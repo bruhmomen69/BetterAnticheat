@@ -1,0 +1,195 @@
+# enabled - whether the check should be used.
+# alert-vl - how many times the check should be failed before an alert should be sent. set to -1 for never.
+# punishments - what commands should be run at what vl. should be vl:command.
+
+hiddenchat:
+  enabled: true
+  alert-vl: 1
+  punishments:
+    '1:say %username% would be banned for HiddenChat!'
+
+impossiblecompletion:
+  enabled: true
+  alert-vl: 1
+  punishments:
+    '1:say %username% would be banned for ImpossibleCompletion!'
+
+impossiblemessage:
+  enabled: true
+  alert-vl: 1
+  punishments:
+    '1:say %username% would be banned for ImpossibleMessage!'
+
+actioninteractorder:
+  enabled: true
+  alert-vl: 1
+  punishments:
+    '1:say %username% would be banned for ActionInteractOrder!'
+
+dualclick:
+  enabled: true
+  alert-vl: 1
+  punishments:
+    '1:say %username% would be banned for DualClick!'
+
+invalidreleasevalues:
+  enabled: true
+  alert-vl: 1
+  punishments:
+    '1:say %username% would be banned for InvalidReleaseValues!'
+
+invaliduseactions:
+  enabled: true
+  alert-vl: 1
+  punishments:
+    '1:say %username% would be banned for InvalidUseActions!'
+
+multipleaction:
+  enabled: true
+  alert-vl: 1
+  punishments:
+    '1:say %username% would be banned for MultipleAction!'
+
+multiplehit:
+  enabled: true
+  alert-vl: 1
+  punishments:
+    '1:say %username% would be banned for MultipleHit!'
+
+noslow:
+  enabled: true
+  alert-vl: 1
+  punishments:
+    '1:say %username% would be banned for NoSlow!'
+
+noswingcombat:
+  enabled: true
+  alert-vl: 1
+  punishments:
+    '1:say %username% would be banned for NoSwingCombat!'
+
+repeatedrelease:
+  enabled: true
+  alert-vl: 1
+  punishments:
+    '1:say %username% would be banned for RepeatedRelease!'
+
+slotinteractorder:
+  enabled: true
+  alert-vl: 1
+  punishments:
+    '1:say %username% would be banned for SlotInteractOrder!'
+
+digblockfaceposition:
+  enabled: true
+  alert-vl: 1
+  punishments:
+    '1:say %username% would be banned for DigBlockFacePosition!'
+
+digorder:
+  enabled: true
+  alert-vl: 1
+  punishments:
+    '1:say %username% would be banned for DigOrder!'
+
+multibreak:
+  enabled: true
+  alert-vl: 1
+  punishments:
+    '1:say %username% would be banned for MultiBreak!'
+
+noswingdig:
+  enabled: true
+  alert-vl: 1
+  punishments:
+    '1:say %username% would be banned for NoSwingDig!'
+
+impossiblehorsejump:
+  enabled: true
+  alert-vl: 1
+  punishments:
+    '1:say %username% would be banned for ImpossibleHorseJump!'
+
+impossibleslot:
+  enabled: true
+  alert-vl: 1
+  punishments:
+    '1:say %username% would be banned for ImpossibleSlot!'
+
+largename:
+  enabled: true
+  alert-vl: 1
+  punishments:
+    '1:say %username% would be banned for LargeName!'
+
+multipleslot:
+  enabled: true
+  alert-vl: 1
+  punishments:
+    '1:say %username% would be banned for MultipleSlot!'
+
+smallrender:
+  enabled: true
+  alert-vl: 1
+  punishments:
+    '1:say %username% would be banned for SmallRender!'
+
+keepaliveorder:
+  enabled: true
+  alert-vl: 1
+  punishments:
+    '1:say %username% would be banned for KeepAliveOrder!'
+
+pingpongorder:
+  enabled: true
+  alert-vl: 1
+  punishments:
+    '1:say %username% would be banned for PingPongOrder!'
+
+post:
+  enabled: true
+  alert-vl: 1
+  punishments:
+    '1:say %username% would be banned for Post!'
+
+teleportconfirmorder:
+  enabled: true
+  alert-vl: 1
+  punishments:
+    '1:say %username% would be banned for TeleportConfirmOrder!'
+
+placeblockfaceposition:
+  enabled: true
+  alert-vl: 1
+  punishments:
+    '1:say %username% would be banned for PlaceBlockFacePosition!'
+
+flyingsequence:
+  enabled: true
+  alert-vl: 1
+  punishments:
+    '1:say %username% would be banned for FlyingSequence!'
+
+impossibleposition:
+  enabled: true
+  alert-vl: 1
+  punishments:
+    '1:say %username% would be banned for ImpossiblePosition!'
+
+impossiblerotation:
+  enabled: true
+  alert-vl: 1
+  punishments:
+    '1:say %username% would be banned for ImpossibleRotation!'
+
+invalidflying:
+  enabled: true
+  alert-vl: 1
+  punishments:
+    '1:say %username% would be banned for InvalidFlying!'
+
+repeatedsteer:
+  enabled: true
+  alert-vl: 1
+  punishments:
+    '1:say %username% would be banned for RepeatedSteer!'

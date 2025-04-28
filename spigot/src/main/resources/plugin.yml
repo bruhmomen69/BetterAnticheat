@@ -1,0 +1,12 @@
+name: BetterAnticheat
+version: 1.0.0
+main: better.anticheat.spigot.BetterAnticheatSpigot
+api-version: 1.13
+load: POSTWORLD
+folia-supported: true
+softdepend:
+  - BetterReload
+depend:
+  - packetevents
+authors:
+  - am noah

@@ -1,0 +1,36 @@
+# How long in ms should it be before a given check can send another alert.
+alert-cooldown: 1000
+
+# What should appear when an alert is hovered over?
+# Remove to disable.
+# Available Placeholders:
+# %clientversion% - The player's Minecraft version.
+# %debug% - Any debug the check outputs.
+alert-hover:
+  - '&7Client Version: &c%clientversion%&7.'
+  - '&7Debug: &c%debug%&7.'
+  - '&7Click to teleport to the player!'
+
+# What message should be displayed when a check is failed?
+# Remove to disable.
+# Available Placeholders:
+# %type% - The check that was failed.
+# %vl% - The amount of times this player has failed the check.
+# %username% - The username of the player who failed the check.
+alert-message: '&c&lBA > &r&4%username% &7failed &4%type% &7VL: &4%vl%'
+
+# What command should be run when an alert message is clicked on?
+# Remove to disable.
+# Available Placeholders:
+# %username% - The username of the player who failed the check.
+click-command: 'tp %username%'
+
+# If true, punishments will be delivered based on a modulo result.
+# If vl modulo the punishment amount = 0, it will run that command.
+# Ex: At 8 vls, 8 % 8, yes. 8 % 4, yes. 8 % 3, no. 8 % 2, yes. 8 % 1, yes.
+# If false, punishments will be delivered at the written vl.
+# Ex: At 8 vls, 8, yes. 4, no. 3, no. 2, no. 1, no.
+punishment-modulo: true
+
+# Sends alerts only to the user who triggered it. Used for testing purposes.
+test-mode: true

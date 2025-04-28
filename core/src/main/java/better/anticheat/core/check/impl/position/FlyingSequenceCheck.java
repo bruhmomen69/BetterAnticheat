@@ -1,0 +1,26 @@
+package better.anticheat.core.check.impl.position;
+
+import better.anticheat.core.check.Check;
+import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
+
+public class FlyingSequenceCheck extends Check {
+
+    private int ticks = 0;
+
+    public FlyingSequenceCheck() {
+        super("FlyingSequence");
+    }
+
+    @Override
+    public void handleReceivePlayPacket(PacketPlayReceiveEvent event) {
+        switch (event.getPacketType()) {
+            case PLAYER_POSITION:
+            case PLAYER_POSITION_AND_ROTATION:
+                ticks = 0;
+                break;
+            case CLIENT_TICK_END:
+                if (++ticks >= 20) fail();
+                break;
+        }
+    }
+}
