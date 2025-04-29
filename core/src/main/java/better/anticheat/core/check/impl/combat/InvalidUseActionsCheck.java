@@ -34,8 +34,6 @@ public class InvalidUseActionsCheck extends Check {
 
                 break;
             case PLAYER_BLOCK_PLACEMENT:
-                WrapperPlayClientPlayerBlockPlacement placeWrapper = new WrapperPlayClientPlayerBlockPlacement(event);
-                if (placeWrapper.getFace().equals(BlockFace.OTHER)) break;
                 placed = true;
                 break;
             case USE_ITEM:

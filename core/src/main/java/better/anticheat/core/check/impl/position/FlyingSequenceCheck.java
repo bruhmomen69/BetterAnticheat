@@ -19,7 +19,7 @@ public class FlyingSequenceCheck extends Check {
                 ticks = 0;
                 break;
             case CLIENT_TICK_END:
-                if (++ticks >= 20) fail();
+                if (++ticks > 20) fail(ticks);
                 break;
         }
     }

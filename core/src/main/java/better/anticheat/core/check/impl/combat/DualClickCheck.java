@@ -24,11 +24,13 @@ public class DualClickCheck extends Check {
             case PLAYER_BLOCK_PLACEMENT:
             case USE_ITEM:
                 rightClick = true;
+                break;
             case PLAYER_DIGGING:
                 WrapperPlayClientPlayerDigging digWrapper = new WrapperPlayClientPlayerDigging(event);
                 // Can false on instant break blocks because Mojang.
                 if (digWrapper.getAction() == DiggingAction.START_DIGGING) return;
                 leftCLick = true;
+                break;
             case INTERACT_ENTITY:
                 WrapperPlayClientInteractEntity interactWrapper = new WrapperPlayClientInteractEntity(event);
                 if (!interactWrapper.getAction().equals(WrapperPlayClientInteractEntity.InteractAction.ATTACK)) return;

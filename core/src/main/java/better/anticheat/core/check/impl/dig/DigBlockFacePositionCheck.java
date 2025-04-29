@@ -22,28 +22,26 @@ public class DigBlockFacePositionCheck extends Check {
             WrapperPlayClientPlayerFlying wrapper = new WrapperPlayClientPlayerFlying(event);
             if (!wrapper.hasPositionChanged()) return;
             position = wrapper.getLocation().getPosition();
+            return;
         } else if (event.getPacketType() != PacketType.Play.Client.PLAYER_DIGGING) return;
 
         WrapperPlayClientPlayerDigging digWrapper = new WrapperPlayClientPlayerDigging(event);
         Vector3i blockPos = digWrapper.getBlockPosition();
         switch (digWrapper.getBlockFace()) {
-            case OTHER:
-                if ((blockPos.getX() != -1) && (blockPos.getY() != 4095) && (blockPos.getZ() != -1)) fail();
-                break;
             case NORTH:
-                if ((blockPos.getZ() + 1.03) < position.getZ()) fail();
+                if ((blockPos.getZ() + 1.03) < position.getZ()) fail(digWrapper.getBlockFace() + " " + digWrapper.getAction());
                 break;
             case SOUTH:
-                if ((blockPos.getZ() - 0.03) > position.getZ()) fail();
+                if ((blockPos.getZ() - 0.03) > position.getZ()) fail(digWrapper.getBlockFace() + " " + digWrapper.getAction());
                 break;
             case WEST:
-                if ((blockPos.getX() + 1.03) < position.getX()) fail();
+                if ((blockPos.getX() + 1.03) < position.getX()) fail(digWrapper.getBlockFace() + " " + digWrapper.getAction());
                 break;
             case EAST:
-                if ((blockPos.getX() - 0.03) > position.getX()) fail();
+                if ((blockPos.getX() - 0.03) > position.getX()) fail(digWrapper.getBlockFace() + " " + digWrapper.getAction());
                 break;
             case DOWN:
-                if ((position.getY() - blockPos.getY()) >= 1) fail();
+                if ((position.getY() - blockPos.getY()) >= 1) fail(digWrapper.getBlockFace() + " " + digWrapper.getAction());
                 break;
         }
     }

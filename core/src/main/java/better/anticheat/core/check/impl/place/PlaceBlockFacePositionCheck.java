@@ -22,14 +22,12 @@ public class PlaceBlockFacePositionCheck extends Check {
             WrapperPlayClientPlayerFlying wrapper = new WrapperPlayClientPlayerFlying(event);
             if (!wrapper.hasPositionChanged()) return;
             position = wrapper.getLocation().getPosition();
+            return;
         } else if (event.getPacketType() != PacketType.Play.Client.PLAYER_BLOCK_PLACEMENT) return;
 
         WrapperPlayClientPlayerBlockPlacement placeWrapper = new WrapperPlayClientPlayerBlockPlacement(event);
         Vector3i blockPos = placeWrapper.getBlockPosition();
         switch (placeWrapper.getFace()) {
-            case OTHER:
-                if ((blockPos.getX() != -1) && (blockPos.getY() != 4095) && (blockPos.getZ() != -1)) fail();
-                break;
             case NORTH:
                 if ((blockPos.getZ() + 1.03) < position.getZ()) fail();
                 break;

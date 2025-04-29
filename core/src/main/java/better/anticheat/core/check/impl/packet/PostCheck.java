@@ -9,7 +9,7 @@ import java.util.List;
 
 public class PostCheck extends Check {
 
-    private boolean sentFlying = false;
+    private boolean sentFlying = false, login = true;
     private final List<PacketType.Play.Client> post = new ArrayList<>();
 
     public PostCheck() {
@@ -33,13 +33,17 @@ public class PostCheck extends Check {
                 sentFlying = false;
                 post.clear();
                 break;
+            case HELD_ITEM_CHANGE:
+                if (login) {
+                    login = false;
+                    break;
+                }
             case ANIMATION:
             case PLAYER_INPUT:
             case ENTITY_ACTION:
             case CLOSE_WINDOW:
             case CREATIVE_INVENTORY_ACTION:
             case EDIT_BOOK:
-            case HELD_ITEM_CHANGE:
             case INTERACT_ENTITY:
             case NAME_ITEM:
             case PLAYER_ABILITIES:
