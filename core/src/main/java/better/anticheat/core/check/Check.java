@@ -127,7 +127,7 @@ public abstract class Check implements Cloneable {
             lastAlertMS = currentMS;
         }
 
-        if (!BetterAnticheat.getInstance().isPunishmentModulo()) {
+        if (BetterAnticheat.getInstance().isPunishmentModulo()) {
             for (int punishVL : punishments.keySet()) {
                 if (vl % punishVL != 0) continue;
                 runPunishment(punishVL);
