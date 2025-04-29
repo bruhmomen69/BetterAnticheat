@@ -28,6 +28,9 @@ public class PlaceBlockFacePositionCheck extends Check {
         WrapperPlayClientPlayerBlockPlacement placeWrapper = new WrapperPlayClientPlayerBlockPlacement(event);
         Vector3i blockPos = placeWrapper.getBlockPosition();
         switch (placeWrapper.getFace()) {
+            case OTHER:
+                if (blockPos.getX() != -1 || blockPos.getY() != 4095 || blockPos.getZ() != -1) fail("other");
+                break;
             case NORTH:
                 if ((blockPos.getZ() + 1.03) < position.getZ()) fail();
                 break;

@@ -3,6 +3,7 @@ package better.anticheat.core.check.impl.dig;
 import better.anticheat.core.check.Check;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
+import com.github.retrooper.packetevents.protocol.player.DiggingAction;
 import com.github.retrooper.packetevents.util.Vector3d;
 import com.github.retrooper.packetevents.util.Vector3i;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerDigging;
@@ -26,8 +27,19 @@ public class DigBlockFacePositionCheck extends Check {
         } else if (event.getPacketType() != PacketType.Play.Client.PLAYER_DIGGING) return;
 
         WrapperPlayClientPlayerDigging digWrapper = new WrapperPlayClientPlayerDigging(event);
+        switch (digWrapper.getAction()) {
+            case FINISHED_DIGGING:
+            case START_DIGGING:
+                break;
+            default:
+                return;
+        }
+
         Vector3i blockPos = digWrapper.getBlockPosition();
         switch (digWrapper.getBlockFace()) {
+            case OTHER:
+                if (blockPos.getX() != -1 || blockPos.getY() != 4095 || blockPos.getZ() != -1) fail("other");
+                break;
             case NORTH:
                 if ((blockPos.getZ() + 1.03) < position.getZ()) fail(digWrapper.getBlockFace() + " " + digWrapper.getAction());
                 break;
