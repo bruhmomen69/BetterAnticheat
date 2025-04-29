@@ -1,6 +1,7 @@
 package better.anticheat.core.check;
 
 import better.anticheat.core.BetterAnticheat;
+import better.anticheat.core.user.UserManager;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.event.simple.PacketPlaySendEvent;
 import com.github.retrooper.packetevents.protocol.player.User;
@@ -115,7 +116,7 @@ public abstract class Check implements Cloneable {
                     finalMessage = finalMessage.hoverEvent(HoverEvent.hoverEvent(HoverEvent.Action.SHOW_TEXT, Component.text(hoverBuild.substring(0, hoverBuild.length() - 1))));
 
                 if (BetterAnticheat.getInstance().isTestMode()) user.sendMessage(finalMessage);
-                else ;
+                else UserManager.sendAlert(finalMessage);
             }
 
             lastAlertMS = currentMS;

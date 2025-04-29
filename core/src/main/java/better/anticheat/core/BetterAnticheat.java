@@ -20,7 +20,7 @@ public class BetterAnticheat {
     // Settings
     private int alertCooldown;
     private List<String> alertHover;
-    private String alertMessage, clickCommand;
+    private String alertMessage, alertPermission, clickCommand;
     private boolean punishmentModulo, testMode;
 
     public BetterAnticheat(DataBridge dataBridge) {
@@ -56,6 +56,7 @@ public class BetterAnticheat {
 
         ConfigSection settings = dataBridge.getConfigurationFile("settings.yml", BetterAnticheat.class.getResourceAsStream("/settings.yml")).load();
         alertCooldown = settings.getObject(Integer.class, "alert-cooldown", 1000);
+        alertPermission = settings.getObject(String.class, "alert-permission", "better.anticheat");
         alertHover = settings.getList(String.class, "alert-hover");
         alertMessage = settings.getObject(String.class, "alert-message", "");
         clickCommand = settings.getObject(String.class, "click-command", "");
@@ -86,6 +87,10 @@ public class BetterAnticheat {
 
     public String getAlertMessage() {
         return alertMessage;
+    }
+
+    public String getAlertPermission() {
+        return alertPermission;
     }
 
     public String getClickCommand() {

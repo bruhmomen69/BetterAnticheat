@@ -1,6 +1,8 @@
 # How long in ms should it be before a given check can send another alert.
 alert-cooldown: 1000
 
+alert-permission: 'better.anticheat'
+
 # What should appear when an alert is hovered over?
 # Remove to disable.
 # Available Placeholders:

@@ -1,10 +1,14 @@
 package better.anticheat.core.user;
 
+import better.anticheat.core.BetterAnticheat;
 import better.anticheat.core.check.Check;
 import better.anticheat.core.check.CheckManager;
 import com.github.retrooper.packetevents.protocol.player.User;
+import net.kyori.adventure.text.Component;
 
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 
 public class UserManager {
 
@@ -20,6 +24,13 @@ public class UserManager {
 
     public static List<Check> getUserChecks(User user) {
         return USER_MAP.get(user);
+    }
+
+    public static void sendAlert(Component text) {
+        for (User user : USER_MAP.keySet()) {
+            if (!BetterAnticheat.getInstance().getDataBridge().hasPermission(user, BetterAnticheat.getInstance().getAlertPermission())) continue;
+            user.sendMessage(text);
+        }
     }
 
     public static void load() {
