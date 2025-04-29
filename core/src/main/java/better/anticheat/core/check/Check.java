@@ -14,8 +14,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public abstract class Check implements Cloneable {
+
+    private final static Pattern TRANSLATE = Pattern.compile("(?i)&[0-9A-FK-ORX]");
 
     protected User user;
 
@@ -97,6 +101,7 @@ public abstract class Check implements Cloneable {
                 message = message.replaceAll("%vl%", String.valueOf(vl));
                 message = message.replaceAll("%type%", type);
                 message = message.replaceAll("%username%", user.getName());
+                message = translateColors(message);
                 Component finalMessage = Component.text(message);
 
                 // Add the click command.
@@ -113,7 +118,7 @@ public abstract class Check implements Cloneable {
                             .append(System.lineSeparator());
                 }
                 if (hoverBuild.length() > 2)
-                    finalMessage = finalMessage.hoverEvent(HoverEvent.hoverEvent(HoverEvent.Action.SHOW_TEXT, Component.text(hoverBuild.substring(0, hoverBuild.length() - 1))));
+                    finalMessage = finalMessage.hoverEvent(HoverEvent.hoverEvent(HoverEvent.Action.SHOW_TEXT, Component.text(translateColors(hoverBuild.substring(0, hoverBuild.length() - 1)))));
 
                 if (BetterAnticheat.getInstance().isTestMode()) user.sendMessage(finalMessage);
                 else UserManager.sendAlert(finalMessage);
@@ -138,6 +143,22 @@ public abstract class Check implements Cloneable {
                 BetterAnticheat.getInstance().getDataBridge().sendCommand(command);
             }
         }
+    }
+
+    private static String translateColors(String text) {
+        if (text == null) return null;
+
+        Matcher matcher = TRANSLATE.matcher(text);
+        StringBuffer output = new StringBuffer();
+
+        while (matcher.find()) {
+            String match = matcher.group();
+            String replacement = "§" + match.substring(1);
+            matcher.appendReplacement(output, replacement);
+        }
+
+        matcher.appendTail(output);
+        return output.toString();
     }
 
     public void load(ConfigSection section) {
