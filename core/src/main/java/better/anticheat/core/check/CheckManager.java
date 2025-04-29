@@ -72,7 +72,6 @@ public class CheckManager {
                 new FlyingSequenceCheck(),
                 new ImpossiblePositionCheck(),
                 new ImpossibleRotationCheck(),
-                new InvalidFlyingCheck(),
                 new RepeatedSteerCheck()
         );
     }

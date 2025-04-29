@@ -6,7 +6,7 @@ import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientSe
 
 public class HiddenChatCheck extends Check {
 
-    private boolean canChat;
+    private boolean canChat = true;
 
     public HiddenChatCheck() {
         super("HiddenChat");

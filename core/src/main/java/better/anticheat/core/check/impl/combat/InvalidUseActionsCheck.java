@@ -39,7 +39,7 @@ public class InvalidUseActionsCheck extends Check {
             case USE_ITEM:
 
                 blocking = true;
-                attacked = false;
+                attacked = placed = false;
 
                 break;
             case PLAYER_DIGGING:

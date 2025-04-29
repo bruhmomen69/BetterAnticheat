@@ -182,12 +182,6 @@ impossiblerotation:
   punishments:
     '1:say %username% would be banned for ImpossibleRotation!'
 
-invalidflying:
-  enabled: true
-  alert-vl: 1
-  punishments:
-    '1:say %username% would be banned for InvalidFlying!'
-
 repeatedsteer:
   enabled: true
   alert-vl: 1

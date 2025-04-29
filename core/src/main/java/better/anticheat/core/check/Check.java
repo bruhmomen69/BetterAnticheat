@@ -115,7 +115,7 @@ public abstract class Check implements Cloneable {
                     hoverBuild.append(string
                                     .replaceAll("%clientversion%", user.getClientVersion().getReleaseName())
                                     .replaceAll("%debug%", debug == null ? "" : debug.toString()))
-                            .append(System.lineSeparator());
+                            .append("\n");
                 }
                 if (hoverBuild.length() > 2)
                     finalMessage = finalMessage.hoverEvent(HoverEvent.hoverEvent(HoverEvent.Action.SHOW_TEXT, Component.text(translateColors(hoverBuild.substring(0, hoverBuild.length() - 1)))));

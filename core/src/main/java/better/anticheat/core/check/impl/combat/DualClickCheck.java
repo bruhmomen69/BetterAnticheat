@@ -2,7 +2,6 @@ package better.anticheat.core.check.impl.combat;
 
 import better.anticheat.core.check.Check;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
-import com.github.retrooper.packetevents.protocol.player.DiggingAction;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientInteractEntity;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerDigging;
 
@@ -28,7 +27,14 @@ public class DualClickCheck extends Check {
             case PLAYER_DIGGING:
                 WrapperPlayClientPlayerDigging digWrapper = new WrapperPlayClientPlayerDigging(event);
                 // Can false on instant break blocks because Mojang.
-                if (digWrapper.getAction() == DiggingAction.START_DIGGING) return;
+                switch (digWrapper.getAction()) {
+                    case CANCELLED_DIGGING:
+                    case FINISHED_DIGGING:
+                    case RELEASE_USE_ITEM:
+                        break;
+                    default:
+                        return;
+                }
                 leftCLick = true;
                 break;
             case INTERACT_ENTITY:
