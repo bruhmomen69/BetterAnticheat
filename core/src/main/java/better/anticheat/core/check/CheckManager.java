@@ -16,8 +16,8 @@ import better.anticheat.core.check.impl.packet.PostCheck;
 import better.anticheat.core.check.impl.packet.TeleportConfirmOrderCheck;
 import better.anticheat.core.check.impl.place.PlaceBlockFacePositionCheck;
 import better.anticheat.core.check.impl.position.*;
+import better.anticheat.core.configuration.ConfigSection;
 import com.github.retrooper.packetevents.protocol.player.User;
-import sharkbyte.configuration.core.ConfigSection;
 
 import java.util.*;
 
@@ -60,7 +60,6 @@ public class CheckManager {
                 new SmallRenderCheck(),
 
                 // Packet Checks
-                new KeepAliveOrderCheck(),
                 new PingPongOrderCheck(),
                 new PostCheck(),
                 new TeleportConfirmOrderCheck(),
@@ -98,7 +97,8 @@ public class CheckManager {
     }
 
     public static void load(BetterAnticheat plugin) {
-        ConfigSection checks = plugin.getDataBridge().getConfigurationFile("checks.yml", BetterAnticheat.class.getResourceAsStream("/checks.yml")).load();
+
+        ConfigSection checks = plugin.getFile("checks.yml", BetterAnticheat.class.getResourceAsStream("/checks.yml")).load();
         for (Check check : CHECKS) check.load(checks.getConfigSection(check.getType().toLowerCase()));
     }
 }

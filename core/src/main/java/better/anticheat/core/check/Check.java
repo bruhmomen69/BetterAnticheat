@@ -1,6 +1,7 @@
 package better.anticheat.core.check;
 
 import better.anticheat.core.BetterAnticheat;
+import better.anticheat.core.configuration.ConfigSection;
 import better.anticheat.core.user.UserManager;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.event.simple.PacketPlaySendEvent;
@@ -8,7 +9,6 @@ import com.github.retrooper.packetevents.protocol.player.User;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
-import sharkbyte.configuration.core.ConfigSection;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -141,8 +141,9 @@ public abstract class Check implements Cloneable {
             for (String command : punishment) {
                 command = command.replaceAll("%username%", user.getName());
                 BetterAnticheat.getInstance().getDataBridge().sendCommand(command);
+                System.out.println(command);
             }
-        }
+        } else System.out.println("null pnshment");
     }
 
     private static String translateColors(String text) {
@@ -172,7 +173,9 @@ public abstract class Check implements Cloneable {
         alertVL = section.getObject(Integer.class, "alert-vl", 1);
 
         punishments.clear();
+        System.out.println(section.getObject(String.class, "punishments", "error"));
         List<String> punishmentList = section.getList(String.class, "punishments");
+        System.out.println("pnshments " + punishmentList.size());
         for (String punishment : punishmentList) {
             String[] elements = punishment.split(":", 2);
             try {
@@ -180,8 +183,11 @@ public abstract class Check implements Cloneable {
                 if (!punishments.containsKey(vl)) punishments.put(vl, new ArrayList<>());
                 punishments.get(vl).add(elements[1]);
             } catch (Exception e) {
-                continue;
+                System.out.println("error in " + type);
+                e.printStackTrace();
             }
         }
+
+        System.out.println(type + " loaded punishments: " + punishments.size());
     }
 }

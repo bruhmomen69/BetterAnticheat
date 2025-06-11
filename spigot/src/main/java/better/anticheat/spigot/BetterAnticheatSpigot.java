@@ -9,7 +9,7 @@ public class BetterAnticheatSpigot extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        core = new BetterAnticheat(new SpigotDataBridge(this));
+        core = new BetterAnticheat(new SpigotDataBridge(this), getDataFolder().toPath());
         core.enable();
     }
 

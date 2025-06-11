@@ -1,12 +1,15 @@
 package better.anticheat.core;
 
 import better.anticheat.core.check.CheckManager;
+import better.anticheat.core.configuration.ConfigSection;
+import better.anticheat.core.configuration.ConfigurationFile;
 import better.anticheat.core.user.PacketListener;
 import better.anticheat.core.user.UserManager;
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.manager.server.ServerVersion;
-import sharkbyte.configuration.core.ConfigSection;
 
+import java.io.InputStream;
+import java.nio.file.Path;
 import java.util.List;
 
 public class BetterAnticheat {
@@ -14,6 +17,7 @@ public class BetterAnticheat {
     private static BetterAnticheat instance;
 
     private final DataBridge dataBridge;
+    private final Path directory;
 
     private boolean enabled;
 
@@ -23,8 +27,9 @@ public class BetterAnticheat {
     private String alertMessage, alertPermission, clickCommand;
     private boolean punishmentModulo, testMode;
 
-    public BetterAnticheat(DataBridge dataBridge) {
+    public BetterAnticheat(DataBridge dataBridge, Path directory) {
         this.dataBridge = dataBridge;
+        this.directory = directory;
         this.enabled = true;
 
         instance = this;
@@ -54,7 +59,7 @@ public class BetterAnticheat {
 
         dataBridge.logInfo("Beginning load!");
 
-        ConfigSection settings = dataBridge.getConfigurationFile("settings.yml", BetterAnticheat.class.getResourceAsStream("/settings.yml")).load();
+        ConfigSection settings = getFile("settings.yml", BetterAnticheat.class.getResourceAsStream("/settings.yml")).load();
         alertCooldown = settings.getObject(Integer.class, "alert-cooldown", 1000);
         alertPermission = settings.getObject(String.class, "alert-permission", "better.anticheat");
         alertHover = settings.getList(String.class, "alert-hover");
@@ -67,6 +72,14 @@ public class BetterAnticheat {
         UserManager.load();
 
         dataBridge.logInfo("Load finished!");
+    }
+
+    public ConfigurationFile getFile(String name) {
+        return new ConfigurationFile(name, directory);
+    }
+
+    public ConfigurationFile getFile(String name, InputStream input) {
+        return new ConfigurationFile(name, directory, input);
     }
 
     /*
