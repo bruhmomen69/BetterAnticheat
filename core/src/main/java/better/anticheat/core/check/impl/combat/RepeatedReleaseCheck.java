@@ -7,7 +7,7 @@ import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPl
 
 public class RepeatedReleaseCheck extends Check {
 
-    private boolean useItem = false;
+    private boolean useItem = true;
 
     public RepeatedReleaseCheck() {
         super("RepeatedRelease");

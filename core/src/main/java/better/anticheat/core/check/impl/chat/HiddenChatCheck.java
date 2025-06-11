@@ -6,7 +6,7 @@ import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientSe
 
 public class HiddenChatCheck extends Check {
 
-    private boolean canChat = true;
+    private boolean canChat = true, initalFlag = false;
 
     public HiddenChatCheck() {
         super("HiddenChat");
@@ -36,7 +36,11 @@ public class HiddenChatCheck extends Check {
                 }
                 break;
             case CHAT_MESSAGE:
-                if (!canChat) fail();
+                if (!canChat) {
+                    // Settings aren't always sent to update this until after chats are sent.
+                    if (initalFlag) fail();
+                    else initalFlag = true;
+                }
                 break;
         }
     }

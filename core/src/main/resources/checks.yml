@@ -134,12 +134,6 @@ smallrender:
   punishments:
     '1:say %username% would be banned for SmallRender!'
 
-keepaliveorder:
-  enabled: true
-  alert-vl: 1
-  punishments:
-    '1:say %username% would be banned for KeepAliveOrder!'
-
 pingpongorder:
   enabled: true
   alert-vl: 1
