@@ -4,8 +4,6 @@ import better.anticheat.core.DataBridge;
 import com.github.retrooper.packetevents.protocol.player.User;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import sharkbyte.configuration.core.ConfigurationFile;
-import sharkbyte.configuration.spigot.SpigotConfigurationFile;
 
 import java.io.InputStream;
 
@@ -15,11 +13,6 @@ public class SpigotDataBridge implements DataBridge {
 
     public SpigotDataBridge(BetterAnticheatSpigot plugin) {
         this.plugin = plugin;
-    }
-
-    @Override
-    public ConfigurationFile getConfigurationFile(String name, InputStream defaultFile) {
-        return new SpigotConfigurationFile(plugin, name, defaultFile);
     }
 
     @Override

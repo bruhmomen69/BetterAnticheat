@@ -72,7 +72,11 @@ public class ConfigSection {
         List<E> obj;
 
         try {
-            obj = (List<E>) config.get(node);
+            if (config.get(node) instanceof List) obj = (List<E>) config.get(node);
+            else {
+                obj = new ArrayList<>();
+                obj.add((E) config.get(node));
+            }
         } catch (Exception e) {
             obj = new ArrayList<>();
         }
