@@ -33,7 +33,7 @@ public class UserManager {
         }
     }
 
-    public static void load() {
+    public static void load(BetterAnticheat plugin) {
         Set<User> users = new HashSet<>(USER_MAP.keySet());
         for (User user : users) {
             // Prevent a memory leak that would likely never happen.
@@ -41,5 +41,6 @@ public class UserManager {
             if (!USER_MAP.containsKey(user)) continue;
             USER_MAP.put(user, CheckManager.getEnabledChecks(user));
         }
+        plugin.getDataBridge().logInfo("Loaded checks for " + users.size() + " players.");
     }
 }

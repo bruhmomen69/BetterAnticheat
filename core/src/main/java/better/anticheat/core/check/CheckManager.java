@@ -103,8 +103,12 @@ public class CheckManager {
     }
 
     public static void load(BetterAnticheat plugin) {
-
         ConfigSection checks = plugin.getFile("checks.yml", BetterAnticheat.class.getResourceAsStream("/checks.yml")).load();
-        for (Check check : CHECKS) check.load(checks.getConfigSection(check.getType().toLowerCase()));
+        int enabled = 0;
+        for (Check check : CHECKS) {
+            check.load(checks.getConfigSection(check.getType().toLowerCase()));
+            if (check.isEnabled()) enabled++;
+        }
+        plugin.getDataBridge().logInfo("Loaded " + CHECKS.size() + " checks, with " + enabled + " being enabled.");
     }
 }

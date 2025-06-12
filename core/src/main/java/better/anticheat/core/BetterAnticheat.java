@@ -69,7 +69,7 @@ public class BetterAnticheat {
         testMode = settings.getObject(Boolean.class, "test-mode", false);
 
         CheckManager.load(this);
-        UserManager.load();
+        UserManager.load(this);
 
         dataBridge.logInfo("Load finished!");
     }
