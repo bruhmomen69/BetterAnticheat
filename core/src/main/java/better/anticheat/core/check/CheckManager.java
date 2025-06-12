@@ -35,15 +35,21 @@ public class CheckManager {
                 new ImpossibleMessageCheck(),
 
                 // Combat Checks
+                /*
+                 * NoSlow and RepeatedRelease were checks in Quality Control that were stable, but it seems like later
+                 * versions of Minecraft than what I had designed those checks for originally may have altered how the
+                 * Use Item packet works. As of now, these two checks false flag and so I am keeping them out of any
+                 * potential releases.
+                 */
                 new ActionInteractOrderCheck(),
                 new DualClickCheck(),
                 new InvalidReleaseValuesCheck(),
                 new InvalidUseActionsCheck(),
                 new MultipleActionCheck(),
                 new MultipleHitCheck(),
-                new NoSlowCheck(),
+                //new NoSlowCheck(),
                 new NoSwingCombatCheck(),
-                new RepeatedReleaseCheck(),
+                //new RepeatedReleaseCheck(),
                 new SlotInteractOrderCheck(),
 
                 // Dig Checks

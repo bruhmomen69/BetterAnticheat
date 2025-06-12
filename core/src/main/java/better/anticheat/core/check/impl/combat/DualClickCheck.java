@@ -7,7 +7,7 @@ import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPl
 
 public class DualClickCheck extends Check {
 
-    private boolean leftCLick = false, rightClick = false;
+    private boolean leftClickAtk = false, leftClickDig = false, rightClickUse = false, rightClickPlace = false;
 
     public DualClickCheck() {
         super("DualClick");
@@ -17,12 +17,15 @@ public class DualClickCheck extends Check {
     public void handleReceivePlayPacket(PacketPlayReceiveEvent event) {
         switch (event.getPacketType()) {
             case CLIENT_TICK_END:
-                if (leftCLick && rightClick) fail();
-                leftCLick = rightClick = false;
+                if (leftClickDig && (rightClickPlace || rightClickUse)) fail("atk");
+                else if (leftClickAtk && rightClickPlace) fail("dig");
+                leftClickAtk = leftClickDig = rightClickPlace = rightClickUse = false;
                 break;
             case PLAYER_BLOCK_PLACEMENT:
+                rightClickPlace = true;
+                break;
             case USE_ITEM:
-                rightClick = true;
+                rightClickUse = true;
                 break;
             case PLAYER_DIGGING:
                 WrapperPlayClientPlayerDigging digWrapper = new WrapperPlayClientPlayerDigging(event);
@@ -35,12 +38,12 @@ public class DualClickCheck extends Check {
                     default:
                         return;
                 }
-                leftCLick = true;
+                leftClickDig = true;
                 break;
             case INTERACT_ENTITY:
                 WrapperPlayClientInteractEntity interactWrapper = new WrapperPlayClientInteractEntity(event);
                 if (!interactWrapper.getAction().equals(WrapperPlayClientInteractEntity.InteractAction.ATTACK)) return;
-                leftCLick = true;
+                leftClickAtk = true;
                 break;
         }
     }
