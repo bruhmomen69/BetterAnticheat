@@ -173,9 +173,7 @@ public abstract class Check implements Cloneable {
         alertVL = section.getObject(Integer.class, "alert-vl", 1);
 
         punishments.clear();
-        System.out.println(section.getObject(String.class, "punishments", "error"));
         List<String> punishmentList = section.getList(String.class, "punishments");
-        System.out.println("pnshments " + punishmentList.size());
         for (String punishment : punishmentList) {
             String[] elements = punishment.split(":", 2);
             try {
@@ -183,11 +181,8 @@ public abstract class Check implements Cloneable {
                 if (!punishments.containsKey(vl)) punishments.put(vl, new ArrayList<>());
                 punishments.get(vl).add(elements[1]);
             } catch (Exception e) {
-                System.out.println("error in " + type);
                 e.printStackTrace();
             }
         }
-
-        System.out.println(type + " loaded punishments: " + punishments.size());
     }
 }
