@@ -12,6 +12,10 @@ import java.nio.file.StandardCopyOption;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+/*
+ * Due to present issues with JitPack, this is a copy-paste of sharkbyte-configuration's snakeyaml module.
+ */
+
 public class ConfigurationFile {
 
     private final String fileName;

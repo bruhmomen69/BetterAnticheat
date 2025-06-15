@@ -2,6 +2,9 @@
 
 **BEFORE INSTALLING, PLEASE READ:** 
 
+At this point, BetterAnticheat is in an early developmental state. It is not confirmed to be stable and should be used
+with caution.
+
 BetterAnticheat is an auxiliary anticheat. BetterAnticheat does not aim to and will not catch cheats like flight, speed,
 reach, etc. BetterAnticheat exists to catch more niche cheats that many anticheats do not catch on their own, meaning it
 should be run alongside another anticheat.
@@ -26,9 +29,81 @@ This plugin is designed for 1.21.4+ on Spigot, Paper/Folia, and Sponge.
 It requires [PacketEvents](https://github.com/retrooper/packetevents)
 
 ## Checks
-- Platform independent design.
-- Fully packet-based.
-- Highly modular and expandable.
+
+BetterAnticheat has the following checks in the following categories:
+
+### Chat
+
+These checks look for issues with chatting. These may catch macros and chat automation tools.
+
+- HiddenChat | Sending chat messages with the chat box hidden (often macros).
+- ImpossibleCompletion | Tab completing invalid messages.
+- ImpossibleMessage | Sending empty or invalidly formatted messages.
+
+### Combat
+
+These checks look for issues with combat. These may catch a variety of combat cheats.
+
+- ActionInteractOrder | Sending an EntityAction packet prior to an InteractEntity in a tick.
+- DualClick | Sending simultaneous left and right clicks.
+- InvalidReleaseValues | Releasing a used item with values filled out.
+- InvalidUseActions | Attacking or placing while using an item.
+- MultipleAction | Changing sneak or sprint status multiple times in a tick.
+- MultipleHit | Hitting multiple entities in a tick.
+- NoSwingCombat | Attacking an entity without sending an arm swing packet.
+- SelfHit | Attacking yourself.
+- SlotInteractOrder | Sending a SlotChange prior to InteractEntity packet in a tick.
+
+### Dig
+
+These checks look for issues with digging. These may catch nuker, fast break, and other cheats.
+
+- DigBlockFacePosition | Digging block faces which cannot be seen.
+- DigOrder | Sending wrongful dig stages.
+- MultiBreak | Digging multiple blocks at once.
+- NoSwingDig | Digging without swinging an arm.
+
+### Flying
+
+These checks look for issues with flying packets. These may catch position/rotation alterations and related cheats.
+
+- ArtificialFlying | Faking flying packets.
+- FlyingSequence | Not sending flying packets within 20 ticks.
+- ImpossiblePosition | Sending position values that are impossible.
+- ImpossibleRotation | Sending rotation values that are impossible.
+- RepeatedSteer | Sending steer packets with no corresponding rotation change.
+
+### Heuristic
+
+These checks use statistics and observed behavior to identify cheats. Unlike other checks, these are not built on
+defined behavior and theoretically could be false flagged by perfect player behavior. As such, I'd recommand that these 
+should be used as an indicator to watch players and, at most, kick them rather than issuing more permanent punishments.
+
+- CombatAcceleration | Constant acceleration during combat.
+
+### Misc
+
+These checks are a variety that don't fit into other categories.
+
+- ImpossibleHorseJump | Sending mathematically wrong horse jumps.
+- ImpossibleSlot | Accessing slots which are not real.
+- LargeName | Renaming an item an excessively long name.
+- MultipleSlot | Changing slots multiple times in a tick.
+- SmallRender | Having a render distance less than 2.
+
+### Packet
+
+These checks look for general packet issues. These may catch packet order alterations.
+
+- PingPongOrder | Sending ping pong packets in the wrong order.
+- Post | Sending packets in the wrong order.
+- TeleportConfirmOrder | Sending teleport confirm packets in the wrong order.
+
+### Place
+
+These checks look for issues with block placement. These may catch scaffold, fast place, ghost hand, and other cheats.
+
+- PlaceBlockFacePosition | Placing on block faces which cannot be seen.
 
 # Documentation
 

@@ -70,7 +70,6 @@ public abstract class Check implements Cloneable {
     @Override
     protected Check clone() {
         try {
-            System.out.println("Cloning " + type);
             return (Check) super.clone();
         } catch (CloneNotSupportedException e) {
             throw new AssertionError();
@@ -141,9 +140,8 @@ public abstract class Check implements Cloneable {
             for (String command : punishment) {
                 command = command.replaceAll("%username%", user.getName());
                 BetterAnticheat.getInstance().getDataBridge().sendCommand(command);
-                System.out.println(command);
             }
-        } else System.out.println("null pnshment");
+        }
     }
 
     private static String translateColors(String text) {

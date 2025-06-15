@@ -3,6 +3,10 @@ package better.anticheat.core.configuration;
 import java.io.Serializable;
 import java.util.*;
 
+/*
+ * Due to present issues with JitPack, this is a copy-paste of sharkbyte-configuration's snakeyaml module.
+ */
+
 public class ConfigSection {
 
     private final ConfigSection parent;
