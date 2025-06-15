@@ -9,13 +9,13 @@ import better.anticheat.core.check.impl.dig.DigBlockFacePositionCheck;
 import better.anticheat.core.check.impl.dig.DigOrderCheck;
 import better.anticheat.core.check.impl.dig.MultiBreakCheck;
 import better.anticheat.core.check.impl.dig.NoSwingDigCheck;
+import better.anticheat.core.check.impl.heuristic.CombatAccelerationCheck;
 import better.anticheat.core.check.impl.misc.*;
-import better.anticheat.core.check.impl.packet.KeepAliveOrderCheck;
 import better.anticheat.core.check.impl.packet.PingPongOrderCheck;
 import better.anticheat.core.check.impl.packet.PostCheck;
 import better.anticheat.core.check.impl.packet.TeleportConfirmOrderCheck;
 import better.anticheat.core.check.impl.place.PlaceBlockFacePositionCheck;
-import better.anticheat.core.check.impl.position.*;
+import better.anticheat.core.check.impl.flying.*;
 import better.anticheat.core.configuration.ConfigSection;
 import com.github.retrooper.packetevents.protocol.player.User;
 
@@ -50,6 +50,7 @@ public class CheckManager {
                 //new NoSlowCheck(),
                 new NoSwingCombatCheck(),
                 //new RepeatedReleaseCheck(),
+                new SelfHitCheck(),
                 new SlotInteractOrderCheck(),
 
                 // Dig Checks
@@ -57,6 +58,16 @@ public class CheckManager {
                 new DigOrderCheck(),
                 new MultiBreakCheck(),
                 new NoSwingDigCheck(),
+
+                // Flying Checks
+                new ArtificialFlyingCheck(),
+                new FlyingSequenceCheck(),
+                new ImpossiblePositionCheck(),
+                new ImpossibleRotationCheck(),
+                new RepeatedSteerCheck(),
+
+                // Heuristic Checks
+                new CombatAccelerationCheck(),
 
                 // Misc Checks
                 new ImpossibleHorseJumpCheck(),
@@ -71,13 +82,7 @@ public class CheckManager {
                 new TeleportConfirmOrderCheck(),
 
                 // Place Checks
-                new PlaceBlockFacePositionCheck(),
-
-                // Position Checks
-                new FlyingSequenceCheck(),
-                new ImpossiblePositionCheck(),
-                new ImpossibleRotationCheck(),
-                new RepeatedSteerCheck()
+                new PlaceBlockFacePositionCheck()
         );
     }
 

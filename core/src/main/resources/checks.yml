@@ -2,6 +2,10 @@
 # alert-vl - how many times the check should be failed before an alert should be sent. set to -1 for never.
 # punishments - what commands should be run at what vl. should be vl:command.
 
+#
+# Chat
+#
+
 hiddenchat:
   enabled: true
   alert-vl: 1
@@ -19,6 +23,10 @@ impossiblemessage:
   alert-vl: 1
   punishments:
     '1:say %username% would be banned for ImpossibleMessage!'
+
+#
+# Combat
+#
 
 actioninteractorder:
   enabled: true
@@ -56,29 +64,27 @@ multiplehit:
   punishments:
     '1:say %username% would be banned for MultipleHit!'
 
-noslow:
-  enabled: true
-  alert-vl: 1
-  punishments:
-    '1:say %username% would be banned for NoSlow!'
-
 noswingcombat:
   enabled: true
   alert-vl: 1
   punishments:
     '1:say %username% would be banned for NoSwingCombat!'
 
-repeatedrelease:
+selfhit:
   enabled: true
   alert-vl: 1
   punishments:
-    '1:say %username% would be banned for RepeatedRelease!'
+    '1:say %username% would be banned for SelfHit!'
 
 slotinteractorder:
   enabled: true
   alert-vl: 1
   punishments:
     '1:say %username% would be banned for SlotInteractOrder!'
+
+#
+# Dig
+#
 
 digblockfaceposition:
   enabled: true
@@ -103,6 +109,54 @@ noswingdig:
   alert-vl: 1
   punishments:
     '1:say %username% would be banned for NoSwingDig!'
+
+#
+# Flying
+#
+
+artificialflying:
+  enabled: true
+  alert-vl: 1
+  punishments:
+    '1:say %username% would be banned for ArtificialFlying!'
+
+flyingsequence:
+  enabled: true
+  alert-vl: 1
+  punishments:
+    '1:say %username% would be banned for FlyingSequence!'
+
+impossibleposition:
+  enabled: true
+  alert-vl: 1
+  punishments:
+    '1:say %username% would be banned for ImpossiblePosition!'
+
+impossiblerotation:
+  enabled: true
+  alert-vl: 1
+  punishments:
+    '1:say %username% would be banned for ImpossibleRotation!'
+
+repeatedsteer:
+  enabled: true
+  alert-vl: 1
+  punishments:
+    '1:say %username% would be banned for RepeatedSteer!'
+
+#
+# Heuristic
+#
+
+combatacceleration:
+  enabled: true
+  alert-vl: 1
+  punishments:
+    '1:say %username% would be kicked for CombatAcceleration!'
+
+#
+# Misc
+#
 
 impossiblehorsejump:
   enabled: true
@@ -134,6 +188,10 @@ smallrender:
   punishments:
     '1:say %username% would be banned for SmallRender!'
 
+#
+# Packet
+#
+
 pingpongorder:
   enabled: true
   alert-vl: 1
@@ -152,32 +210,12 @@ teleportconfirmorder:
   punishments:
     '1:say %username% would be banned for TeleportConfirmOrder!'
 
+#
+# Place
+#
+
 placeblockfaceposition:
   enabled: true
   alert-vl: 1
   punishments:
     '1:say %username% would be banned for PlaceBlockFacePosition!'
-
-flyingsequence:
-  enabled: true
-  alert-vl: 1
-  punishments:
-    '1:say %username% would be banned for FlyingSequence!'
-
-impossibleposition:
-  enabled: true
-  alert-vl: 1
-  punishments:
-    '1:say %username% would be banned for ImpossiblePosition!'
-
-impossiblerotation:
-  enabled: true
-  alert-vl: 1
-  punishments:
-    '1:say %username% would be banned for ImpossibleRotation!'
-
-repeatedsteer:
-  enabled: true
-  alert-vl: 1
-  punishments:
-    '1:say %username% would be banned for RepeatedSteer!'

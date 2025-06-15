@@ -1,4 +1,4 @@
-package better.anticheat.core.check.impl.position;
+package better.anticheat.core.check.impl.flying;
 
 import better.anticheat.core.check.Check;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;

@@ -1,11 +1,11 @@
-package better.anticheat.core.check.impl.position;
+package better.anticheat.core.check.impl.flying;
 
 import better.anticheat.core.check.Check;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 
 public class FlyingSequenceCheck extends Check {
 
-    private int ticks = 0;
+    private int ticks = -1;
 
     public FlyingSequenceCheck() {
         super("FlyingSequence");
@@ -19,6 +19,8 @@ public class FlyingSequenceCheck extends Check {
                 ticks = 0;
                 break;
             case CLIENT_TICK_END:
+                // Prevent until first position is sent.
+                if (ticks < 0) return;
                 if (++ticks > 20) fail(ticks);
                 break;
         }
