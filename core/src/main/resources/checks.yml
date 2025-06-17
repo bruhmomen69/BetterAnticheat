@@ -154,6 +154,12 @@ combatacceleration:
   punishments:
     '1:say %username% would be kicked for CombatAcceleration!'
 
+pitchsnap:
+  enabled: true
+  alert-vl: 1
+  punishments:
+    '1:say %username% would be kicked for PitchSnap!'
+
 #
 # Misc
 #

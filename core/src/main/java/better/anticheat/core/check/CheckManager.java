@@ -10,6 +10,7 @@ import better.anticheat.core.check.impl.dig.DigOrderCheck;
 import better.anticheat.core.check.impl.dig.MultiBreakCheck;
 import better.anticheat.core.check.impl.dig.NoSwingDigCheck;
 import better.anticheat.core.check.impl.heuristic.CombatAccelerationCheck;
+import better.anticheat.core.check.impl.heuristic.PitchSnapCheck;
 import better.anticheat.core.check.impl.misc.*;
 import better.anticheat.core.check.impl.packet.PingPongOrderCheck;
 import better.anticheat.core.check.impl.packet.PostCheck;
@@ -68,6 +69,7 @@ public class CheckManager {
 
                 // Heuristic Checks
                 new CombatAccelerationCheck(),
+                new PitchSnapCheck(),
 
                 // Misc Checks
                 new ImpossibleHorseJumpCheck(),

@@ -76,10 +76,11 @@ These checks look for issues with flying packets. These may catch position/rotat
 ### Heuristic
 
 These checks use statistics and observed behavior to identify cheats. Unlike other checks, these are not built on
-defined behavior and theoretically could be false flagged by perfect player behavior. As such, I'd recommand that these 
+defined behavior and theoretically could be false flagged by perfect player behavior. As such, I'd recommend that these 
 should be used as an indicator to watch players and, at most, kick them rather than issuing more permanent punishments.
 
 - CombatAcceleration | Constant acceleration during combat.
+- PitchSnap | Snapping vertical rotation changes.
 
 ### Misc
 
