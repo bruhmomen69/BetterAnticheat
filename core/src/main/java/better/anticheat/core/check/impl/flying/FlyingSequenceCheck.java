@@ -14,6 +14,7 @@ public class FlyingSequenceCheck extends Check {
     @Override
     public void handleReceivePlayPacket(PacketPlayReceiveEvent event) {
         switch (event.getPacketType()) {
+            case STEER_VEHICLE:
             case PLAYER_POSITION:
             case PLAYER_POSITION_AND_ROTATION:
                 ticks = 0;

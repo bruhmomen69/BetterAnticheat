@@ -6,10 +6,10 @@ import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 
 public class ArtificialFlyingCheck extends Check {
 
-    private boolean sentFlying = false;
+    private boolean sentFlying = false, teleported = true;
 
     public ArtificialFlyingCheck() {
-        super("ArtificialPosition");
+        super("ArtificialFlying");
     }
 
     @Override
@@ -23,11 +23,15 @@ public class ArtificialFlyingCheck extends Check {
             case PLAYER_POSITION:
             case PLAYER_ROTATION:
             case PLAYER_POSITION_AND_ROTATION:
+                if (teleported) break;
                 if (sentFlying) fail();
                 sentFlying = true;
                 break;
             case CLIENT_TICK_END:
-                sentFlying = false;
+                sentFlying = teleported = false;
+                break;
+            case TELEPORT_CONFIRM:
+                teleported = true;
                 break;
         }
     }
