@@ -5,6 +5,11 @@ import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.protocol.player.DiggingAction;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerDigging;
 
+/*
+ * NOTE: This check is currenlty not enabled due to false flag issues.
+ * Use Item mechanics may have changed since this was originally designed?
+ */
+
 public class RepeatedReleaseCheck extends Check {
 
     private boolean useItem = true;

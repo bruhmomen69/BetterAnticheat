@@ -6,6 +6,11 @@ import com.github.retrooper.packetevents.protocol.player.DiggingAction;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientEntityAction;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerDigging;
 
+/*
+ * NOTE: This check is currenlty not enabled due to false flag issues.
+ * Use Item mechanics may have changed since this was originally designed?
+ */
+
 public class NoSlowCheck extends Check {
 
     private boolean blocking = false, sprinting = false;

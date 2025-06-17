@@ -27,11 +27,9 @@ public class HiddenChatCheck extends Check {
                     case FULL:
                     case SYSTEM:
                         canChat = true;
-
                         break;
                     case HIDDEN:
                         canChat = false;
-
                         break;
                 }
                 break;
