@@ -35,4 +35,4 @@ click-command: 'tp %username%'
 punishment-modulo: true
 
 # Sends alerts only to the user who triggered it. Used for testing purposes.
-test-mode: true
+test-mode: false

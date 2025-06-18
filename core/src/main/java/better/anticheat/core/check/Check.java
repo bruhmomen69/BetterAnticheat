@@ -106,7 +106,7 @@ public abstract class Check implements Cloneable {
                 // Add the click command.
                 String click = BetterAnticheat.getInstance().getClickCommand();
                 if (!click.isEmpty())
-                    finalMessage = finalMessage.clickEvent(ClickEvent.runCommand(click.replaceAll("%username%", user.getName())));
+                    finalMessage = finalMessage.clickEvent(ClickEvent.clickEvent(ClickEvent.Action.RUN_COMMAND, "/" + click.replaceAll("%username%", user.getName())));
 
                 // Assemble and add the hover message.
                 StringBuilder hoverBuild = new StringBuilder();

@@ -9,7 +9,7 @@ import java.util.List;
 
 public class PostCheck extends Check {
 
-    private boolean sentFlying = false, login = true;
+    private boolean sentFlying = false, held = true, login = false;
     private final List<PacketType.Play.Client> post = new ArrayList<>();
 
     public PostCheck() {
@@ -19,6 +19,9 @@ public class PostCheck extends Check {
     @Override
     public void handleReceivePlayPacket(PacketPlayReceiveEvent event) {
         switch (event.getPacketType()) {
+            case PLAYER_LOADED:
+                login = true;
+                break;
             case PLAYER_FLYING:
             case PLAYER_POSITION:
             case PLAYER_ROTATION:
@@ -34,8 +37,8 @@ public class PostCheck extends Check {
                 post.clear();
                 break;
             case HELD_ITEM_CHANGE:
-                if (login) {
-                    login = false;
+                if (held) {
+                    held = false;
                     break;
                 }
             case ANIMATION:
@@ -53,6 +56,7 @@ public class PostCheck extends Check {
             case SPECTATE:
             case TAB_COMPLETE:
             case UPDATE_SIGN:
+                if (!login) break;
                 if (sentFlying) post.add(event.getPacketType());
                 break;
         }

@@ -5,6 +5,7 @@ import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerFlying;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientSteerVehicle;
+import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientVehicleMove;
 
 public class RepeatedSteerCheck extends Check {
 
@@ -24,10 +25,7 @@ public class RepeatedSteerCheck extends Check {
         if (WrapperPlayClientPlayerFlying.isFlying(event.getPacketType())) {
             WrapperPlayClientPlayerFlying wrapper = new WrapperPlayClientPlayerFlying(event);
             if (wrapper.hasRotationChanged()) lastRotating = true;
-        } else if (event.getPacketType() == PacketType.Play.Client.STEER_VEHICLE) {
-            WrapperPlayClientSteerVehicle wrapper = new WrapperPlayClientSteerVehicle(event);
-            if (wrapper.isUnmount() || wrapper.isJump()) return;
-
+        } else if (event.getPacketType() == PacketType.Play.Client.VEHICLE_MOVE) {
             //There has to have been a rotation in between the last steer vehicle packet.
             if (!lastRotating) {
                 fail();
