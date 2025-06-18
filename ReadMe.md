@@ -28,6 +28,8 @@ This plugin is designed for 1.21.4+ on Spigot, Paper/Folia, and Sponge.
 
 It requires [PacketEvents](https://github.com/retrooper/packetevents)
 
+On the Spigot and Paper/Folia platforms, it supports [BetterReload](https://modrinth.com/plugin/betterreload). This is an optional dependency.
+
 ## Checks
 
 BetterAnticheat has the following checks in the following categories:
@@ -108,7 +110,7 @@ These checks look for issues with block placement. These may catch scaffold, fas
 
 # Documentation
 
-TODO
+Documentation is currently a work in progress. Please check back later.
 
 # Support
 
