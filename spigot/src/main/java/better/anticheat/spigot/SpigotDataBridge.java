@@ -40,5 +40,6 @@ public class SpigotDataBridge implements DataBridge {
 
     @Override
     public void sendCommand(String command) {
-        Bukkit.getScheduler().runTask(plugin, () -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command));    }
+        Bukkit.getScheduler().runTask(plugin, () -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command));
+    }
 }
