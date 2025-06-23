@@ -8,7 +8,7 @@ public class PitchSnapCheck extends Check {
 
     private boolean rotated = false;
     private int stage = 0;
-    private float lllPitch, llPitch, lPitch;
+    private float llDeltaPitch;
 
     public PitchSnapCheck() {
         super("PitchSnap");
@@ -25,24 +25,22 @@ public class PitchSnapCheck extends Check {
 
                 switch (stage) {
                     case 0:
-                        lllPitch = wrapper.getLocation().getPitch();
+                        stage = 1;
                         break;
                     case 1:
-                        llPitch = wrapper.getLocation().getPitch();
+                        llDeltaPitch = Math.abs(player.getRotationTracker().getDeltaPitch());
+                        stage = 2;
                         break;
                     case 2:
-                        lPitch = wrapper.getLocation().getPitch();
+                        stage = 3;
                         break;
                     case 3:
-                        float llDeltaPitch = Math.abs(llPitch - lllPitch);
-                        float lDeltaPitch = Math.abs(lPitch - llPitch);
-                        float deltaPitch = Math.abs(wrapper.getLocation().getPitch() - lPitch);
+                        float lDeltaPitch = Math.abs(player.getRotationTracker().getLastDeltaPitch());
+                        float deltaPitch = Math.abs(player.getRotationTracker().getDeltaPitch());
 
                         if (llDeltaPitch < 3f && lDeltaPitch > 15f && deltaPitch < 3f) fail();
 
-                        lllPitch = llPitch;
-                        llPitch = lPitch;
-                        lPitch = wrapper.getLocation().getPitch();
+                        llDeltaPitch = lDeltaPitch;
                         break;
                 }
 

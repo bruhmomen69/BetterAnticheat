@@ -8,7 +8,7 @@ import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPl
 public class PositionTracker extends Tracker {
 
     private double x, y, z, lastX, lastY, lastZ;
-    private double deltaX, deltaY, deltaZ, lastDeltaX, lastDeltaY, lastDeltaZ;
+    private double deltaX, deltaY, deltaZ, deltaXZ, lastDeltaX, lastDeltaY, lastDeltaZ, lastDeltaXZ;
 
     public PositionTracker(Player player) {
         super(player);
@@ -54,6 +54,10 @@ public class PositionTracker extends Tracker {
         return deltaZ;
     }
 
+    public double getDeltaXZ() {
+        return deltaXZ;
+    }
+
     public double getLastDeltaX() {
         return lastDeltaX;
     }
@@ -64,6 +68,10 @@ public class PositionTracker extends Tracker {
 
     public double getLastDeltaZ() {
         return lastDeltaZ;
+    }
+
+    public double getLastDeltaXZ() {
+        return lastDeltaXZ;
     }
 
     /*
@@ -82,6 +90,7 @@ public class PositionTracker extends Tracker {
         lastDeltaX = deltaX;
         lastDeltaY = deltaY;
         lastDeltaZ = deltaZ;
+        lastDeltaXZ = deltaXZ;
 
         x = wrapper.getLocation().getX();
         y = wrapper.getLocation().getY();
@@ -89,5 +98,6 @@ public class PositionTracker extends Tracker {
         deltaX = x - lastX;
         deltaY = y - lastY;
         deltaZ = z - lastZ;
+        deltaXZ = Math.hypot(deltaX, deltaZ);
     }
 }
