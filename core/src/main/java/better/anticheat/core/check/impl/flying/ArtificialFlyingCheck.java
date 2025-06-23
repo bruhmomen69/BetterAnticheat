@@ -2,7 +2,6 @@ package better.anticheat.core.check.impl.flying;
 
 import better.anticheat.core.check.Check;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
-import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 
 public class ArtificialFlyingCheck extends Check {
 

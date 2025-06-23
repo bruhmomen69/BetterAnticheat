@@ -4,8 +4,6 @@ import better.anticheat.core.check.Check;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerFlying;
-import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientSteerVehicle;
-import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientVehicleMove;
 
 public class RepeatedSteerCheck extends Check {
 

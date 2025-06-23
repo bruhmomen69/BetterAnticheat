@@ -5,8 +5,6 @@ import com.github.retrooper.packetevents.protocol.player.User;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
-import java.io.InputStream;
-
 public class SpigotDataBridge implements DataBridge {
 
     private final BetterAnticheatSpigot plugin;

@@ -9,6 +9,7 @@ import better.anticheat.core.check.impl.dig.DigBlockFacePositionCheck;
 import better.anticheat.core.check.impl.dig.DigOrderCheck;
 import better.anticheat.core.check.impl.dig.MultiBreakCheck;
 import better.anticheat.core.check.impl.dig.NoSwingDigCheck;
+import better.anticheat.core.check.impl.flying.*;
 import better.anticheat.core.check.impl.heuristic.CombatAccelerationCheck;
 import better.anticheat.core.check.impl.heuristic.PitchSnapCheck;
 import better.anticheat.core.check.impl.misc.*;
@@ -16,7 +17,6 @@ import better.anticheat.core.check.impl.packet.PingPongOrderCheck;
 import better.anticheat.core.check.impl.packet.PostCheck;
 import better.anticheat.core.check.impl.packet.TeleportConfirmOrderCheck;
 import better.anticheat.core.check.impl.place.PlaceBlockFacePositionCheck;
-import better.anticheat.core.check.impl.flying.*;
 import better.anticheat.core.configuration.ConfigSection;
 import better.anticheat.core.player.Player;
 

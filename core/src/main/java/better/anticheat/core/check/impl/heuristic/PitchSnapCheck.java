@@ -2,7 +2,6 @@ package better.anticheat.core.check.impl.heuristic;
 
 import better.anticheat.core.check.Check;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
-import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerFlying;
 
 public class PitchSnapCheck extends Check {
 
@@ -20,9 +19,7 @@ public class PitchSnapCheck extends Check {
             case PLAYER_ROTATION:
             case PLAYER_POSITION_AND_ROTATION:
                 rotated = true;
-
-                WrapperPlayClientPlayerFlying wrapper = new WrapperPlayClientPlayerFlying(event);
-
+                
                 switch (stage) {
                     case 0:
                         stage = 1;
