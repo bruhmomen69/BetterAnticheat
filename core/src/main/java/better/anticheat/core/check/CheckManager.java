@@ -18,7 +18,7 @@ import better.anticheat.core.check.impl.packet.TeleportConfirmOrderCheck;
 import better.anticheat.core.check.impl.place.PlaceBlockFacePositionCheck;
 import better.anticheat.core.check.impl.flying.*;
 import better.anticheat.core.configuration.ConfigSection;
-import com.github.retrooper.packetevents.protocol.player.User;
+import better.anticheat.core.player.Player;
 
 import java.util.*;
 
@@ -36,12 +36,6 @@ public class CheckManager {
                 new ImpossibleMessageCheck(),
 
                 // Combat Checks
-                /*
-                 * NoSlow and RepeatedRelease were checks in Quality Control that were stable, but it seems like later
-                 * versions of Minecraft than what I had designed those checks for originally may have altered how the
-                 * Use Item packet works. As of now, these two checks false flag and so I am keeping them out of any
-                 * potential releases.
-                 */
                 new ActionInteractOrderCheck(),
                 new DualClickCheck(),
                 new InvalidReleaseValuesCheck(),
@@ -92,7 +86,7 @@ public class CheckManager {
         return Collections.unmodifiableList(CHECKS);
     }
 
-    public static List<Check> getEnabledChecks(User user) {
+    public static List<Check> getEnabledChecks(Player player) {
         /*
          * Do NOT return the existing array list. That would lead to multiple users using the same list, creating
          * concurrency issues.
@@ -102,10 +96,9 @@ public class CheckManager {
         List<Check> returnList = new ArrayList<>();
         for (Check check : CHECKS) {
             if (!check.isEnabled()) continue;
-            returnList.add(check.copy(user));
+            returnList.add(check.copy(player));
         }
 
-        System.out.println("Loaded " + returnList.size() + " checks for " + user.getName());
         return returnList;
     }
 

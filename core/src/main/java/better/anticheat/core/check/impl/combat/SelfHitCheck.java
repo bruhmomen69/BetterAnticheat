@@ -15,6 +15,6 @@ public class SelfHitCheck extends Check {
     public void handleReceivePlayPacket(PacketPlayReceiveEvent event) {
         if (event.getPacketType() != PacketType.Play.Client.INTERACT_ENTITY) return;
         WrapperPlayClientInteractEntity wrapper = new WrapperPlayClientInteractEntity(event);
-        if (wrapper.getEntityId() == user.getEntityId()) fail();
+        if (wrapper.getEntityId() == player.getUser().getEntityId()) fail();
     }
 }

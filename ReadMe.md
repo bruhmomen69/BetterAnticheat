@@ -110,7 +110,9 @@ These checks look for issues with block placement. These may catch scaffold, fas
 
 # Documentation
 
-Documentation is currently a work in progress. Please check back later.
+For the documentation home, please visit [here](https://github.com/amnoah/BetterAnticheat/wiki/).
+
+For information on how to hide BetterAnticheat, please visit [here](https://github.com/amnoah/BetterAnticheat/wiki/Hiding-BetterAnticheat).
 
 # Support
 

@@ -2,10 +2,10 @@ package better.anticheat.core.check;
 
 import better.anticheat.core.BetterAnticheat;
 import better.anticheat.core.configuration.ConfigSection;
-import better.anticheat.core.user.UserManager;
+import better.anticheat.core.player.Player;
+import better.anticheat.core.player.PlayerManager;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.event.simple.PacketPlaySendEvent;
-import com.github.retrooper.packetevents.protocol.player.User;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
@@ -21,7 +21,7 @@ public abstract class Check implements Cloneable {
 
     private final static Pattern TRANSLATE = Pattern.compile("(?i)&[0-9A-FK-ORX]");
 
-    protected User user;
+    protected Player player;
 
     private String type;
 
@@ -56,9 +56,9 @@ public abstract class Check implements Cloneable {
      * Clone
      */
 
-    public Check copy(User user) {
+    public Check copy(Player player) {
         Check check = clone();
-        check.user = user;
+        check.player = player;
         check.type = this.type;
         check.enabled = this.enabled;
         check.alertVL = this.alertVL;
@@ -99,28 +99,28 @@ public abstract class Check implements Cloneable {
             if (!message.isEmpty()) {
                 message = message.replaceAll("%vl%", String.valueOf(vl));
                 message = message.replaceAll("%type%", type);
-                message = message.replaceAll("%username%", user.getName());
+                message = message.replaceAll("%username%", player.getUser().getName());
                 message = translateColors(message);
                 Component finalMessage = Component.text(message);
 
                 // Add the click command.
                 String click = BetterAnticheat.getInstance().getClickCommand();
                 if (!click.isEmpty())
-                    finalMessage = finalMessage.clickEvent(ClickEvent.clickEvent(ClickEvent.Action.RUN_COMMAND, "/" + click.replaceAll("%username%", user.getName())));
+                    finalMessage = finalMessage.clickEvent(ClickEvent.clickEvent(ClickEvent.Action.RUN_COMMAND, "/" + click.replaceAll("%username%", player.getUser().getName())));
 
                 // Assemble and add the hover message.
                 StringBuilder hoverBuild = new StringBuilder();
                 for (String string : BetterAnticheat.getInstance().getAlertHover()) {
                     hoverBuild.append(string
-                                    .replaceAll("%clientversion%", user.getClientVersion().getReleaseName())
-                                    .replaceAll("%debug%", debug == null ? "" : debug.toString()))
+                                    .replaceAll("%clientversion%", player.getUser().getClientVersion().getReleaseName())
+                                    .replaceAll("%debug%", debug == null ? "NO DEBUG" : debug.toString()))
                             .append("\n");
                 }
                 if (hoverBuild.length() > 2)
                     finalMessage = finalMessage.hoverEvent(HoverEvent.hoverEvent(HoverEvent.Action.SHOW_TEXT, Component.text(translateColors(hoverBuild.substring(0, hoverBuild.length() - 1)))));
 
-                if (BetterAnticheat.getInstance().isTestMode()) user.sendMessage(finalMessage);
-                else UserManager.sendAlert(finalMessage);
+                if (BetterAnticheat.getInstance().isTestMode()) player.getUser().sendMessage(finalMessage);
+                else PlayerManager.sendAlert(finalMessage);
             }
 
             lastAlertMS = currentMS;
@@ -138,7 +138,7 @@ public abstract class Check implements Cloneable {
         List<String> punishment = punishments.get(vl);
         if (punishment != null) {
             for (String command : punishment) {
-                command = command.replaceAll("%username%", user.getName());
+                command = command.replaceAll("%username%", player.getUser().getName());
                 BetterAnticheat.getInstance().getDataBridge().sendCommand(command);
             }
         }

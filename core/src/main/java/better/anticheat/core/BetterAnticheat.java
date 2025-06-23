@@ -3,8 +3,7 @@ package better.anticheat.core;
 import better.anticheat.core.check.CheckManager;
 import better.anticheat.core.configuration.ConfigSection;
 import better.anticheat.core.configuration.ConfigurationFile;
-import better.anticheat.core.user.PacketListener;
-import better.anticheat.core.user.UserManager;
+import better.anticheat.core.player.PlayerManager;
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.manager.server.ServerVersion;
 
@@ -69,7 +68,7 @@ public class BetterAnticheat {
         testMode = settings.getObject(Boolean.class, "test-mode", false);
 
         CheckManager.load(this);
-        UserManager.load(this);
+        PlayerManager.load(this);
 
         dataBridge.logInfo("Load finished!");
     }
