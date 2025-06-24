@@ -13,6 +13,7 @@ import better.anticheat.core.check.impl.flying.*;
 import better.anticheat.core.check.impl.heuristic.CombatAccelerationCheck;
 import better.anticheat.core.check.impl.heuristic.PitchSnapCheck;
 import better.anticheat.core.check.impl.misc.*;
+import better.anticheat.core.check.impl.packet.LoadOrderCheck;
 import better.anticheat.core.check.impl.packet.PingPongOrderCheck;
 import better.anticheat.core.check.impl.packet.PostCheck;
 import better.anticheat.core.check.impl.packet.TeleportConfirmOrderCheck;
@@ -56,9 +57,11 @@ public class CheckManager {
 
                 // Flying Checks
                 new ArtificialFlyingCheck(),
+                new ArtificialPositionCheck(),
                 new FlyingSequenceCheck(),
                 new ImpossiblePositionCheck(),
                 new ImpossibleRotationCheck(),
+                new RepeatedRotationCheck(),
                 new RepeatedSteerCheck(),
 
                 // Heuristic Checks
@@ -73,6 +76,7 @@ public class CheckManager {
                 new SmallRenderCheck(),
 
                 // Packet Checks
+                new LoadOrderCheck(),
                 new PingPongOrderCheck(),
                 new PostCheck(),
                 new TeleportConfirmOrderCheck(),

@@ -120,6 +120,12 @@ artificialflying:
   punishments:
     '1:say %username% would be banned for ArtificialFlying!'
 
+artificialposition:
+  enabled: true
+  alert-vl: 1
+  punishments:
+    '1:say %username% would be banned for ArtificialPosition!'
+
 flyingsequence:
   enabled: true
   alert-vl: 1
@@ -137,6 +143,12 @@ impossiblerotation:
   alert-vl: 1
   punishments:
     '1:say %username% would be banned for ImpossibleRotation!'
+
+repeatedrotation:
+  enabled: true
+  alert-vl: 1
+  punishments:
+    '1:say %username% would be banned for RepeatedRotation!'
 
 repeatedsteer:
   enabled: true
@@ -197,6 +209,12 @@ smallrender:
 #
 # Packet
 #
+
+loadorder:
+  enabled: true
+  alert-vl: 1
+  punishments:
+    '1:say %username% would be banned for LoadOrder!'
 
 pingpongorder:
   enabled: true
