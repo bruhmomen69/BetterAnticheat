@@ -104,12 +104,6 @@ multibreak:
   punishments:
     '1:say %username% would be banned for MultiBreak!'
 
-noswingdig:
-  enabled: true
-  alert-vl: 1
-  punishments:
-    '1:say %username% would be banned for NoSwingDig!'
-
 #
 # Flying
 #
@@ -166,12 +160,6 @@ combatacceleration:
   punishments:
     '1:say %username% would be kicked for CombatAcceleration!'
 
-pitchsnap:
-  enabled: true
-  alert-vl: 1
-  punishments:
-    '1:say %username% would be kicked for PitchSnap!'
-
 #
 # Misc
 #
@@ -210,11 +198,13 @@ smallrender:
 # Packet
 #
 
-loadorder:
+balance:
   enabled: true
   alert-vl: 1
   punishments:
-    '1:say %username% would be banned for LoadOrder!'
+    '1:say %username% would be banned for Balance!'
+  max-balance: 150
+  min-balance: -3000
 
 pingpongorder:
   enabled: true

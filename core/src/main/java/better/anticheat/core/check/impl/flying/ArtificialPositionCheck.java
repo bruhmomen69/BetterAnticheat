@@ -16,8 +16,7 @@ public class ArtificialPositionCheck extends Check {
     public void handleReceivePlayPacket(PacketPlayReceiveEvent event) {
         switch (event.getPacketType()) {
             case PLAYER_LOADED:
-                ticks = 0;
-                samePositions = 0;
+                ticks = samePositions = 0;
                 break;
             case TELEPORT_CONFIRM:
                 if (ticks < 0) break;
@@ -25,9 +24,10 @@ public class ArtificialPositionCheck extends Check {
                 break;
             case CLIENT_TICK_END:
                 if (ticks < 0) break;
-                if (++ticks > 20) {
+                if (++ticks == 20) {
                     if (!position) fail("Lack");
                     ticks = samePositions = 0;
+                    position = false;
                 }
                 break;
             case PLAYER_POSITION:

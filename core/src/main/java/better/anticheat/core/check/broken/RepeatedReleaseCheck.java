@@ -1,4 +1,4 @@
-package better.anticheat.core.check.impl.combat;
+package better.anticheat.core.check.broken;
 
 import better.anticheat.core.check.Check;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
@@ -20,6 +20,11 @@ public class RepeatedReleaseCheck extends Check {
 
     @Override
     public void handleReceivePlayPacket(PacketPlayReceiveEvent event) {
+
+        /*
+         * For some reason you can send multiple releases? Needs debugging.
+         */
+
         switch (event.getPacketType()) {
             //Keep track of whether the player sent an initial use item packet.
             case USE_ITEM:

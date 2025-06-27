@@ -1,4 +1,4 @@
-package better.anticheat.core.check.impl.dig;
+package better.anticheat.core.check.broken;
 
 import better.anticheat.core.check.Check;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
@@ -17,6 +17,17 @@ public class NoSwingDigCheck extends Check {
 
         /*
          * This check just verifies that you swing once a tick during digging.
+         *
+         * It is entirely stable, except for one very specific scenario!
+         *
+         * Currently, it is not stable due to some really weird behavior with world borders.
+         * If you start digging a block near the world border and then adjust your view to look at the blue barrier, you
+         * can enter a state where your latest digging status is still start, but you are no longer swinging. You can
+         * then either let go and have this check flag via the Cancel action or return to the block and have it flag via
+         * the Finished action.
+         *
+         * Potential ideas for fixing this revolve around compensating the world and checking for proximity to the world
+         * border.
          */
 
         switch (event.getPacketType()) {

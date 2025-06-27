@@ -63,16 +63,17 @@ These checks look for issues with digging. These may catch nuker, fast break, an
 - DigBlockFacePosition | Digging block faces which cannot be seen.
 - DigOrder | Sending wrongful dig stages.
 - MultiBreak | Digging multiple blocks at once.
-- NoSwingDig | Digging without swinging an arm.
 
 ### Flying
 
 These checks look for issues with flying packets. These may catch position/rotation alterations and related cheats.
 
 - ArtificialFlying | Faking flying packets.
+- ArtificialPosition | Sending impossibly small position changes.
 - FlyingSequence | Not sending flying packets within 20 ticks.
 - ImpossiblePosition | Sending position values that are impossible.
 - ImpossibleRotation | Sending rotation values that are impossible.
+- RepeatedRotation | Sending repeated rotation values.
 - RepeatedSteer | Sending steer packets with no corresponding rotation change.
 
 ### Heuristic
@@ -82,7 +83,6 @@ defined behavior and theoretically could be false flagged by perfect player beha
 should be used as an indicator to watch players and, at most, kick them rather than issuing more permanent punishments.
 
 - CombatAcceleration | Constant acceleration during combat.
-- PitchSnap | Snapping vertical rotation changes.
 
 ### Misc
 
@@ -98,6 +98,7 @@ These checks are a variety that don't fit into other categories.
 
 These checks look for general packet issues. These may catch packet order alterations.
 
+- Balance | Checks for accelerated game speeds (WIP).
 - PingPongOrder | Sending ping pong packets in the wrong order.
 - Post | Sending packets in the wrong order.
 - TeleportConfirmOrder | Sending teleport confirm packets in the wrong order.

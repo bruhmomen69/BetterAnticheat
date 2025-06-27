@@ -1,15 +1,10 @@
-package better.anticheat.core.check.impl.combat;
+package better.anticheat.core.check.broken;
 
 import better.anticheat.core.check.Check;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.protocol.player.DiggingAction;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientEntityAction;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerDigging;
-
-/*
- * NOTE: This check is currenlty not enabled due to false flag issues.
- * Use Item mechanics may have changed since this was originally designed?
- */
 
 public class NoSlowCheck extends Check {
 
@@ -21,6 +16,12 @@ public class NoSlowCheck extends Check {
 
     @Override
     public void handleReceivePlayPacket(PacketPlayReceiveEvent event) {
+
+        /*
+         * This check is intended to detect starting sprinting while using an item (like blocking a shield, shooting a
+         * bow, or eating food). However, this check has unexplainable falses.
+         */
+
         switch (event.getPacketType()) {
             case USE_ITEM:
                 blocking = true;

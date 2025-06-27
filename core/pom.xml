@@ -104,7 +104,7 @@
                             <relocations>
                                 <relocation>
                                     <pattern>org.yaml</pattern>
-                                    <shadedPattern>better.anticheat.shaded.snakeyaml</shadedPattern>
+                                    <shadedPattern>better.anticheat.snakeyaml</shadedPattern>
                                 </relocation>
                             </relocations>
                         </configuration>

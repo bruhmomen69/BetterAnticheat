@@ -7,7 +7,7 @@ import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPl
 
 public class DigOrderCheck extends Check {
 
-    private boolean started = true, lastCanceled = false;
+    private boolean started = true;
 
     public DigOrderCheck() {
         super("DigOrder");
@@ -17,22 +17,19 @@ public class DigOrderCheck extends Check {
     public void handleReceivePlayPacket(PacketPlayReceiveEvent event) {
 
         /*
-         * Minecraft works very iffy regarding insta break blocks. If you break an insta break block, you send a
-         * Start Destroy Block but never a Stop Destroy Block. This means you can have 2 starts in a row. However,
-         * Stop Destroy Block requires there to have been a Start Destroy Block sent previously. This means that if you
-         * end twice with no start in between you're cheating.
+         * This check used to also include a check for repeated Finish behavior - but that is now a feature in
+         * Minecraft. The following is valid netcode:
          *
-         * This also accounts for an extremely niche piece of weird net code that Nekroses found to false the check.
-         * If a client is teleported while digging, it will send a Cancel. However, if it moves the client slightly
-         * back in a position where it can still finish the digging it will send the Finish. This means you can
-         * technically end twice, but it must go in the order of Start -> Cancelled -> Finished to do so.
+         * Start -> Stop -> Stop -> Stop -> Stop -> Stop
          *
-         * To account for this if the second ending is a Finish the previous must not be a Cancelled. If the second
-         * ending is a Cancelled it doesn't matter what the previous is.
+         * This occurs when you break a block in a WorldGuard area with a block behind it. For some reason after
+         * finishing breaking the block, when the block is replaced it is assumed that the Dig process is still
+         * continuing. I'm really not sure why it works like this, but it means we can no longer check for repeated
+         * finish actions. It also means the following is valid netcode:
          *
-         * Link to Nekroses (as a thank you): https://www.youtube.com/channel/UCyyX_xSdXDcKGDJCY4JqCrA
+         * Start -> Stop -> Cancel
          *
-         * This check just verifies that behavior, possibly patching some nuker or fastbreak cheats.
+         * Since the player is still continuing digging after finishing!!! I give up Mojang.
          */
 
         if (event.getPacketType() != PacketType.Play.Client.PLAYER_DIGGING) return;
@@ -41,22 +38,11 @@ public class DigOrderCheck extends Check {
         switch (wrapper.getAction()) {
             case START_DIGGING:
                 started = true;
-                lastCanceled = false;
 
                 break;
             case CANCELLED_DIGGING:
                 if (!started) fail();
-
                 started = false;
-                lastCanceled = true;
-
-                break;
-            case FINISHED_DIGGING:
-                if (!started && !lastCanceled) {
-                    fail();
-                }
-
-                started = lastCanceled = false;
 
                 break;
         }

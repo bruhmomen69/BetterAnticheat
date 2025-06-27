@@ -1,6 +1,6 @@
 name: BetterAnticheat
 version: 0.0.1
-main: better.anticheat.spigot.BetterAnticheatSpigot
+main: better.anticheat.paper.BetterAnticheatPaper
 api-version: 1.13
 load: POSTWORLD
 folia-supported: true

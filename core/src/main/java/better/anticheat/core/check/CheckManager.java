@@ -8,15 +8,10 @@ import better.anticheat.core.check.impl.combat.*;
 import better.anticheat.core.check.impl.dig.DigBlockFacePositionCheck;
 import better.anticheat.core.check.impl.dig.DigOrderCheck;
 import better.anticheat.core.check.impl.dig.MultiBreakCheck;
-import better.anticheat.core.check.impl.dig.NoSwingDigCheck;
 import better.anticheat.core.check.impl.flying.*;
 import better.anticheat.core.check.impl.heuristic.CombatAccelerationCheck;
-import better.anticheat.core.check.impl.heuristic.PitchSnapCheck;
 import better.anticheat.core.check.impl.misc.*;
-import better.anticheat.core.check.impl.packet.LoadOrderCheck;
-import better.anticheat.core.check.impl.packet.PingPongOrderCheck;
-import better.anticheat.core.check.impl.packet.PostCheck;
-import better.anticheat.core.check.impl.packet.TeleportConfirmOrderCheck;
+import better.anticheat.core.check.impl.packet.*;
 import better.anticheat.core.check.impl.place.PlaceBlockFacePositionCheck;
 import better.anticheat.core.configuration.ConfigSection;
 import better.anticheat.core.player.Player;
@@ -43,9 +38,7 @@ public class CheckManager {
                 new InvalidUseActionsCheck(),
                 new MultipleActionCheck(),
                 new MultipleHitCheck(),
-                //new NoSlowCheck(),
                 new NoSwingCombatCheck(),
-                //new RepeatedReleaseCheck(),
                 new SelfHitCheck(),
                 new SlotInteractOrderCheck(),
 
@@ -53,7 +46,6 @@ public class CheckManager {
                 new DigBlockFacePositionCheck(),
                 new DigOrderCheck(),
                 new MultiBreakCheck(),
-                new NoSwingDigCheck(),
 
                 // Flying Checks
                 new ArtificialFlyingCheck(),
@@ -66,7 +58,6 @@ public class CheckManager {
 
                 // Heuristic Checks
                 new CombatAccelerationCheck(),
-                new PitchSnapCheck(),
 
                 // Misc Checks
                 new ImpossibleHorseJumpCheck(),
@@ -76,7 +67,7 @@ public class CheckManager {
                 new SmallRenderCheck(),
 
                 // Packet Checks
-                new LoadOrderCheck(),
+                new BalanceCheck(),
                 new PingPongOrderCheck(),
                 new PostCheck(),
                 new TeleportConfirmOrderCheck(),
