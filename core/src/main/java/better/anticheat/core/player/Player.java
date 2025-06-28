@@ -18,7 +18,6 @@ public class Player {
 
     private List<Check> checks = null;
 
-
     public Player(User user) {
         this.user = user;
         positionTracker = new PositionTracker(this);
@@ -69,7 +68,7 @@ public class Player {
      */
 
     public void load() {
-        if (checks == null) CheckManager.getChecks(this);
+        if (checks == null) checks = CheckManager.getChecks(this);
         else for (Check check : checks) check.load();
     }
 }
