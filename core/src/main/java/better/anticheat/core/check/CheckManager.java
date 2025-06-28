@@ -1,8 +1,6 @@
 package better.anticheat.core.check;
 
 import better.anticheat.core.BetterAnticheat;
-import better.anticheat.core.check.broken.PingPongOrderCheck;
-import better.anticheat.core.check.broken.TeleportConfirmOrderCheck;
 import better.anticheat.core.check.impl.chat.HiddenChatCheck;
 import better.anticheat.core.check.impl.chat.ImpossibleCompletionCheck;
 import better.anticheat.core.check.impl.chat.ImpossibleMessageCheck;
@@ -13,7 +11,8 @@ import better.anticheat.core.check.impl.dig.MultiBreakCheck;
 import better.anticheat.core.check.impl.flying.*;
 import better.anticheat.core.check.impl.heuristic.CombatAccelerationCheck;
 import better.anticheat.core.check.impl.misc.*;
-import better.anticheat.core.check.impl.packet.*;
+import better.anticheat.core.check.impl.packet.BalanceCheck;
+import better.anticheat.core.check.impl.packet.PostCheck;
 import better.anticheat.core.check.impl.place.PlaceBlockFacePositionCheck;
 import better.anticheat.core.configuration.ConfigSection;
 import better.anticheat.core.player.Player;
