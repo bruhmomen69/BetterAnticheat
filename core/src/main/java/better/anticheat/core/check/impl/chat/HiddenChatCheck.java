@@ -14,15 +14,16 @@ public class HiddenChatCheck extends Check {
 
     @Override
     public void handleReceivePlayPacket(PacketPlayReceiveEvent event) {
+
+        /*
+         * You can only chat while your chat is visible. It is impossible to chat with a vanilla client when your chat
+         * is Hidden.
+         * TODO: Look into potential issues with servers that are offline.
+         */
+
         switch (event.getPacketType()) {
             case CLIENT_SETTINGS:
                 WrapperPlayClientSettings wrapper = new WrapperPlayClientSettings(event);
-
-                /*
-                 * You can only chat while your chat is visible.
-                 * It is impossible to chat with a vanilla client when your chat is Hidden.
-                 */
-
                 switch (wrapper.getChatVisibility()) {
                     case FULL:
                     case SYSTEM:

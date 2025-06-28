@@ -13,10 +13,14 @@ public class ImpossibleCompletionCheck extends Check {
 
     @Override
     public void handleReceivePlayPacket(PacketPlayReceiveEvent event) {
+
+        /*
+         * This check verifies that you have attempted to type something before attempting a tab completion.
+         * You cannot tab complete an empty string.
+         */
+
         if (event.getPacketType() != PacketType.Play.Client.TAB_COMPLETE) return;
         WrapperPlayClientTabComplete wrapper = new WrapperPlayClientTabComplete(event);
-
-        // To tab complete you must have some text.
         if (wrapper.getText().isEmpty()) fail();
     }
 }

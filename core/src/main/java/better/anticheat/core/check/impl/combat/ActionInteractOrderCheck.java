@@ -14,6 +14,11 @@ public class ActionInteractOrderCheck extends Check {
 
     @Override
     public void handleReceivePlayPacket(PacketPlayReceiveEvent event) {
+
+        /*
+         * Minecraft's processing does not allow
+         */
+
         switch (event.getPacketType()) {
             case CLIENT_TICK_END:
                 sentEntityAction = false;

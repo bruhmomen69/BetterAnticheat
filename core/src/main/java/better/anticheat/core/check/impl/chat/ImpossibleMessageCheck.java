@@ -13,6 +13,11 @@ public class ImpossibleMessageCheck extends Check {
 
     @Override
     public void handleReceivePlayPacket(PacketPlayReceiveEvent event) {
+
+        /*
+         * This check looks for messages that are either fully empty or only made up of spacing characters.
+         */
+
         if (event.getPacketType() != PacketType.Play.Client.CHAT_MESSAGE) return;
         WrapperPlayClientChatMessage wrapper = new WrapperPlayClientChatMessage(event);
         String message = wrapper.getMessage();
