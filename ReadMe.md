@@ -22,6 +22,8 @@ This project and its collaborators use the following regularly and are thankful 
 - [PacketEvents](https://github.com/retrooper/packetevents)
 - [sharkbyte-configuration](https://github.com/amnoah/sharkbyte-configuration)
 
+There is a test server available at `192.18.159.249` for clients 1.21.4 and above.
+
 ## Requirements
 
 This plugin is designed for 1.21.4+ on Spigot, Paper/Folia, and Sponge.
@@ -99,9 +101,7 @@ These checks are a variety that don't fit into other categories.
 These checks look for general packet issues. These may catch packet order alterations.
 
 - Balance | Checks for accelerated game speeds (WIP).
-- PingPongOrder | Sending ping pong packets in the wrong order.
 - Post | Sending packets in the wrong order.
-- TeleportConfirmOrder | Sending teleport confirm packets in the wrong order.
 
 ### Place
 

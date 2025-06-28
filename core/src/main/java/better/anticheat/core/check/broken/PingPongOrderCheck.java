@@ -1,4 +1,4 @@
-package better.anticheat.core.check.impl.packet;
+package better.anticheat.core.check.broken;
 
 import better.anticheat.core.check.Check;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;

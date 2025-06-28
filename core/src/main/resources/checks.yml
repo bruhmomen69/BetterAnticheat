@@ -202,27 +202,15 @@ balance:
   enabled: true
   alert-vl: 1
   punishments:
-    '1:say %username% would be banned for Balance!'
+    '1:say %username% would be kicked for Balance!'
   max-balance: 150
   min-balance: -3000
-
-pingpongorder:
-  enabled: true
-  alert-vl: 1
-  punishments:
-    '1:say %username% would be banned for PingPongOrder!'
 
 post:
   enabled: true
   alert-vl: 1
   punishments:
     '1:say %username% would be banned for Post!'
-
-teleportconfirmorder:
-  enabled: true
-  alert-vl: 1
-  punishments:
-    '1:say %username% would be banned for TeleportConfirmOrder!'
 
 #
 # Place

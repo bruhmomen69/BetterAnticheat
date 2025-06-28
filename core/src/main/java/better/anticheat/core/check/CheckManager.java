@@ -1,6 +1,8 @@
 package better.anticheat.core.check;
 
 import better.anticheat.core.BetterAnticheat;
+import better.anticheat.core.check.broken.PingPongOrderCheck;
+import better.anticheat.core.check.broken.TeleportConfirmOrderCheck;
 import better.anticheat.core.check.impl.chat.HiddenChatCheck;
 import better.anticheat.core.check.impl.chat.ImpossibleCompletionCheck;
 import better.anticheat.core.check.impl.chat.ImpossibleMessageCheck;
@@ -68,9 +70,7 @@ public class CheckManager {
 
                 // Packet Checks
                 new BalanceCheck(),
-                new PingPongOrderCheck(),
                 new PostCheck(),
-                new TeleportConfirmOrderCheck(),
 
                 // Place Checks
                 new PlaceBlockFacePositionCheck()
