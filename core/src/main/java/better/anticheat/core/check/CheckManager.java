@@ -81,7 +81,7 @@ public class CheckManager {
         return Collections.unmodifiableList(CHECKS);
     }
 
-    public static List<Check> getEnabledChecks(Player player) {
+    public static List<Check> getChecks(Player player) {
         /*
          * Do NOT return the existing array list. That would lead to multiple users using the same list, creating
          * concurrency issues.
@@ -90,8 +90,7 @@ public class CheckManager {
          */
         List<Check> returnList = new ArrayList<>();
         for (Check check : CHECKS) {
-            if (!check.isEnabled()) continue;
-            returnList.add(check.copy(player));
+            returnList.add(check.initialCopy(player));
         }
 
         return returnList;

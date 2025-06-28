@@ -21,6 +21,7 @@ public abstract class Check implements Cloneable {
 
     private final static Pattern TRANSLATE = Pattern.compile("(?i)&[0-9A-FK-ORX]");
 
+    protected Check reference;
     protected Player player;
 
     private String type;
@@ -53,17 +54,22 @@ public abstract class Check implements Cloneable {
     public void handleSendPlayPacket(PacketPlaySendEvent event) {}
 
     /*
-     * Clone
+     * Check set up.
      */
 
-    public Check copy(Player player) {
+    public void load() {
+        type = reference.type;
+        enabled = reference.enabled;
+        alertVL = reference.alertVL;
+        punishments = reference.punishments;
+        vl = reference.vl;
+    }
+
+    public Check initialCopy(Player player) {
         Check check = clone();
+        check.reference = this;
         check.player = player;
-        check.type = this.type;
-        check.enabled = this.enabled;
-        check.alertVL = this.alertVL;
-        check.punishments = this.punishments;
-        check.vl = this.vl;
+        check.load();
         return check;
     }
 

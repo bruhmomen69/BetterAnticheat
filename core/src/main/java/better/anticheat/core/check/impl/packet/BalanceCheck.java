@@ -49,4 +49,12 @@ public class BalanceCheck extends Check {
         maxBalance = section.getObject(Integer.class, "max-balance", 100);
         minBalance = section.getObject(Integer.class, "min-balance", -3000);
     }
+
+    @Override
+    public void load() {
+        super.load();
+        BalanceCheck balanceCheck = (BalanceCheck) reference;
+        maxBalance = balanceCheck.maxBalance;
+        minBalance = balanceCheck.minBalance;
+    }
 }

@@ -16,7 +16,7 @@ public class Player {
     private final PositionTracker positionTracker;
     private final RotationTracker rotationTracker;
 
-    private List<Check> checks;
+    private List<Check> checks = null;
 
 
     public Player(User user) {
@@ -49,13 +49,19 @@ public class Player {
     public void handleReceivePacket(PacketPlayReceiveEvent event) {
         positionTracker.handlePacketPlayReceive(event);
         rotationTracker.handlePacketPlayReceive(event);
-        for (Check check : checks) check.handleReceivePlayPacket(event);
+        for (Check check : checks) {
+            if (!check.isEnabled()) continue;
+            check.handleReceivePlayPacket(event);
+        }
     }
 
     public void handleSendPacket(PacketPlaySendEvent event) {
         positionTracker.handlePacketPlaySend(event);
         rotationTracker.handlePacketPlaySend(event);
-        for (Check check : checks) check.handleSendPlayPacket(event);
+        for (Check check : checks) {
+            if (!check.isEnabled()) continue;
+            check.handleSendPlayPacket(event);
+        }
     }
 
     /*
@@ -63,6 +69,7 @@ public class Player {
      */
 
     public void load() {
-        checks = CheckManager.getEnabledChecks(this);
+        if (checks == null) CheckManager.getChecks(this);
+        else for (Check check : checks) check.load();
     }
 }
