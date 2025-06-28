@@ -18,6 +18,8 @@ public class PaperDataBridge implements DataBridge {
 
     @Override
     public boolean hasPermission(User user, String... permission) {
+        // Users in any stage are checked - only go through if they have a UUID.
+        if (user.getUUID() == null) return false;
         Player player = Bukkit.getPlayer(user.getUUID());
         if (player == null) return false;
         if (player.isOp()) return true;
