@@ -115,6 +115,8 @@ For the documentation home, please visit [here](https://github.com/amnoah/Better
 
 For information on how to hide BetterAnticheat, please visit [here](https://github.com/amnoah/BetterAnticheat/wiki/Hiding-BetterAnticheat).
 
+For information on how to use BetterAnticheat, please visit [here](https://github.com/amnoah/BetterAnticheat/wiki/Using-BetterAnticheat).
+
 # Support
 
 For general support, please join my [Discord server](https://discord.gg/ey9uTg3hcy).
