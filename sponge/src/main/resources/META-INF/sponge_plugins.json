@@ -1,0 +1,38 @@
+{
+  "loader": {
+    "name": "java_plain",
+    "version": "2.5.1-SNAPSHOT"
+  },
+  "license": "GPL-3",
+  "plugins": [
+    {
+      "id": "betteranticheat",
+      "name": "BetterAnticheat",
+      "entrypoint": "better.anticheat.sponge.BetterAnticheatSponge",
+      "description": "An auxiliary anticheat designed with stability as its focus.",
+      "version": "1.0.0",
+      "branding": {},
+      "links": {},
+      "contributors": [
+        {
+          "name": "am noah",
+          "description": "Lead Developer"
+        }
+      ],
+      "dependencies": [
+        {
+          "id": "spongeapi",
+          "version": "14.0.0-SNAPSHOT",
+          "load-order": "after",
+          "optional": false
+        },
+        {
+          "id": "packetevents",
+          "version": "*",
+          "load-order": "after",
+          "optional": false
+        }
+      ]
+    }
+  ]
+}
