@@ -8,6 +8,7 @@ import better.anticheat.core.check.impl.combat.*;
 import better.anticheat.core.check.impl.dig.DigBlockFacePositionCheck;
 import better.anticheat.core.check.impl.dig.DigOrderCheck;
 import better.anticheat.core.check.impl.dig.MultiBreakCheck;
+import better.anticheat.core.check.impl.dig.RepeatedDigCheck;
 import better.anticheat.core.check.impl.flying.*;
 import better.anticheat.core.check.impl.heuristic.CombatAccelerationCheck;
 import better.anticheat.core.check.impl.misc.*;
@@ -47,6 +48,7 @@ public class CheckManager {
                 new DigBlockFacePositionCheck(),
                 new DigOrderCheck(),
                 new MultiBreakCheck(),
+                new RepeatedDigCheck(),
 
                 // Flying Checks
                 new ArtificialFlyingCheck(),

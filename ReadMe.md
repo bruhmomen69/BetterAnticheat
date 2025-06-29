@@ -65,6 +65,7 @@ These checks look for issues with digging. These may catch nuker, fast break, an
 - DigBlockFacePosition | Digging block faces which cannot be seen.
 - DigOrder | Sending wrongful dig stages.
 - MultiBreak | Digging multiple blocks at once.
+- RepeatedDig | Sending multiple dig packets within a tick.
 
 ### Flying
 

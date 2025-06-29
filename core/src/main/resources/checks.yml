@@ -104,6 +104,12 @@ multibreak:
   punishments:
     '1:say %username% would be banned for MultiBreak!'
 
+repeateddig:
+  enabled: true
+  alert-vl: 1
+  punishments:
+    '1:say %username% would be banned for RepeatedDig!'
+
 #
 # Flying
 #
