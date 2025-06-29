@@ -3,75 +3,19 @@ package better.anticheat.core.player.tracker.impl;
 import better.anticheat.core.player.Player;
 import better.anticheat.core.player.tracker.Tracker;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
+import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerFlying;
+import lombok.Getter;
 
+@Getter
 public class PositionTracker extends Tracker {
 
     private double x, y, z, lastX, lastY, lastZ;
     private double deltaX, deltaY, deltaZ, deltaXZ, lastDeltaX, lastDeltaY, lastDeltaZ, lastDeltaXZ;
+    private long ticks;
 
     public PositionTracker(Player player) {
         super(player);
-    }
-
-    /*
-     * Getters.
-     */
-
-    public double getX() {
-        return x;
-    }
-
-    public double getY() {
-        return y;
-    }
-
-    public double getZ() {
-        return z;
-    }
-
-    public double getLastX() {
-        return lastX;
-    }
-
-    public double getLastY() {
-        return lastY;
-    }
-
-    public double getLastZ() {
-        return lastZ;
-    }
-
-    public double getDeltaX() {
-        return deltaX;
-    }
-
-    public double getDeltaY() {
-        return deltaY;
-    }
-
-    public double getDeltaZ() {
-        return deltaZ;
-    }
-
-    public double getDeltaXZ() {
-        return deltaXZ;
-    }
-
-    public double getLastDeltaX() {
-        return lastDeltaX;
-    }
-
-    public double getLastDeltaY() {
-        return lastDeltaY;
-    }
-
-    public double getLastDeltaZ() {
-        return lastDeltaZ;
-    }
-
-    public double getLastDeltaXZ() {
-        return lastDeltaXZ;
     }
 
     /*
@@ -80,6 +24,9 @@ public class PositionTracker extends Tracker {
 
     @Override
     public void handlePacketPlayReceive(PacketPlayReceiveEvent event) {
+        if (event.getPacketType() == PacketType.Play.Client.CLIENT_TICK_END)
+            ticks++;
+
         if (!WrapperPlayClientPlayerFlying.isFlying(event.getPacketType())) return;
         WrapperPlayClientPlayerFlying wrapper = new WrapperPlayClientPlayerFlying(event);
         if (!wrapper.hasPositionChanged()) return;

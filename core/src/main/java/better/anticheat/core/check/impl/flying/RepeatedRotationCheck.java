@@ -20,6 +20,7 @@ public class RepeatedRotationCheck extends Check {
             case VEHICLE_MOVE:
                 exemptTicks = 2;
                 break;
+            // Won't be effected by teleporting since that forces a POS_LOOK packet.
             case PLAYER_ROTATION:
                 if (exemptTicks > 0) break;
                 if (!loaded) return;

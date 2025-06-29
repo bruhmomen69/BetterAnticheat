@@ -9,3 +9,9 @@ depend:
   - packetevents
 authors:
   - am noah
+libraries:
+  - it.unimi.dsi:fastutil:8.5.16
+  - org.slf4j:slf4j-api:2.0.17
+  - org.apache.logging.log4j:log4j-slf4j18-impl:2.18.0
+  - org.yaml:snakeyaml:2.4
+  - org.jetbrains:annotations:26.0.2

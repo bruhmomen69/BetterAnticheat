@@ -45,7 +45,7 @@ public class BetterAnticheat {
 
     public void enable() {
         if (!enabled) return;
-        PacketEvents.getAPI().getEventManager().registerListener(new PacketListener());
+        PacketEvents.getAPI().getEventManager().registerListener(new PacketListener(this.dataBridge));
         load();
     }
 

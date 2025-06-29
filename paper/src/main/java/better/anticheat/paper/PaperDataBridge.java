@@ -6,6 +6,9 @@ import com.tcoded.folialib.FoliaLib;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
+import javax.annotation.Nullable;
+import java.io.Closeable;
+
 public class PaperDataBridge implements DataBridge {
 
     private final BetterAnticheatPaper plugin;
@@ -44,5 +47,25 @@ public class PaperDataBridge implements DataBridge {
     @Override
     public void sendCommand(String command) {
         lib.getScheduler().runNextTick((task) -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command));
+    }
+
+    @Override
+    public Closeable registerTickListener(User user, Runnable runnable) {
+        if (user.getUUID() == null) return null;
+        Player player = Bukkit.getPlayer(user.getUUID());
+        if (player == null) return null;
+
+        final var task = lib.getScheduler().runAtEntityTimer(player, runnable, 1, 1);
+        return task::cancel;
+    }
+
+    @Override
+    public Closeable runTaskLater(User user, Runnable runnable, int delayTicks) {
+        if (user.getUUID() == null) return null;
+        Player player = Bukkit.getPlayer(user.getUUID());
+        if (player == null) return null;
+
+        final var task = lib.getScheduler().runAtEntityLater(player, runnable, delayTicks);
+        return task::cancel;
     }
 }

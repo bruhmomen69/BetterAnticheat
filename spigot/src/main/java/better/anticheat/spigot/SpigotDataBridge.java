@@ -4,6 +4,9 @@ import better.anticheat.core.DataBridge;
 import com.github.retrooper.packetevents.protocol.player.User;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitRunnable;
+
+import java.io.Closeable;
 
 public class SpigotDataBridge implements DataBridge {
 
@@ -41,5 +44,29 @@ public class SpigotDataBridge implements DataBridge {
     @Override
     public void sendCommand(String command) {
         Bukkit.getScheduler().runTask(plugin, () -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command));
+    }
+
+    @Override
+    public Closeable registerTickListener(User user, Runnable runnable) {
+        final var task = new BukkitRunnable() {
+            @Override
+            public void run() {
+                runnable.run();
+            }
+        }.runTaskTimer(plugin, 0, 1);
+
+        return task::cancel;
+    }
+
+    @Override
+    public Closeable runTaskLater(User user, Runnable runnable, int delayTicks) {
+        final var task = new BukkitRunnable() {
+            @Override
+            public void run() {
+                runnable.run();
+            }
+        }.runTaskLater(plugin, delayTicks);
+
+        return task::cancel;
     }
 }

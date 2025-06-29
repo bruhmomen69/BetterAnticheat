@@ -1,63 +1,72 @@
 package better.anticheat.core.player;
 
+import better.anticheat.core.DataBridge;
 import better.anticheat.core.check.Check;
 import better.anticheat.core.check.CheckManager;
 import better.anticheat.core.player.tracker.impl.PositionTracker;
 import better.anticheat.core.player.tracker.impl.RotationTracker;
+import better.anticheat.core.player.tracker.impl.confirmation.ConfirmationTracker;
+import better.anticheat.core.player.tracker.impl.entity.EntityTracker;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.event.simple.PacketPlaySendEvent;
 import com.github.retrooper.packetevents.protocol.player.User;
+import lombok.Getter;
 
+import java.io.Closeable;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
-public class Player {
+public class Player implements Closeable {
 
+    @Getter
     private final User user;
+    @Getter
     private final PositionTracker positionTracker;
+    @Getter
     private final RotationTracker rotationTracker;
+    @Getter
+    private final ConfirmationTracker confirmationTracker;
+    @Getter
+    private final EntityTracker entityTracker;
 
     private List<Check> checks = null;
 
-    public Player(User user) {
+    private final List<Closeable> closeables = new ArrayList<>();
+
+    public Player(final User user, final DataBridge dataBridge) {
         this.user = user;
-        positionTracker = new PositionTracker(this);
-        rotationTracker = new RotationTracker(this);
+        this.positionTracker = new PositionTracker(this);
+        this.rotationTracker = new RotationTracker(this);
+        this.confirmationTracker = new ConfirmationTracker(this);
+        this.entityTracker = new EntityTracker(this, this.confirmationTracker, this.positionTracker, dataBridge);
         load();
-    }
 
-    /*
-     * Getters.
-     */
-
-    public PositionTracker getPositionTracker() {
-        return positionTracker;
-    }
-
-    public RotationTracker getRotationTracker() {
-        return rotationTracker;
-    }
-
-    public User getUser() {
-        return user;
+        closeables.add(dataBridge.registerTickListener(user, this.confirmationTracker::sendTickKeepaliveNoFlush));
     }
 
     /*
      * Handle packets.
      */
-
     public void handleReceivePacket(PacketPlayReceiveEvent event) {
-        positionTracker.handlePacketPlayReceive(event);
-        rotationTracker.handlePacketPlayReceive(event);
-        for (Check check : checks) {
+        this.positionTracker.handlePacketPlayReceive(event);
+        this.rotationTracker.handlePacketPlayReceive(event);
+        this.confirmationTracker.handlePacketPlayReceive(event);
+        this.entityTracker.handlePacketPlayReceive(event);
+
+        for (Check check : this.checks) {
             if (!check.isEnabled()) continue;
             check.handleReceivePlayPacket(event);
         }
     }
 
     public void handleSendPacket(PacketPlaySendEvent event) {
-        positionTracker.handlePacketPlaySend(event);
-        rotationTracker.handlePacketPlaySend(event);
-        for (Check check : checks) {
+        this.positionTracker.handlePacketPlaySend(event);
+        this.rotationTracker.handlePacketPlaySend(event);
+        this.confirmationTracker.handlePacketPlaySend(event);
+        this.entityTracker.handlePacketPlaySend(event);
+
+        for (Check check : this.checks) {
             if (!check.isEnabled()) continue;
             check.handleSendPlayPacket(event);
         }
@@ -70,5 +79,13 @@ public class Player {
     public void load() {
         if (checks == null) checks = CheckManager.getChecks(this);
         else for (Check check : checks) check.load();
+    }
+
+    @Override
+    public void close() throws IOException {
+        for (final var closeable : this.closeables) {
+            if (closeable == null) continue;
+            closeable.close();
+        }
     }
 }

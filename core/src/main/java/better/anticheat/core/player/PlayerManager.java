@@ -1,10 +1,12 @@
 package better.anticheat.core.player;
 
 import better.anticheat.core.BetterAnticheat;
+import better.anticheat.core.DataBridge;
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.protocol.player.User;
 import net.kyori.adventure.text.Component;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -34,13 +36,15 @@ public class PlayerManager {
      * Player management.
      */
 
-    public static void addUser(User user) {
+    public static void addUser(User user, DataBridge dataBridge) {
         for (Quantifier quantifier : QUANTIFIERS) if (!quantifier.check(user)) return;
-        USER_MAP.put(user, new Player(user));
+        USER_MAP.put(user, new Player(user, dataBridge));
     }
 
-    public static void removeUser(User user) {
-        USER_MAP.remove(user);
+    public static void removeUser(User user) throws IOException {
+        final var removedPlayer = USER_MAP.remove(user);
+        if (removedPlayer == null) return;
+        removedPlayer.close();
     }
 
     public static Player getPlayer(User user) {
