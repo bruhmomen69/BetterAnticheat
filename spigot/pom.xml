@@ -71,6 +71,18 @@
             <version>API-v1.0.0</version>
             <scope>provided</scope>
         </dependency>
+
+        <dependency>
+            <groupId>io.github.revxrsal</groupId>
+            <artifactId>lamp.common</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.github.revxrsal</groupId>
+            <artifactId>lamp.bukkit</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <!-- Brigadier is not supported on this platform -->
     </dependencies>
 
     <build>
@@ -94,6 +106,13 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.13.0</version>
+
+                <configuration>
+                    <compilerArgs>
+                        <!-- Preserves parameter names -->
+                        <arg>-parameters</arg>
+                    </compilerArgs>
+                </configuration>
             </plugin>
 
             <plugin>

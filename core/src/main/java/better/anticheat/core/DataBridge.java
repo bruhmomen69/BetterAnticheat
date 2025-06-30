@@ -1,11 +1,16 @@
 package better.anticheat.core;
 
 import com.github.retrooper.packetevents.protocol.player.User;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import revxrsal.commands.command.CommandActor;
+import revxrsal.commands.exception.CommandExceptionHandler;
+import revxrsal.commands.parameter.ParameterTypes;
 
 import java.io.Closeable;
+import java.util.function.Consumer;
 
-public interface DataBridge {
+public interface DataBridge<T extends CommandActor> {
 
     boolean hasPermission(User user, String... permission);
 
@@ -17,4 +22,8 @@ public interface DataBridge {
 
     @Nullable Closeable registerTickListener(User user, Runnable runnable);
     @Nullable Closeable runTaskLater(User user, Runnable runnable, int delayTicks);
+
+    void registerCommands(@Nullable CommandExceptionHandler<T> commandExceptionHandler, @Nullable Consumer<ParameterTypes.Builder<T>> parameterBuilder, Object... commands);
+
+    String getVersion();
 }

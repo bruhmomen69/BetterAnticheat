@@ -43,7 +43,7 @@ public class BetterAnticheatSponge {
     @Listener
     public void onServerLoad(final StartingEngineEvent<Server> event) {
         core = new BetterAnticheat(
-                new SpongeDataBridge(game, logger),
+                new SpongeDataBridge(this, game, logger),
                 configDirectory
         );
     }

@@ -11,10 +11,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class PlayerManager {
 
-    private static final Map<User, Player> USER_MAP = new HashMap<>();
+    private static final Map<User, Player> USER_MAP = new ConcurrentHashMap<>();
     private static final List<Quantifier> QUANTIFIERS = new ArrayList<>();
 
     /*
@@ -49,6 +50,14 @@ public class PlayerManager {
 
     public static Player getPlayer(User user) {
         return USER_MAP.get(user);
+    }
+
+    public static Player getPlayerByName(String name) {
+        for (Player value : USER_MAP.values()) {
+            if (value.getUser().getName().equalsIgnoreCase(name)) return value;
+        }
+
+        return null;
     }
 
     public static void load(BetterAnticheat plugin) {

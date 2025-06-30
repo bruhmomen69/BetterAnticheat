@@ -5,10 +5,15 @@ import com.github.retrooper.packetevents.protocol.player.User;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
+import revxrsal.commands.bukkit.BukkitLamp;
+import revxrsal.commands.bukkit.actor.BukkitCommandActor;
+import revxrsal.commands.exception.CommandExceptionHandler;
+import revxrsal.commands.parameter.ParameterTypes;
 
 import java.io.Closeable;
+import java.util.function.Consumer;
 
-public class SpigotDataBridge implements DataBridge {
+public class SpigotDataBridge implements DataBridge<BukkitCommandActor> {
 
     private final BetterAnticheatSpigot plugin;
 
@@ -68,5 +73,21 @@ public class SpigotDataBridge implements DataBridge {
         }.runTaskLater(plugin, delayTicks);
 
         return task::cancel;
+    }
+
+    @Override
+    public void registerCommands(CommandExceptionHandler<BukkitCommandActor> exceptionHandler, Consumer<ParameterTypes.Builder<BukkitCommandActor>> parameterBuilder, Object... commands) {
+        var lampBuilder = BukkitLamp.builder(this.plugin);
+
+        if (exceptionHandler != null) lampBuilder = lampBuilder.exceptionHandler(exceptionHandler);
+        if (parameterBuilder != null) lampBuilder = lampBuilder.parameterTypes(parameterBuilder);
+
+        final var lamp = lampBuilder.build();
+        lamp.register(commands);
+    }
+
+    @Override
+    public String getVersion() {
+        return plugin.getDescription().getVersion();
     }
 }

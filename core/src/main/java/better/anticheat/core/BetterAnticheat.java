@@ -1,6 +1,7 @@
 package better.anticheat.core;
 
 import better.anticheat.core.check.CheckManager;
+import better.anticheat.core.command.BetterAnticheatCommand;
 import better.anticheat.core.configuration.ConfigSection;
 import better.anticheat.core.configuration.ConfigurationFile;
 import better.anticheat.core.player.PlayerManager;
@@ -24,7 +25,7 @@ public class BetterAnticheat {
     private int alertCooldown;
     private List<String> alertHover;
     private String alertMessage, alertPermission, clickCommand;
-    private boolean punishmentModulo, testMode;
+    private boolean punishmentModulo, testMode, useCommand;
 
     public BetterAnticheat(DataBridge dataBridge, Path directory) {
         this.dataBridge = dataBridge;
@@ -47,6 +48,10 @@ public class BetterAnticheat {
         if (!enabled) return;
         PacketEvents.getAPI().getEventManager().registerListener(new PacketListener(this.dataBridge));
         load();
+
+        if (useCommand) {
+            dataBridge.registerCommands(null, null, new BetterAnticheatCommand(this.dataBridge));
+        }
     }
 
     public void disable() {
@@ -66,6 +71,7 @@ public class BetterAnticheat {
         clickCommand = settings.getObject(String.class, "click-command", "");
         punishmentModulo = settings.getObject(Boolean.class, "punishment-modulo", true);
         testMode = settings.getObject(Boolean.class, "test-mode", false);
+        useCommand = settings.getObject(Boolean.class, "enable-commands", true); // Default to true for people who have not updated their config.
 
         CheckManager.load(this);
         PlayerManager.load(this);

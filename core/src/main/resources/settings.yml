@@ -36,3 +36,6 @@ punishment-modulo: true
 
 # Sends alerts only to the user who triggered it. Used for testing purposes.
 test-mode: false
+
+# Should the plugin register commands? This makes most other steps to hide the anticheat pointless.
+enable-commands: false

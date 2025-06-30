@@ -5,11 +5,16 @@ import com.github.retrooper.packetevents.protocol.player.User;
 import com.tcoded.folialib.FoliaLib;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import revxrsal.commands.bukkit.BukkitLamp;
+import revxrsal.commands.bukkit.actor.BukkitCommandActor;
+import revxrsal.commands.exception.CommandExceptionHandler;
+import revxrsal.commands.parameter.ParameterTypes;
 
 import javax.annotation.Nullable;
 import java.io.Closeable;
+import java.util.function.Consumer;
 
-public class PaperDataBridge implements DataBridge {
+public class PaperDataBridge implements DataBridge<BukkitCommandActor> {
 
     private final BetterAnticheatPaper plugin;
     private final FoliaLib lib;
@@ -67,5 +72,21 @@ public class PaperDataBridge implements DataBridge {
 
         final var task = lib.getScheduler().runAtEntityLater(player, runnable, delayTicks);
         return task::cancel;
+    }
+
+    @Override
+    public void registerCommands(CommandExceptionHandler<BukkitCommandActor> exceptionHandler, Consumer<ParameterTypes.Builder<BukkitCommandActor>> parameterBuilder, Object... commands) {
+        var lampBuilder = BukkitLamp.builder(this.plugin);
+
+        if (exceptionHandler != null) lampBuilder = lampBuilder.exceptionHandler(exceptionHandler);
+        if (parameterBuilder != null) lampBuilder = lampBuilder.parameterTypes(parameterBuilder);
+
+        final var lamp = lampBuilder.build();
+        lamp.register(commands);
+    }
+
+    @Override
+    public String getVersion() {
+        return plugin.getPluginMeta().getVersion();
     }
 }

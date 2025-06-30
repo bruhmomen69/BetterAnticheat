@@ -15,3 +15,6 @@ libraries:
   - org.apache.logging.log4j:log4j-slf4j18-impl:2.18.0
   - org.yaml:snakeyaml:2.4
   - org.jetbrains:annotations:26.0.2
+  - io.github.revxrsal:lamp.bukkit:4.0.0-rc.12
+  - io.github.revxrsal:lamp.brigadier:4.0.0-rc.12
+  - io.github.revxrsal:lamp.common:4.0.0-rc.12

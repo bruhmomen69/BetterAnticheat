@@ -12,16 +12,24 @@ import org.spongepowered.api.entity.living.player.server.ServerPlayer;
 import org.spongepowered.api.scheduler.ScheduledTask;
 import org.spongepowered.api.scheduler.Task;
 import org.spongepowered.api.util.Ticks;
+import revxrsal.commands.exception.CommandExceptionHandler;
+import revxrsal.commands.parameter.ParameterTypes;
+import revxrsal.commands.sponge.SpongeLamp;
+import revxrsal.commands.sponge.SpongeLampConfig;
+import revxrsal.commands.sponge.actor.SpongeCommandActor;
 
 import java.io.Closeable;
 import java.util.Optional;
+import java.util.function.Consumer;
 
-public class SpongeDataBridge implements DataBridge {
+public class SpongeDataBridge implements DataBridge<SpongeCommandActor> {
 
+    private final BetterAnticheatSponge plugin;
     private final Game game;
     private final Logger logger;
 
-    public SpongeDataBridge(Game game, Logger logger) {
+    public SpongeDataBridge(BetterAnticheatSponge plugin, Game game, Logger logger) {
+        this.plugin = plugin;
         this.game = game;
         this.logger = logger;
     }
@@ -71,5 +79,21 @@ public class SpongeDataBridge implements DataBridge {
         Task task = builder.execute(runnable).delay(Ticks.of(delayTicks)).build();
         ScheduledTask scheduledTask = game.server().scheduler().submit(task);
         return scheduledTask::cancel;
+    }
+
+    @Override
+    public void registerCommands(CommandExceptionHandler<SpongeCommandActor> exceptionHandler, Consumer<ParameterTypes.Builder<SpongeCommandActor>> parameterBuilder, Object... commands) {
+        var lampBuilder = SpongeLamp.builder(plugin);
+
+        if (exceptionHandler != null) lampBuilder = lampBuilder.exceptionHandler(exceptionHandler);
+        if (parameterBuilder != null) lampBuilder = lampBuilder.parameterTypes(parameterBuilder);
+
+        final var lamp = lampBuilder.build();
+        lamp.register(commands);
+    }
+
+    @Override
+    public String getVersion() {
+        return game.pluginManager().fromInstance(plugin).map((pl) -> pl.metadata().version().toString()).orElse("Sponge");
     }
 }

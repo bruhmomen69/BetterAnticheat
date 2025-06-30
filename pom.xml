@@ -9,6 +9,32 @@
     <packaging>pom</packaging>
     <version>1.0.0</version>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>io.github.revxrsal</groupId>
+                <artifactId>lamp.common</artifactId>
+                <version>${lamp.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.github.revxrsal</groupId>
+                <artifactId>lamp.bukkit</artifactId>
+                <version>${lamp.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.github.revxrsal</groupId>
+                <artifactId>lamp.brigadier</artifactId>
+                <version>${lamp.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.github.revxrsal</groupId>
+                <artifactId>lamp.sponge</artifactId>
+                <version>${lamp.version}</version>
+                <scope>compile</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <modules>
         <module>core</module>
         <module>spigot</module>
@@ -20,5 +46,7 @@
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <lamp.version>4.0.0-rc.12</lamp.version>
     </properties>
 </project>
