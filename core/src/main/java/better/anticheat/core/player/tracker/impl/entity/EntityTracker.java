@@ -10,7 +10,7 @@ import better.anticheat.core.player.tracker.impl.entity.type.EntityTrackerState;
 import better.anticheat.core.player.tracker.impl.entity.type.SplitEntityUpdate;
 import better.anticheat.core.util.BoundingBoxSize;
 import better.anticheat.core.util.MathUtil;
-import better.anticheat.core.util.type.bistate.DoubleBiState;
+import better.anticheat.core.util.type.xstate.bistate.DoubleBiState;
 import better.anticheat.core.util.type.entity.AxisAlignedBB;
 import better.anticheat.core.util.type.fastlist.FastObjectArrayList;
 import better.anticheat.core.util.type.incrementer.LongIncrementer;

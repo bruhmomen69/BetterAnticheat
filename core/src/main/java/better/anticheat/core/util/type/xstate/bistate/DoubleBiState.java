@@ -1,4 +1,4 @@
-package better.anticheat.core.util.type.bistate;
+package better.anticheat.core.util.type.xstate.bistate;
 
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.doubles.DoubleListIterator;

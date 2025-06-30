@@ -7,19 +7,32 @@ import com.github.retrooper.packetevents.protocol.entity.type.EntityTypes;
 import com.github.retrooper.packetevents.util.Vector3d;
 
 /**
- * Yeah, I know this is a bad class
- * I just can't figure out how to PR it to PacketEvents due to babies, slimes, and other irregularities
- * <p>
- * I could PR a ton of classes in order to accomplish it but then no one would use it
- * (And even if they did they would likely be breaking my license...)
+ * Utility class for calculating bounding box sizes and related properties for various Minecraft entities.
+ * This class addresses irregularities in entity dimensions, particularly for baby entities, slimes, and others,
+ * which prevent direct integration into PacketEvents. It provides methods to compute width, height, and passenger offsets.
+ * Note: Due to complexities in entity attributes, some calculations depend on provided EntityData.
  */
 public final class BoundingBoxSize {
 
+    /**
+     * Retrieves the width of the bounding box for the given entity data.
+     * This method accounts for special cases like baby animals and delegates to getWidthMinusBaby.
+     *
+     * @param packetEntity the entity data containing type and attributes; must not be null
+     * @return the width of the entity's bounding box as a float
+     */
     public static float getWidth(EntityData packetEntity) {
         // Turtles are the only baby animal that don't follow the * 0.5 rule
         return getWidthMinusBaby(packetEntity);
     }
 
+    /**
+     * Internal helper method to calculate the width of an entity's bounding box, excluding baby scaling logic.
+     * Handles various entity types with specific width values based on Minecraft entity properties.
+     *
+     * @param packetEntity the entity data containing type and attributes; must not be null
+     * @return the width of the entity's bounding box as a float
+     */
     private static float getWidthMinusBaby(EntityData packetEntity) {
         final EntityType type = packetEntity.getType();
         if (EntityTypes.AXOLOTL.equals(type)) {
@@ -118,6 +131,14 @@ public final class BoundingBoxSize {
         return 0.6f;
     }
 
+    /**
+     * Rotates a vector around the Y-axis by the given yaw angle.
+     * Used for orientation calculations in bounding box contexts.
+     *
+     * @param yaw the yaw angle in radians for rotation
+     * @param start the initial vector to rotate; must not be null
+     * @return the rotated vector as a Vector3d object
+     */
     private static Vector3d yRot(float yaw, Vector3d start) {
         double cos = (float) Math.cos(yaw);
         double sin = (float) Math.sin(yaw);
@@ -128,39 +149,25 @@ public final class BoundingBoxSize {
         );
     }
 
+    /**
+     * Retrieves the height of the bounding box for the given entity data.
+     * This method accounts for special cases and delegates to getHeightMinusBaby.
+     *
+     * @param packetEntity the entity data containing type and attributes; must not be null
+     * @return the height of the entity's bounding box as a float
+     */
     public static float getHeight(EntityData packetEntity) {
         // Turtles are the only baby animal that don't follow the * 0.5 rule
         return getHeightMinusBaby(packetEntity);
     }
 
-    public static double getPassengerRidingOffset(EntityData packetEntity) {
-        final EntityType type = packetEntity.getType();
-        if (EntityTypes.HORSE.equals(type))
-            return (getHeight(packetEntity) * 0.75) - 0.25;
-
-
-        if (EntityTypes.isTypeInstanceOf(type, EntityTypes.MINECART_ABSTRACT)) {
-            return 0;
-        } else if (EntityTypes.isTypeInstanceOf(type, EntityTypes.BOAT)) {
-            return -0.1;
-        } else if (EntityTypes.HOGLIN.equals(type) || EntityTypes.ZOGLIN.equals(type)) {
-            return getHeight(packetEntity) - 0.15;
-        } else if (EntityTypes.LLAMA.equals(type)) {
-            return getHeight(packetEntity) * 0.67;
-        } else if (EntityTypes.PIGLIN.equals(type)) {
-            return getHeight(packetEntity) * 0.92;
-        } else if (EntityTypes.RAVAGER.equals(type)) {
-            return 2.1;
-        } else if (EntityTypes.SKELETON.equals(type)) {
-            return (getHeight(packetEntity) * 0.75) - 0.1875;
-        } else if (EntityTypes.SPIDER.equals(type)) {
-            return getHeight(packetEntity) * 0.5;
-        } else if (EntityTypes.STRIDER.equals(type)) {// depends on animation position, good luck getting it exactly, this is the best you can do though
-            return getHeight(packetEntity) - 0.19;
-        }
-        return getHeight(packetEntity) * 0.75;
-    }
-
+    /**
+     * Internal helper method to calculate the height of an entity's bounding box, excluding baby scaling logic.
+     * Handles various entity types with specific height values based on Minecraft entity properties.
+     *
+     * @param packetEntity the entity data containing type and attributes; must not be null
+     * @return the height of the entity's bounding box as a float
+     */
     private static float getHeightMinusBaby(EntityData packetEntity) {
         final EntityType type = packetEntity.getType();
         if (EntityTypes.ARMADILLO.equals(type)) {
@@ -322,5 +329,40 @@ public final class BoundingBoxSize {
             return 0.25F;
         }
         return 1.95f;
+    }
+
+    /**
+     * Calculates the offset for passengers riding on the entity, used for position adjustments.
+     * Accounts for entity-specific riding offsets, such as for horses, boats, and others.
+     *
+     * @param packetEntity the entity data containing type and attributes; must not be null
+     * @return the passenger riding offset as a double
+     */
+    public static double getPassengerRidingOffset(EntityData packetEntity) {
+        final EntityType type = packetEntity.getType();
+        if (EntityTypes.HORSE.equals(type))
+            return (getHeight(packetEntity) * 0.75) - 0.25;
+
+
+        if (EntityTypes.isTypeInstanceOf(type, EntityTypes.MINECART_ABSTRACT)) {
+            return 0;
+        } else if (EntityTypes.isTypeInstanceOf(type, EntityTypes.BOAT)) {
+            return -0.1;
+        } else if (EntityTypes.HOGLIN.equals(type) || EntityTypes.ZOGLIN.equals(type)) {
+            return getHeight(packetEntity) - 0.15;
+        } else if (EntityTypes.LLAMA.equals(type)) {
+            return getHeight(packetEntity) * 0.67;
+        } else if (EntityTypes.PIGLIN.equals(type)) {
+            return getHeight(packetEntity) * 0.92;
+        } else if (EntityTypes.RAVAGER.equals(type)) {
+            return 2.1;
+        } else if (EntityTypes.SKELETON.equals(type)) {
+            return (getHeight(packetEntity) * 0.75) - 0.1875;
+        } else if (EntityTypes.SPIDER.equals(type)) {
+            return getHeight(packetEntity) * 0.5;
+        } else if (EntityTypes.STRIDER.equals(type)) {// depends on animation position, good luck getting it exactly, this is the best you can do though
+            return getHeight(packetEntity) - 0.19;
+        }
+        return getHeight(packetEntity) * 0.75;
     }
 }

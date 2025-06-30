@@ -1,10 +1,10 @@
-package better.anticheat.core.util.type.bistate;
+package better.anticheat.core.util.type.xstate.manystate;
 
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Iterator;
 
-public interface BiState<A> extends Iterable<A> {
+public interface ManyState<A> extends Iterable<A> {
     @NotNull
     @Override
     Iterator<A> iterator();
@@ -13,9 +13,13 @@ public interface BiState<A> extends Iterable<A> {
 
     void addNew(A neww);
 
-    A getOldObject();
+    A get(int index);
 
-    A getCurrentObject();
+    A getCurrent();
+
+    int size();
+
+    int capacity();
 
     int hashCode();
 
