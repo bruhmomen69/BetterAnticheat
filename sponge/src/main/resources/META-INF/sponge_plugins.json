@@ -3,7 +3,7 @@
     "name": "java_plain",
     "version": "2.5.1-SNAPSHOT"
   },
-  "license": "GPL-3",
+  "license": "AGPL-3",
   "plugins": [
     {
       "id": "betteranticheat",
