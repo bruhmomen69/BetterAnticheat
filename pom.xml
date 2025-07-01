@@ -32,6 +32,44 @@
                 <version>${lamp.version}</version>
                 <scope>compile</scope>
             </dependency>
+
+            <dependency>
+                <groupId>com.github.haifengl</groupId>
+                <artifactId>smile-core</artifactId>
+                <version>4.4.0</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.duckdb</groupId>
+                        <artifactId>duckdb_jdbc</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.bytedeco</groupId>
+                        <artifactId>openblas</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>com.github.haifengl</groupId>
+                <artifactId>smile-plot</artifactId>
+                <version>4.4.0</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.duckdb</groupId>
+                        <artifactId>duckdb_jdbc</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.bytedeco</groupId>
+                        <artifactId>openblas</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>com.alibaba.fastjson2</groupId>
+                <artifactId>fastjson2</artifactId>
+                <version>2.0.57</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 

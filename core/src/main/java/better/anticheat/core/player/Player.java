@@ -7,6 +7,7 @@ import better.anticheat.core.player.tracker.impl.PositionTracker;
 import better.anticheat.core.player.tracker.impl.RotationTracker;
 import better.anticheat.core.player.tracker.impl.confirmation.ConfirmationTracker;
 import better.anticheat.core.player.tracker.impl.entity.EntityTracker;
+import better.anticheat.core.player.tracker.impl.ml.CMLTracker;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.event.simple.PacketPlaySendEvent;
 import com.github.retrooper.packetevents.protocol.player.User;
@@ -29,6 +30,8 @@ public class Player implements Closeable {
     private final ConfirmationTracker confirmationTracker;
     @Getter
     private final EntityTracker entityTracker;
+    @Getter
+    private final CMLTracker cmlTracker;
 
     private List<Check> checks = null;
 
@@ -40,6 +43,7 @@ public class Player implements Closeable {
         this.rotationTracker = new RotationTracker(this);
         this.confirmationTracker = new ConfirmationTracker(this);
         this.entityTracker = new EntityTracker(this, this.confirmationTracker, this.positionTracker, dataBridge);
+        this.cmlTracker = new CMLTracker(this);
         load();
 
         closeables.add(dataBridge.registerTickListener(user, this.confirmationTracker::sendTickKeepaliveNoFlush));
@@ -53,6 +57,7 @@ public class Player implements Closeable {
         this.rotationTracker.handlePacketPlayReceive(event);
         this.confirmationTracker.handlePacketPlayReceive(event);
         this.entityTracker.handlePacketPlayReceive(event);
+        this.cmlTracker.handlePacketPlayReceive(event);
 
         for (Check check : this.checks) {
             if (!check.isEnabled()) continue;
@@ -65,6 +70,7 @@ public class Player implements Closeable {
         this.rotationTracker.handlePacketPlaySend(event);
         this.confirmationTracker.handlePacketPlaySend(event);
         this.entityTracker.handlePacketPlaySend(event);
+        this.cmlTracker.handlePacketPlaySend(event);
 
         for (Check check : this.checks) {
             if (!check.isEnabled()) continue;

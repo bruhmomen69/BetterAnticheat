@@ -50,7 +50,7 @@ public class BetterAnticheat {
         load();
 
         if (useCommand) {
-            dataBridge.registerCommands(null, null, new BetterAnticheatCommand(this.dataBridge));
+            dataBridge.registerCommands(null, null, new BetterAnticheatCommand(this.dataBridge, this.directory));
         }
     }
 

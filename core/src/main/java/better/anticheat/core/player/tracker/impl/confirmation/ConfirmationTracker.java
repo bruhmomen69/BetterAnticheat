@@ -19,7 +19,9 @@ import org.jetbrains.annotations.Nullable;
 
 import java.nio.ByteBuffer;
 import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 public class ConfirmationTracker extends Tracker {
@@ -28,7 +30,7 @@ public class ConfirmationTracker extends Tracker {
     /**
      * A list of awaiting confirmations.
      */
-    private final HashSet<ConfirmationState> confirmations = new HashSet<>();
+    private final Set<ConfirmationState> confirmations = ConcurrentHashMap.newKeySet(10);
     /**
      * 30 seconds of recent confirmations, assuming one confirmation per tick, but it is usually less than this, meaning it can provide an even longer window
      */

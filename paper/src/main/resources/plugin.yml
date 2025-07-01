@@ -16,3 +16,6 @@ libraries:
   - io.github.revxrsal:lamp.bukkit:4.0.0-rc.12
   - io.github.revxrsal:lamp.brigadier:4.0.0-rc.12
   - io.github.revxrsal:lamp.common:4.0.0-rc.12
+  - com.github.haifengl:smile-core:4.4.0
+  - com.github.haifengl:smile-plot:4.4.0
+  - com.alibaba.fastjson2:fastjson2:2.0.57
