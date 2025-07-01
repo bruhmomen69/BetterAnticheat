@@ -1,15 +1,13 @@
 package better.anticheat.core.check.impl.misc;
 
 import better.anticheat.core.check.Check;
+import better.anticheat.core.check.CheckInfo;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientEntityAction;
 
+@CheckInfo(name = "ImpossibleHorseJump", category = "misc", config = "checks")
 public class ImpossibleHorseJumpCheck extends Check {
-
-    public ImpossibleHorseJumpCheck() {
-        super("ImpossibleHorseJump");
-    }
 
     @Override
     public void handleReceivePlayPacket(PacketPlayReceiveEvent event) {

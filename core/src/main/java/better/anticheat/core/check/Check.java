@@ -6,6 +6,7 @@ import better.anticheat.core.player.Player;
 import better.anticheat.core.player.PlayerManager;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.event.simple.PacketPlaySendEvent;
+import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
@@ -24,29 +25,34 @@ public abstract class Check implements Cloneable {
     protected Check reference;
     protected Player player;
 
-    private String type;
+    @Getter
+    private final String name, category, config;
+    @Getter
+    private final boolean experimental;
 
+    @Getter
     private boolean enabled = false;
     private int alertVL = 0;
     private Map<Integer, List<String>> punishments = new HashMap<>();
 
+    @Getter
     private int vl = 0;
     private long lastAlertMS = 0;
 
-    public Check(String type) {
-        this.type = type;
-    }
+    public Check() {
+        CheckInfo info = this.getClass().getAnnotation(CheckInfo.class);
+        if (info == null) {
+            name = getClass().getName();
+            category = "UNSUPPORTED";
+            config = null;
+            experimental = true;
+            return;
+        }
 
-    public boolean isEnabled() {
-        return enabled;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public int getVL() {
-        return vl;
+        name = info.name();
+        category = info.category();
+        config = info.config();
+        experimental = info.experimental();
     }
 
     public void handleReceivePlayPacket(PacketPlayReceiveEvent event) {}
@@ -58,7 +64,6 @@ public abstract class Check implements Cloneable {
      */
 
     public void load() {
-        type = reference.type;
         enabled = reference.enabled;
         alertVL = reference.alertVL;
         punishments = reference.punishments;
@@ -104,7 +109,7 @@ public abstract class Check implements Cloneable {
             String message = BetterAnticheat.getInstance().getAlertMessage();
             if (!message.isEmpty()) {
                 message = message.replaceAll("%vl%", String.valueOf(vl));
-                message = message.replaceAll("%type%", type);
+                message = message.replaceAll("%type%", name);
                 message = message.replaceAll("%username%", player.getUser().getName());
                 message = translateColors(message);
                 Component finalMessage = Component.text(message);
@@ -166,16 +171,38 @@ public abstract class Check implements Cloneable {
         return output.toString();
     }
 
-    public void load(ConfigSection section) {
+    /**
+     *
+     */
+    public boolean load(ConfigSection section) {
         if (section == null) {
             enabled = false;
-            return;
+            return false;
         }
 
-        enabled = section.getObject(Boolean.class, "enabled", false);
-        if (!enabled) return; // No use in wasting more time.
+        boolean modified = false;
+
+        // Fetch enabled status.
+        if (!section.hasNode("enabled")) {
+            section.setObject(Boolean.class, "enabled", true);
+            modified = true;
+        }
+        enabled = section.getObject(Boolean.class, "enabled", true);
+
+        // No use in wasting more time loading.
+        if (!enabled) return modified;
+
+        // Fetch alertvl.
+        if (!section.hasNode("alert-vl")) {
+            section.setObject(Integer.class, "alert-vl", 1);
+            modified = true;
+        }
         alertVL = section.getObject(Integer.class, "alert-vl", 1);
 
+        if (!section.hasNode("punishments")) {
+            section.setList(String.class, "punishments", new ArrayList<>());
+            modified = true;
+        }
         punishments.clear();
         List<String> punishmentList = section.getList(String.class, "punishments");
         for (String punishment : punishmentList) {
@@ -188,5 +215,7 @@ public abstract class Check implements Cloneable {
                 e.printStackTrace();
             }
         }
+
+        return modified;
     }
 }

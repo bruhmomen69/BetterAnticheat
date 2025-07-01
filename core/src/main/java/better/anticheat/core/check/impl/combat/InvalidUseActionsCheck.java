@@ -1,18 +1,16 @@
 package better.anticheat.core.check.impl.combat;
 
 import better.anticheat.core.check.Check;
+import better.anticheat.core.check.CheckInfo;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.protocol.player.DiggingAction;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientInteractEntity;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerDigging;
 
+@CheckInfo(name = "InvalidUseActions", category = "combat", config = "checks")
 public class InvalidUseActionsCheck extends Check {
 
     private boolean blocking = false, attacked = false, placed = false;
-
-    public InvalidUseActionsCheck() {
-        super("InvalidUseActions");
-    }
 
     @Override
     public void handleReceivePlayPacket(PacketPlayReceiveEvent event) {

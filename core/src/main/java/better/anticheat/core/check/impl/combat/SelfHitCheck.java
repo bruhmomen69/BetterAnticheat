@@ -1,15 +1,13 @@
 package better.anticheat.core.check.impl.combat;
 
 import better.anticheat.core.check.Check;
+import better.anticheat.core.check.CheckInfo;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientInteractEntity;
 
+@CheckInfo(name = "SelfHit", category = "combat", config = "checks")
 public class SelfHitCheck extends Check {
-
-    public SelfHitCheck() {
-        super("SelfHit");
-    }
 
     @Override
     public void handleReceivePlayPacket(PacketPlayReceiveEvent event) {

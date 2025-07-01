@@ -1,15 +1,13 @@
 package better.anticheat.core.check.impl.chat;
 
 import better.anticheat.core.check.Check;
+import better.anticheat.core.check.CheckInfo;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientTabComplete;
 
+@CheckInfo(name = "ImpossibleCompletion", category = "chat", config = "checks")
 public class ImpossibleCompletionCheck extends Check {
-
-    public ImpossibleCompletionCheck() {
-        super("ImpossibleCompletion");
-    }
 
     @Override
     public void handleReceivePlayPacket(PacketPlayReceiveEvent event) {

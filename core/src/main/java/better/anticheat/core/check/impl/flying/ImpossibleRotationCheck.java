@@ -1,14 +1,12 @@
 package better.anticheat.core.check.impl.flying;
 
 import better.anticheat.core.check.Check;
+import better.anticheat.core.check.CheckInfo;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerFlying;
 
+@CheckInfo(name = "ImpossibleRotation", category = "flying", config = "checks")
 public class ImpossibleRotationCheck extends Check {
-
-    public ImpossibleRotationCheck() {
-        super("ImpossibleRotation");
-    }
 
     @Override
     public void handleReceivePlayPacket(PacketPlayReceiveEvent event) {

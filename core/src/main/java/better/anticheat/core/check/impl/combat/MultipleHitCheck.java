@@ -1,16 +1,14 @@
 package better.anticheat.core.check.impl.combat;
 
 import better.anticheat.core.check.Check;
+import better.anticheat.core.check.CheckInfo;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientInteractEntity;
 
+@CheckInfo(name = "MultipleHit", category = "combat", config = "checks")
 public class MultipleHitCheck extends Check {
 
     private Integer lastEnemy;
-
-    public MultipleHitCheck() {
-        super("MultipleHit");
-    }
 
     @Override
     public void handleReceivePlayPacket(PacketPlayReceiveEvent event) {

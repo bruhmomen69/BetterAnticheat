@@ -1,6 +1,7 @@
 package better.anticheat.core.check.impl.place;
 
 import better.anticheat.core.check.Check;
+import better.anticheat.core.check.CheckInfo;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.util.Vector3d;
@@ -8,13 +9,10 @@ import com.github.retrooper.packetevents.util.Vector3i;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerBlockPlacement;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerFlying;
 
+@CheckInfo(name = "PlaceBlockFacePosition", category = "place", config = "checks")
 public class PlaceBlockFacePositionCheck extends Check {
 
     private Vector3d position = null;
-
-    public PlaceBlockFacePositionCheck() {
-        super("PlaceBlockFacePosition");
-    }
 
     @Override
     public void handleReceivePlayPacket(PacketPlayReceiveEvent event) {

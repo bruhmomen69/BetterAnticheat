@@ -1,15 +1,13 @@
 package better.anticheat.core.check.impl.combat;
 
 import better.anticheat.core.check.Check;
+import better.anticheat.core.check.CheckInfo;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 
+@CheckInfo(name = "SlotInteractOrder", category = "combat", config = "checks")
 public class SlotInteractOrderCheck extends Check {
 
     private boolean slotChange = false;
-
-    public SlotInteractOrderCheck() {
-        super("SlotInteractOrder");
-    }
 
     @Override
     public void handleReceivePlayPacket(PacketPlayReceiveEvent event) {

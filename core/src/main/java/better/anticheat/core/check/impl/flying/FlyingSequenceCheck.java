@@ -1,15 +1,13 @@
 package better.anticheat.core.check.impl.flying;
 
 import better.anticheat.core.check.Check;
+import better.anticheat.core.check.CheckInfo;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 
+@CheckInfo(name = "FlyingSequence", category = "flying", config = "checks")
 public class FlyingSequenceCheck extends Check {
 
     private int ticks = -1;
-
-    public FlyingSequenceCheck() {
-        super("FlyingSequence");
-    }
 
     @Override
     public void handleReceivePlayPacket(PacketPlayReceiveEvent event) {

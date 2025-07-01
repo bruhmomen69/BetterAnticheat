@@ -1,17 +1,15 @@
 package better.anticheat.core.check.impl.combat;
 
 import better.anticheat.core.check.Check;
+import better.anticheat.core.check.CheckInfo;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.protocol.player.DiggingAction;
 import com.github.retrooper.packetevents.protocol.world.BlockFace;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerDigging;
 
+@CheckInfo(name = "InvalidReleaseValues", category = "combat", config = "checks")
 public class InvalidReleaseValuesCheck extends Check {
-
-    public InvalidReleaseValuesCheck() {
-        super("InvalidReleaseValues");
-    }
 
     @Override
     public void handleReceivePlayPacket(PacketPlayReceiveEvent event) {

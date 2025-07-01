@@ -1,5 +1,6 @@
 package better.anticheat.core.configuration;
 
+import lombok.Getter;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
@@ -22,7 +23,7 @@ public class ConfigurationFile {
     private final Path directoryPath, filePath;
     private final InputStream input;
     private final Yaml yaml;
-    private Map<String, Object> root;
+    private Map<String, Object> root = null;
 
     protected File configFile;
 
@@ -86,5 +87,10 @@ public class ConfigurationFile {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public ConfigSection getRoot() {
+        if (root == null) load();
+        return new ConfigSection(root);
     }
 }

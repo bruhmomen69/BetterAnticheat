@@ -1,17 +1,15 @@
 package better.anticheat.core.check.impl.heuristic;
 
 import better.anticheat.core.check.Check;
+import better.anticheat.core.check.CheckInfo;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerFlying;
 
+@CheckInfo(name = "CombatAcceleration", category = "heuristic", config = "checks")
 public class CombatAccelerationCheck extends Check {
 
     private boolean posRotChange = false, lastTickChange = false, teleporting = false;
     private int ticksSinceAttack = 0;
-
-    public CombatAccelerationCheck() {
-        super("CombatAcceleration");
-    }
 
     @Override
     public void handleReceivePlayPacket(PacketPlayReceiveEvent event) {

@@ -1,16 +1,14 @@
 package better.anticheat.core.check.impl.flying;
 
 import better.anticheat.core.check.Check;
+import better.anticheat.core.check.CheckInfo;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 
+@CheckInfo(name = "RepeatedRotation", category = "flying", config = "checks")
 public class RepeatedRotationCheck extends Check {
 
     private boolean loaded = false;
     private int exemptTicks = 0;
-
-    public RepeatedRotationCheck() {
-        super("RepeatedRotation");
-    }
 
     @Override
     public void handleReceivePlayPacket(PacketPlayReceiveEvent event) {

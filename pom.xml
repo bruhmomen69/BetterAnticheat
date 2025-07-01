@@ -40,6 +40,7 @@
         <module>spigot</module>
         <module>sponge</module>
         <module>paper</module>
+        <module>velocity</module>
     </modules>
 
     <properties>

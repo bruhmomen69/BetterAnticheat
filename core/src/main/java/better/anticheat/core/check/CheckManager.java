@@ -16,7 +16,9 @@ import better.anticheat.core.check.impl.packet.BalanceCheck;
 import better.anticheat.core.check.impl.packet.PostCheck;
 import better.anticheat.core.check.impl.place.PlaceBlockFacePositionCheck;
 import better.anticheat.core.configuration.ConfigSection;
+import better.anticheat.core.configuration.ConfigurationFile;
 import better.anticheat.core.player.Player;
+import com.sun.security.auth.login.ConfigFile;
 
 import java.util.*;
 
@@ -97,13 +99,50 @@ public class CheckManager {
         return returnList;
     }
 
+    /**
+     * Load all checks in the CHECKS list via their preferred configuration files.
+     */
     public static void load(BetterAnticheat plugin) {
-        ConfigSection checks = plugin.getFile("checks.yml", BetterAnticheat.class.getResourceAsStream("/checks.yml")).load();
+        Map<String, ConfigurationFile> configMap = new HashMap<>();
+        Set<String> modified = new HashSet<>();
         int enabled = 0;
         for (Check check : CHECKS) {
-            check.load(checks.getConfigSection(check.getType().toLowerCase()));
+            // Ensure the check has a defined config in its CheckInfo.
+            if (check.getConfig() == null) {
+                plugin.getDataBridge().logWarning("Could not load " + check.getName() + " due to null config!");
+                continue;
+            }
+
+            // Resolve the corresponding file.
+            String fileName = check.getConfig().toLowerCase();
+            ConfigurationFile file = configMap.get(fileName);
+            if (file == null) {
+                file = plugin.getFile(fileName + ".yml");
+                file.load();
+                configMap.put(fileName, file);
+            }
+
+            // Ensure the category is in the file.
+            ConfigSection node = file.getRoot();
+            if (!node.hasNode(check.getCategory())) {
+                modified.add(fileName);
+                node.addNode(check.getCategory());
+            }
+            node = node.getConfigSection(check.getCategory());
+
+            // Ensure the check is in the file
+            if (!node.hasNode(check.getName())) {
+                modified.add(fileName);
+                node.addNode(check.getName());
+            }
+            node = node.getConfigSection(check.getName());
+
+            // Load the check with its appropriate config.
+            if (check.load(node)) modified.add(fileName);
             if (check.isEnabled()) enabled++;
         }
+
+        for (String file : modified) configMap.get(file).save();
         plugin.getDataBridge().logInfo("Loaded " + CHECKS.size() + " checks, with " + enabled + " being enabled.");
     }
 }

@@ -1,16 +1,14 @@
 package better.anticheat.core.check.impl.flying;
 
 import better.anticheat.core.check.Check;
+import better.anticheat.core.check.CheckInfo;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 
+@CheckInfo(name = "ArtificialPosition", category = "flying", config = "checks")
 public class ArtificialPositionCheck extends Check {
 
     private boolean position = true;
     private int ticks = -1, samePositions = 0;
-
-    public ArtificialPositionCheck() {
-        super("ArtificialPosition");
-    }
 
     @Override
     public void handleReceivePlayPacket(PacketPlayReceiveEvent event) {

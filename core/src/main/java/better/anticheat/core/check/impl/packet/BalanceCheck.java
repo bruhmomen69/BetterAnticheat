@@ -1,17 +1,15 @@
 package better.anticheat.core.check.impl.packet;
 
 import better.anticheat.core.check.Check;
+import better.anticheat.core.check.CheckInfo;
 import better.anticheat.core.configuration.ConfigSection;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 
+@CheckInfo(name = "Balance", category = "packet", config = "checks")
 public class BalanceCheck extends Check {
 
     private long lastTick = -1, balance = 0;
     private long maxBalance, minBalance;
-
-    public BalanceCheck() {
-        super("Balance");
-    }
 
     @Override
     public void handleReceivePlayPacket(PacketPlayReceiveEvent event) {
@@ -44,10 +42,24 @@ public class BalanceCheck extends Check {
     }
 
     @Override
-    public void load(ConfigSection section) {
-        super.load(section);
+    public boolean load(ConfigSection section) {
+        boolean modified = super.load(section);
+
+        // Fetch max balance.
+        if (!section.hasNode("max-balance")) {
+            section.setObject(Integer.class, "max-balance", 150);
+            modified = true;
+        }
         maxBalance = section.getObject(Integer.class, "max-balance", 100);
+
+        // Fetch max balance.
+        if (!section.hasNode("min-balance")) {
+            section.setObject(Integer.class, "min-balance", -3000);
+            modified = true;
+        }
         minBalance = section.getObject(Integer.class, "min-balance", -3000);
+
+        return modified;
     }
 
     @Override

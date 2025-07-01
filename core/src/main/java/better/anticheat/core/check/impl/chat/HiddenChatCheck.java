@@ -1,16 +1,14 @@
 package better.anticheat.core.check.impl.chat;
 
 import better.anticheat.core.check.Check;
+import better.anticheat.core.check.CheckInfo;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientSettings;
 
+@CheckInfo(name = "HiddenChat", category = "chat", config = "checks")
 public class HiddenChatCheck extends Check {
 
     private boolean canChat = true, initalFlag = false;
-
-    public HiddenChatCheck() {
-        super("HiddenChat");
-    }
 
     @Override
     public void handleReceivePlayPacket(PacketPlayReceiveEvent event) {

@@ -1,16 +1,14 @@
 package better.anticheat.core.check.impl.combat;
 
 import better.anticheat.core.check.Check;
+import better.anticheat.core.check.CheckInfo;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientInteractEntity;
 
+@CheckInfo(name = "ActionInteractOrder", category = "combat", config = "checks")
 public class ActionInteractOrderCheck extends Check {
 
     private boolean sentEntityAction = false;
-
-    public ActionInteractOrderCheck() {
-        super("ActionInteractOrder");
-    }
 
     @Override
     public void handleReceivePlayPacket(PacketPlayReceiveEvent event) {

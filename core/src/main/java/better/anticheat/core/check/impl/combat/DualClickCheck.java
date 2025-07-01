@@ -1,17 +1,15 @@
 package better.anticheat.core.check.impl.combat;
 
 import better.anticheat.core.check.Check;
+import better.anticheat.core.check.CheckInfo;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientInteractEntity;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerDigging;
 
+@CheckInfo(name = "DualClick", category = "combat", config = "checks")
 public class DualClickCheck extends Check {
 
     private boolean leftClickAtk = false, leftClickDig = false, rightClickUse = false, rightClickPlace = false;
-
-    public DualClickCheck() {
-        super("DualClick");
-    }
 
     @Override
     public void handleReceivePlayPacket(PacketPlayReceiveEvent event) {

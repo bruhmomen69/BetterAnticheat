@@ -1,20 +1,18 @@
 package better.anticheat.core.check.impl.packet;
 
 import better.anticheat.core.check.Check;
+import better.anticheat.core.check.CheckInfo;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@CheckInfo(name = "Post", category = "packet", config = "checks")
 public class PostCheck extends Check {
 
     private boolean sentFlying = false, held = true, login = false;
     private final List<PacketType.Play.Client> post = new ArrayList<>();
-
-    public PostCheck() {
-        super("Post");
-    }
 
     @Override
     public void handleReceivePlayPacket(PacketPlayReceiveEvent event) {

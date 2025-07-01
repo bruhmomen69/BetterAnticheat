@@ -1,15 +1,13 @@
 package better.anticheat.core.check.impl.misc;
 
 import better.anticheat.core.check.Check;
+import better.anticheat.core.check.CheckInfo;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientNameItem;
 
+@CheckInfo(name = "LargeName", category = "misc", config = "checks")
 public class LargeNameCheck extends Check {
-
-    public LargeNameCheck() {
-        super("LargeName");
-    }
 
     @Override
     public void handleReceivePlayPacket(PacketPlayReceiveEvent event) {

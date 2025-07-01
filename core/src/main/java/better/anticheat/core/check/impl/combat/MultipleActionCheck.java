@@ -1,16 +1,14 @@
 package better.anticheat.core.check.impl.combat;
 
 import better.anticheat.core.check.Check;
+import better.anticheat.core.check.CheckInfo;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientEntityAction;
 
+@CheckInfo(name = "MultipleAction", category = "combat", config = "checks")
 public class MultipleActionCheck extends Check {
 
     private boolean changedSneak = false, changedSprint = false;
-
-    public MultipleActionCheck() {
-        super("MultipleAction");
-    }
 
     @Override
     public void handleReceivePlayPacket(PacketPlayReceiveEvent event) {
