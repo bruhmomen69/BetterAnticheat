@@ -33,7 +33,6 @@ public class Player implements Closeable {
     @Getter
     private final CMLTracker cmlTracker;
 
-    @Getter
     private List<Check> checks = null;
 
     private final List<Closeable> closeables = new ArrayList<>();
@@ -86,9 +85,6 @@ public class Player implements Closeable {
     public void load() {
         if (checks == null) checks = CheckManager.getChecks(this);
         else for (Check check : checks) check.load();
-
-        // Load CML generated checks.
-        this.cmlTracker.onPlayerInit();
     }
 
     @Override

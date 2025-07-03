@@ -7,7 +7,6 @@ import better.anticheat.core.player.PlayerManager;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.event.simple.PacketPlaySendEvent;
 import lombok.Getter;
-import lombok.Setter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
@@ -26,8 +25,8 @@ public abstract class Check implements Cloneable {
     protected Check reference;
     protected Player player;
 
-    @Getter @Setter
-    private String name, category, config;
+    @Getter
+    private final String name, category, config;
     @Getter
     private final boolean experimental;
 
@@ -43,7 +42,7 @@ public abstract class Check implements Cloneable {
     public Check() {
         CheckInfo info = this.getClass().getAnnotation(CheckInfo.class);
         if (info == null) {
-            name = getClass().getSimpleName();
+            name = getClass().getName();
             category = "UNSUPPORTED";
             config = null;
             experimental = true;
