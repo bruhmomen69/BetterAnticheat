@@ -39,6 +39,7 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ForkJoinPool;
 
 @RequiredArgsConstructor
 @Command({"betteranticheat", "bac", "betterac", "antispam"})
@@ -133,6 +134,49 @@ public class BetterAnticheatCommand {
         sendReply(actor, Component.text("Recording saved! Remember to reset!"));
     }
 
+    @Subcommand("recording-merge")
+    public void recordingMerge(final CommandActor actor, final String source1, final String source2, final String dest) throws IOException {
+        if (!hasPermission(actor)) return;
+
+        final var json1 = loadRecordingJson(source1);
+        if (json1 == null) {
+            sendReply(actor, Component.text("Could not load source recording: " + source1));
+            return;
+        }
+
+        final var json2 = loadRecordingJson(source2);
+        if (json2 == null) {
+            sendReply(actor, Component.text("Could not load source recording: " + source2));
+            return;
+        }
+
+        final var yaws1 = json1.getJSONArray("yaws");
+        final var offsets1 = json1.getJSONArray("offsets");
+        final var enhancedOffsets1 = json1.getJSONArray("enhancedOffsets");
+
+        final var yaws2 = json2.getJSONArray("yaws");
+        final var offsets2 = json2.getJSONArray("offsets");
+        final var enhancedOffsets2 = json2.getJSONArray("enhancedOffsets");
+
+        yaws1.addAll(yaws2);
+        offsets1.addAll(offsets2);
+        enhancedOffsets1.addAll(enhancedOffsets2);
+
+        final JSONObject mergedJson = new JSONObject();
+        mergedJson.put("yaws", yaws1);
+        mergedJson.put("offsets", offsets1);
+        mergedJson.put("enhancedOffsets", enhancedOffsets1);
+
+        final var recordingDirectory = directory.resolve("recording");
+        if (!recordingDirectory.toFile().exists()) {
+            recordingDirectory.toFile().mkdirs();
+        }
+
+        Files.writeString(recordingDirectory.resolve(dest + ".json"), JSON.toJSONString(mergedJson), StandardCharsets.UTF_16LE);
+
+        sendReply(actor, Component.text("Merged " + source1 + " and " + source2 + " into " + dest));
+    }
+
     @Subcommand("recording-validate")
     public void recordingValidate(final CommandActor actor, final String legit, @Range(min = 0, max = 2) final short column, final List<String> cheating) throws IOException {
         final var legitData = loadData(legit);
@@ -181,15 +225,17 @@ public class BetterAnticheatCommand {
 
         final double[][][] finalCheatingData = new double[][][]{combinedYaws, combinedOffsets, combinedEnhancedOffsets};
 
-        actor.reply("--- RAW DATA: ");
-        runTrainerTests(legitData, finalCheatingData, actor, column, false, false);
+        ForkJoinPool.commonPool().execute(() -> {
+            actor.reply("--- RAW DATA: ");
+            runTrainerTests(legitData, finalCheatingData, actor, column, false, false);
 
-        actor.reply("--- PROCESSED DATA: ");
-        runTrainerTests(legitData, finalCheatingData, actor, column, true, true);
+            actor.reply("--- PROCESSED DATA: ");
+            runTrainerTests(legitData, finalCheatingData, actor, column, true, true);
+        });
     }
 
-    private void runTrainerTests(double[][][] legitData, double[][][] finalCheatingData, final CommandActor actor, final int slice, final boolean intlify, final boolean statistics) {
-        final MLTrainer trainer = new MLTrainer(legitData, finalCheatingData, slice, true, intlify, statistics);
+    private void runTrainerTests(double[][][] legitData, double[][][] cheatingData, CommandActor actor, short column, boolean process, boolean enhanced) {
+        final MLTrainer trainer = new MLTrainer(legitData, cheatingData, column, true, process, enhanced, true);
 
         final var cheatingPlot = Grid.of(new double[][][]{trainer.getCheatingTrain(), trainer.getLegitTrain()});
         var pane = new FigurePane(cheatingPlot.figure());
@@ -206,6 +252,11 @@ public class BetterAnticheatCommand {
         testModelI32(trainer.getGiniTree(), legitTestData, cheatingTestData, actor);
         actor.reply("---- Decision Tree (Entropy):");
         testModelI32(trainer.getEntropyTree(), legitTestData, cheatingTestData, actor);
+
+        actor.reply("---- Random Forest (Gini) - OVERFITTING WARNING:");
+        testModelI32(trainer.getGiniForest(), legitTestData, cheatingTestData, actor);
+        actor.reply("---- Random Forest (Entropy) - OVERFITTING WARNING:");
+        testModelI32(trainer.getEntropyForest(), legitTestData, cheatingTestData, actor);
 
         actor.reply("---- Legacy Models:");
         testModel(trainer.trainLogisticRegression(), legitTestData, cheatingTestData, actor, trainer, "LogisticRegression");
@@ -375,6 +426,19 @@ public class BetterAnticheatCommand {
         final var bytes = Files.readAllBytes(recordingDirectory.resolve(name + ".json"));
 
         return readData(bytes);
+    }
+
+    private @Nullable JSONObject loadRecordingJson(final String name) throws IOException {
+        final var recordingDirectory = directory.resolve("recording");
+        if (!recordingDirectory.toFile().exists()) {
+            recordingDirectory.toFile().mkdirs();
+        }
+        final var file = recordingDirectory.resolve(name + ".json");
+        if (!file.toFile().exists()) {
+            return null;
+        }
+        final var bytes = Files.readAllBytes(file);
+        return JSON.parseObject(new String(bytes, StandardCharsets.UTF_16LE));
     }
 
     private double[][][] readData(final byte[] bytes) {

@@ -13,6 +13,7 @@ import smile.data.type.StructField;
 import smile.data.type.StructType;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -24,7 +25,6 @@ import java.util.function.Function;
 
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
-import com.alibaba.fastjson2.JSONObject;
 
 @Slf4j
 @Getter
@@ -45,6 +45,8 @@ public class MLTrainer {
 
     private DecisionTree giniTree;
     private DecisionTree entropyTree;
+    private RandomForest giniForest;
+    private RandomForest entropyForest;
 
     private static final StructType PREDICTION_STRUCT = new StructType(
             new StructField("V2", DataTypes.IntType),
@@ -55,14 +57,15 @@ public class MLTrainer {
     );
 
     /**
-     * @param legitData    the non cheating training data
-     * @param cheatingData the cheating training data
-     * @param slice        the slice of the data to use. Options: 0, 1, or 2.
-     * @param shrink       should we shrink the data to the smallest of the two?
-     * @param intlify      should we do some changes improve compatibility of weirdly shaped doubles. NOTE: This trims the decimal places to the first 7 only, among other tasks.
-     * @param statistics   should we generate statistics for the data, instead of using raw data.
+     * @param legitData         the non cheating training data
+     * @param cheatingData      the cheating training data
+     * @param slice             the slice of the data to use. Options: 0, 1, or 2.
+     * @param shrink            should we shrink the data to the smallest of the two?
+     * @param intlify           should we do some changes improve compatibility of weirdly shaped doubles. NOTE: This trims the decimal places to the first 7 only, among other tasks.
+     * @param statistics        should we generate statistics for the data, instead of using raw data.
+     * @param trainRandomForest should we train a random forest, resulting in many unwanted logs.
      */
-    public MLTrainer(final double[][][] legitData, final double[][][] cheatingData, final int slice, final boolean shrink, final boolean intlify, final boolean statistics) {
+    public MLTrainer(final double[][][] legitData, final double[][][] cheatingData, final int slice, final boolean shrink, final boolean intlify, final boolean statistics, boolean trainRandomForest) {
         this.legitData = legitData[slice];
         this.cheatingData = cheatingData[slice];
 
@@ -100,7 +103,7 @@ public class MLTrainer {
             this.labels[i + this.legitTrain.length] = 10;
         }
 
-        this.buildDTree();
+        this.buildDTree(trainRandomForest);
 
         // Intlify ONLY after building the tree
         if (this.intlify) {
@@ -146,7 +149,7 @@ public class MLTrainer {
         };
     }
 
-    private void buildDTree() {
+    private void buildDTree(final boolean trainRandomForest) {
         var xArrays = new int[this.train.length][];
         for (int i = 0; i < this.train.length; i++) {
             final var array = this.train[i];
@@ -157,8 +160,13 @@ public class MLTrainer {
         xArrays = xArrayListForm.toArray(new int[0][]);
         final var df = DataFrame.of(xArrays);
         log.debug("DataFrame: {}", df.toString(0, 20, true));
-        this.giniTree = DecisionTree.fit(Formula.lhs("V1"), df, new DecisionTree.Options(SplitRule.GINI, 20, 0, 5));
-        this.entropyTree = DecisionTree.fit(Formula.lhs("V1"), df, new DecisionTree.Options(SplitRule.ENTROPY, 25, 0, 3));
+        this.giniTree = DecisionTree.fit(Formula.lhs("V1"), df, new DecisionTree.Options(SplitRule.GINI, 15, 0, 5));
+        this.entropyTree = DecisionTree.fit(Formula.lhs("V1"), df, new DecisionTree.Options(SplitRule.ENTROPY, 20, 0, 3));
+
+        // Shitty Forests
+        if (!trainRandomForest) return;
+        this.giniForest = RandomForest.fit(Formula.lhs("V1"), df, new RandomForest.Options(100, 0, SplitRule.GINI, 15, 0, 5, 1.0, null, null, null));
+        this.entropyForest = RandomForest.fit(Formula.lhs("V1"), df, new RandomForest.Options(100, 0, SplitRule.ENTROPY, 20, 0, 5, 1.0, null, null, null));
     }
 
     /**
@@ -217,12 +225,13 @@ public class MLTrainer {
     /**
      * Creates a prediction function from configured datasets and model parameters.
      *
-     * @param legitDatasetNames   List of filenames for legitimate data recordings.
+     * @param legitDatasetNames    List of filenames for legitimate data recordings.
      * @param cheatingDatasetNames List of filenames for cheating data recordings.
-     * @param modelType            The type of model to train. Options: "gini", "entropy", "logistic_regression", "fld", "knn", "lda".
+     * @param modelType            The type of model to train. Options: "decision_tree_gini", "decision_tree_entropy", "random_forest_gini", "random_forest_entropy", "logistic_regression", "fld", "knn", "lda".
      * @param slice                The data slice to use (0 for yaws, 1 for offsets, 2 for enhancedOffsets).
      * @param intlify              Whether to intlify the data.
      * @param statistics           Whether to generate statistics from the data.
+     * @param shrink
      * @param dataDirectory        The directory where recording data is stored.
      * @return A function that takes raw input data and returns a prediction score.
      * @throws IOException if there is an error reading the data files.
@@ -234,13 +243,15 @@ public class MLTrainer {
             int slice,
             boolean intlify,
             boolean statistics,
-            Path dataDirectory
+            boolean shrink, Path dataDirectory
     ) throws IOException {
         List<double[][][]> legitDataList = new ArrayList<>();
         for (String name : legitDatasetNames) {
             double[][][] data = loadData(name, dataDirectory);
             if (data != null) {
                 legitDataList.add(data);
+            } else {
+                log.error("[BetterAnticheat] Failed to load ML data from file {} (legit split), please check your ML configuration.", name);
             }
         }
 
@@ -249,16 +260,18 @@ public class MLTrainer {
             double[][][] data = loadData(name, dataDirectory);
             if (data != null) {
                 cheatingDataList.add(data);
+            } else {
+                log.error("[BetterAnticheat] Failed to load ML data from file {} (cheating split), please check your ML configuration.", name);
             }
         }
 
         double[][][] mergedLegitData = mergeData(legitDataList);
         double[][][] mergedCheatingData = mergeData(cheatingDataList);
 
-        MLTrainer trainer = new MLTrainer(mergedLegitData, mergedCheatingData, slice, true, intlify, statistics);
+        MLTrainer trainer = new MLTrainer(mergedLegitData, mergedCheatingData, slice, true, intlify, statistics, modelType.toLowerCase().contains("forest"));
 
         return switch (modelType.toLowerCase()) {
-            case "gini" -> {
+            case "decision_tree_gini" -> {
                 final var model = trainer.getGiniTree();
                 yield (double[][] input) -> {
                     double[] prepared = trainer.prepareInput(input);
@@ -269,8 +282,30 @@ public class MLTrainer {
                     return (double) model.predict(Tuple.of(PREDICTION_STRUCT, tupleData));
                 };
             }
-            case "entropy" -> {
+            case "decision_tree_entropy" -> {
                 final var model = trainer.getEntropyTree();
+                yield (double[][] input) -> {
+                    double[] prepared = trainer.prepareInput(input);
+                    int[] tupleData = new int[prepared.length];
+                    for (int i = 0; i < prepared.length; i++) {
+                        tupleData[i] = (int) Math.round(prepared[i] * 1_000_000);
+                    }
+                    return (double) model.predict(Tuple.of(PREDICTION_STRUCT, tupleData));
+                };
+            }
+            case "random_forest_gini" -> {
+                final var model = trainer.getGiniForest();
+                yield (double[][] input) -> {
+                    double[] prepared = trainer.prepareInput(input);
+                    int[] tupleData = new int[prepared.length];
+                    for (int i = 0; i < prepared.length; i++) {
+                        tupleData[i] = (int) Math.round(prepared[i] * 1_000_000);
+                    }
+                    return (double) model.predict(Tuple.of(PREDICTION_STRUCT, tupleData));
+                };
+            }
+            case "random_forest_entropy" -> {
+                final var model = trainer.getEntropyForest();
                 yield (double[][] input) -> {
                     double[] prepared = trainer.prepareInput(input);
                     int[] tupleData = new int[prepared.length];
@@ -331,31 +366,43 @@ public class MLTrainer {
         return new double[][][]{combinedYaws, combinedOffsets, combinedEnhancedOffsets};
     }
 
-    private static double[][][] loadData(final String name, final Path dataDirectory) throws IOException {
-        final var recordingDirectory = dataDirectory.resolve("recording");
-        if (!recordingDirectory.toFile().exists()) {
-            recordingDirectory.toFile().mkdirs();
+    private static double[][][] loadData(String fileName, Path dataDirectory) throws IOException {
+        String resourceName = fileName + ".json";
+        InputStream resourceStream = MLTrainer.class.getClassLoader().getResourceAsStream(resourceName);
+
+        if (resourceStream != null) {
+            log.debug("Loading data from resource: {}", resourceName);
+            try (InputStream stream = resourceStream) {
+                byte[] jsonData = stream.readAllBytes();
+                return readData(jsonData);
+            }
+        } else {
+            log.debug("Resource '{}' not found, trying local file system.", resourceName);
+            final var recordingDirectory = dataDirectory.resolve("recording");
+            if (!recordingDirectory.toFile().exists()) {
+                recordingDirectory.toFile().mkdirs();
+            }
+            final var file = recordingDirectory.resolve(resourceName);
+            if (!file.toFile().exists()) {
+                return null;
+            }
+            byte[] jsonData = Files.readAllBytes(file);
+            return readData(jsonData);
         }
-        final var file = recordingDirectory.resolve(name + ".json");
-        if (!file.toFile().exists()) {
-            return null;
-        }
-        final var bytes = Files.readAllBytes(file);
-        return readData(bytes);
     }
 
-    private static double[][][] readData(final byte[] bytes) {
-        final var json = JSON.parseObject(new String(bytes, StandardCharsets.UTF_16LE));
-        final var yawsArrays = json.getJSONArray("yaws");
-        final var offsetsArrays = json.getJSONArray("offsets");
-        final var enhancedOffsetsArrays = json.getJSONArray("enhancedOffsets");
+    private static double[][][] readData(byte[] jsonData) {
+        final var root = JSON.parseObject(new String(jsonData, StandardCharsets.UTF_16LE));
+        JSONArray yawsArrays = root.getJSONArray("yaws");
+        JSONArray offsetsArrays = root.getJSONArray("offsets");
+        JSONArray enhancedOffsetsArrays = root.getJSONArray("enhancedOffsets");
 
-        final var yaws = new double[yawsArrays.size()][];
-        final var offsets = new double[offsetsArrays.size()][];
-        final var enhancedOffsets = new double[enhancedOffsetsArrays.size()][];
+        double[][] yaws = new double[yawsArrays.size()][];
+        double[][] offsets = new double[offsetsArrays.size()][];
+        double[][] enhancedOffsets = new double[enhancedOffsetsArrays.size()][];
 
         for (int i = 0; i < yawsArrays.size(); i++) {
-            final var yawsArray = (JSONArray) yawsArrays.get(i);
+            JSONArray yawsArray = (JSONArray) yawsArrays.get(i);
             yaws[i] = new double[yawsArray.size()];
             for (int j = 0; j < yawsArray.size(); j++) {
                 yaws[i][j] = yawsArray.getDoubleValue(j);
@@ -363,7 +410,7 @@ public class MLTrainer {
         }
 
         for (int i = 0; i < offsetsArrays.size(); i++) {
-            final var offsetsArray = (JSONArray) offsetsArrays.get(i);
+            JSONArray offsetsArray = (JSONArray) offsetsArrays.get(i);
             offsets[i] = new double[offsetsArray.size()];
             for (int j = 0; j < offsetsArray.size(); j++) {
                 offsets[i][j] = offsetsArray.getDoubleValue(j);
@@ -371,7 +418,7 @@ public class MLTrainer {
         }
 
         for (int i = 0; i < enhancedOffsetsArrays.size(); i++) {
-            final var enhancedOffsetsArray = (JSONArray) enhancedOffsetsArrays.get(i);
+            JSONArray enhancedOffsetsArray = (JSONArray) enhancedOffsetsArrays.get(i);
             enhancedOffsets[i] = new double[enhancedOffsetsArray.size()];
             for (int j = 0; j < enhancedOffsetsArray.size(); j++) {
                 enhancedOffsets[i][j] = enhancedOffsetsArray.getDoubleValue(j);
