@@ -52,6 +52,7 @@ public class BetterAnticheatSponge {
     public void onServerStart(final StartedEngineEvent<Server> event) {
         core.enable();
         Sponge.eventManager().registerListeners(pluginContainer, new ReloadListener(core));
+        Sponge.eventManager().registerListeners(pluginContainer, new PlayerJoinListener());
     }
 
     @Listener

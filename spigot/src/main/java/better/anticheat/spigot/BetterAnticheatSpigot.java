@@ -22,6 +22,8 @@ public class BetterAnticheatSpigot extends JavaPlugin {
 
         metrics = new Metrics(this, BSTATS_ID);
 
+        getServer().getPluginManager().registerEvents(new PlayerJoinListener(), this);
+
         if (getServer().getPluginManager().getPlugin("BetterReload") != null) {
             getServer().getPluginManager().registerEvents(new ReloadListener(core), this);
         }

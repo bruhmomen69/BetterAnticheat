@@ -12,6 +12,8 @@ import revxrsal.commands.parameter.ParameterTypes;
 
 import javax.annotation.Nullable;
 import java.io.Closeable;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 public class PaperDataBridge implements DataBridge<BukkitCommandActor> {
@@ -57,21 +59,69 @@ public class PaperDataBridge implements DataBridge<BukkitCommandActor> {
     @Override
     public Closeable registerTickListener(User user, Runnable runnable) {
         if (user.getUUID() == null) return null;
-        Player player = Bukkit.getPlayer(user.getUUID());
-        if (player == null) return null;
+        var player = Bukkit.getPlayer(user.getUUID());
+        if (player != null) {
+            final var task = lib.getScheduler().runAtEntityTimer(player, runnable, 1, 1);
+            return task::cancel;
+        }
 
-        final var task = lib.getScheduler().runAtEntityTimer(player, runnable, 1, 1);
-        return task::cancel;
+        final var future = new CompletableFuture<Void>();
+        final var cancelled = new AtomicBoolean(false);
+        lib.getScheduler().runAsync(task -> {
+            while (!cancelled.get()) {
+                var p = Bukkit.getPlayer(user.getUUID());
+                if (p != null) {
+                    final var innerTask = lib.getScheduler().runAtEntityTimer(p, runnable, 1, 1);
+                    future.complete(null);
+                    future.whenComplete((a,b) -> innerTask.cancel());
+                    return;
+                }
+                try {
+                    Thread.sleep(50);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+            }
+        });
+        return () -> {
+            cancelled.set(true);
+            future.cancel(true);
+        };
     }
 
     @Override
     public Closeable runTaskLater(User user, Runnable runnable, int delayTicks) {
         if (user.getUUID() == null) return null;
-        Player player = Bukkit.getPlayer(user.getUUID());
-        if (player == null) return null;
+        var player = Bukkit.getPlayer(user.getUUID());
+        if (player != null) {
+            final var task = lib.getScheduler().runAtEntityLater(player, runnable, delayTicks);
+            return task::cancel;
+        }
 
-        final var task = lib.getScheduler().runAtEntityLater(player, runnable, delayTicks);
-        return task::cancel;
+        final var future = new CompletableFuture<Void>();
+        final var cancelled = new AtomicBoolean(false);
+        lib.getScheduler().runAsync(task -> {
+            while (!cancelled.get()) {
+                var p = Bukkit.getPlayer(user.getUUID());
+                if (p != null) {
+                    final var innerTask = lib.getScheduler().runAtEntityLater(p, runnable, delayTicks);
+                    future.complete(null);
+                    future.whenComplete((a,b) -> innerTask.cancel());
+                    return;
+                }
+                try {
+                    Thread.sleep(50);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+            }
+        });
+        return () -> {
+            cancelled.set(true);
+            future.cancel(true);
+        };
     }
 
     @Override
