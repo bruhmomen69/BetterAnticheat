@@ -23,7 +23,7 @@ import java.nio.file.Path;
 )
 public class BetterAnticheatVelocity {
 
-    private static final int B_STATS_ID = 00000;
+    private static final int B_STATS_ID = 26391;
 
     private final ProxyServer server;
     private final Logger logger;
