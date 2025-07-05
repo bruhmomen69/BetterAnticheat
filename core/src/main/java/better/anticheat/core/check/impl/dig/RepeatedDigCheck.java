@@ -22,13 +22,12 @@ public class RepeatedDigCheck extends Check {
                 switch (wrapper.getAction()) {
                     case START_DIGGING:
                     case FINISHED_DIGGING:
-                    case CANCELLED_DIGGING:
                         break;
                     default:
                         return;
                 }
 
-                if (dug) fail();
+                if (dug) fail(wrapper.getAction());
                 dug = true;
 
                 break;
