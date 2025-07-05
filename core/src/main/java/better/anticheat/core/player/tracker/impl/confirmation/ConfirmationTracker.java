@@ -2,6 +2,7 @@ package better.anticheat.core.player.tracker.impl.confirmation;
 
 import better.anticheat.core.player.Player;
 import better.anticheat.core.player.tracker.Tracker;
+import better.anticheat.core.player.tracker.impl.confirmation.allocator.SequentialLongCookieAllocator;
 import better.anticheat.core.util.EasyLoops;
 import better.anticheat.core.util.type.EvictingDeque;
 import better.anticheat.core.util.type.incrementer.IntIncrementer;
@@ -17,12 +18,11 @@ import lombok.extern.slf4j.Slf4j;
 import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.Nullable;
 
-import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 public class ConfirmationTracker extends Tracker {
@@ -36,7 +36,7 @@ public class ConfirmationTracker extends Tracker {
      * 30 seconds of recent confirmations, assuming one confirmation per tick, but it is usually less than this, meaning it can provide an even longer window
      */
     private final EvictingDeque<ConfirmationState> recentConfirmations = new EvictingDeque<>(600);
-    private final LongIncrementer cookieIncrementer = new LongIncrementer(Long.MIN_VALUE);
+    private final CookieIdAllocator cookieIdAllocator;
     private final LongIncrementer keepAliveIncrementer = new LongIncrementer(Short.MIN_VALUE);
     /**
      * If this is not null, the last sent confirmation, and when sent within 10ms of now, can be re-used.
@@ -45,16 +45,22 @@ public class ConfirmationTracker extends Tracker {
     private @Nullable ConfirmationState lastSentConfirmation = null;
 
     public ConfirmationTracker(Player player) {
+        this(player, new SequentialLongCookieAllocator());
+    }
+    
+    public ConfirmationTracker(Player player, CookieIdAllocator cookieIdAllocator) {
         super(player);
+        this.cookieIdAllocator = cookieIdAllocator;
     }
 
     @Override
-    public final void handlePacketPlayReceive(PacketPlayReceiveEvent event) {
+    public final void handlePacketPlayReceive(final PacketPlayReceiveEvent event) {
         switch (event.getPacketType()) {
-            case PONG:
+            case PONG: {
                 final var pongWrapper = new WrapperPlayClientPong(event);
                 final var pongId = pongWrapper.getId();
-                final var pongConfirmation = EasyLoops.findFirst(confirmations, state -> state.getId() == pongId && state.getType() == ConfirmationType.PINGPONG);
+                final var pongConfirmation = EasyLoops.findFirst(confirmations, state ->
+                        state.getType() == ConfirmationType.PINGPONG && state.hasLongId() && state.getLongId() == pongId);
                 if (pongConfirmation != null) {
                     pongConfirmation.setTimestampConfirmed(System.currentTimeMillis());
                     pongConfirmation.getListeners().forEach(Runnable::run);
@@ -68,10 +74,12 @@ public class ConfirmationTracker extends Tracker {
                     log.debug("[BetterAntiCheat] Received pong without confirmation: {}", pongId);
                 }
                 break;
-            case KEEP_ALIVE:
+            }
+            case KEEP_ALIVE: {
                 final var keepAliveWrapper = new WrapperPlayClientKeepAlive(event);
                 final var keepAliveId = keepAliveWrapper.getId();
-                final var keepAliveConfirmation = EasyLoops.findFirst(confirmations, state -> state.getId() == keepAliveId && state.getType() == ConfirmationType.KEEPALIVE);
+                final var keepAliveConfirmation = EasyLoops.findFirst(confirmations, state ->
+                        state.getType() == ConfirmationType.KEEPALIVE && state.hasLongId() && state.getLongId() == keepAliveId);
                 if (keepAliveConfirmation != null) {
                     keepAliveConfirmation.setTimestampConfirmed(System.currentTimeMillis());
                     keepAliveConfirmation.getListeners().forEach(Runnable::run);
@@ -85,12 +93,17 @@ public class ConfirmationTracker extends Tracker {
                     log.debug("[BetterAntiCheat] Received keepalive without confirmation: {}", keepAliveId);
                 }
                 break;
-            case COOKIE_RESPONSE:
+            }
+            case COOKIE_RESPONSE: {
                 final var cookieWrapper = new WrapperPlayClientCookieResponse(event);
-                final byte[] payload = cookieWrapper.getPayload();
-                if (payload != null && payload.length >= 8) {
-                    final long cookieId = ByteBuffer.wrap(payload).getLong();
-                    final var cookieConfirmation = EasyLoops.findFirst(confirmations, state -> state.getId() == cookieId && state.getType() == ConfirmationType.COOKIE);
+                final var payload = cookieWrapper.getPayload();
+                if (payload != null && payload.length >= cookieIdAllocator.getCookieIdLength()) {
+                    final var cookieConfirmation = EasyLoops.findFirst(confirmations, state ->
+                            state.hasByteArrayId() &&
+                                    state.getType() == ConfirmationType.COOKIE &&
+                                    Arrays.equals(state.getByteArrayId(), payload)
+                    );
+
                     if (cookieConfirmation != null) {
                         cookieConfirmation.setTimestampConfirmed(System.currentTimeMillis());
                         cookieConfirmation.getListeners().forEach(Runnable::run);
@@ -101,14 +114,16 @@ public class ConfirmationTracker extends Tracker {
                             event.setCancelled(true);
                         }
                     } else {
-                        log.debug("[BetterAntiCheat] Received cookie response without confirmation: {}", cookieId);
+                        log.debug("[BetterAntiCheat] Received cookie response without confirmation: {}", Arrays.toString(payload));
                     }
                 } else {
-                    log.debug("[BetterAntiCheat] Received cookie response without payload");
+                    log.debug("[BetterAntiCheat] Received cookie response with invalid payload length. Expected: {}, Got: {}",
+                            cookieIdAllocator.getCookieIdLength(), payload != null ? payload.length : 0);
                 }
                 break;
-            case CLIENT_TICK_END:
-                final long currentTime = System.currentTimeMillis();
+            }
+            case CLIENT_TICK_END: {
+                final var currentTime = System.currentTimeMillis();
                 confirmations.removeIf(state -> {
                     if (state.getTimestampConfirmed() == -1L && currentTime - state.getTimestamp() > 60000) {
                         state.getListeners().forEach(Runnable::run);
@@ -123,13 +138,14 @@ public class ConfirmationTracker extends Tracker {
                     return false;
                 });
                 break;
+            }
             default:
                 break;
         }
     }
 
     @Override
-    public final void handlePacketPlaySend(PacketPlaySendEvent event) {
+    public final void handlePacketPlaySend(final PacketPlaySendEvent event) {
         // Log shit that has been sent
         switch (event.getPacketType()) {
             case PING: {
@@ -147,6 +163,8 @@ public class ConfirmationTracker extends Tracker {
 
     /**
      * Sends a confirmation packet that can be subscribed to.
+     *
+     * @return A combined confirmation object.
      */
     public CombinedConfirmation confirm() {
         final var now = System.currentTimeMillis();
@@ -164,7 +182,7 @@ public class ConfirmationTracker extends Tracker {
             return acquiredConfirmation;
         }
 
-        // Sent last tick, and NOT this tick (12ms ago for examplar), therefore is a perfect pre confirmation option
+        // Sent last tick, and NOT this tick (12ms ago for exemplar), therefore is a perfect pre confirmation option
         var sentOption = EasyLoops.findFirst(confirmations, c -> c.getType() == ConfirmationType.KEEPALIVE & c.getTimestampConfirmed() == -1L & now - c.getTimestamp() <= 120 & now - c.getTimestamp() > 12);
         // Check if there is a sendoption except there is no keepalive sendoption.
         if (sentOption != null) {
@@ -222,18 +240,24 @@ public class ConfirmationTracker extends Tracker {
         return acquiredConfirmation;
     }
 
+    /**
+     * Sends a cookie or returns the last sent confirmation if it was sent recently.
+     *
+     * @param now The current time in milliseconds.
+     * @return The confirmation state.
+     */
     public ConfirmationState sendCookieOrLatest(final long now) {
         if (this.lastSentConfirmation == null || now - this.lastSentConfirmation.getTimestamp() > 10) {
             log.trace("[BetterAntiCheat] Sending cookie");
-            final var id = this.cookieIncrementer.increment();
+            final var cookieId = this.cookieIdAllocator.allocateNext();
             getPlayer().getUser().writePacket(new WrapperPlayServerStoreCookie(
                     new ResourceLocation(COOKIE_NAMESPACE, COOKIE_KEY),
-                    ByteBuffer.allocate(8).putLong(id).array()
+                    cookieId
             ));
             getPlayer().getUser().sendPacket(new WrapperPlayServerCookieRequest(
                     new ResourceLocation(COOKIE_NAMESPACE, COOKIE_KEY)
             ));
-            this.lastSentConfirmation = new ConfirmationState(id, ConfirmationType.COOKIE, now, true);
+            this.lastSentConfirmation = new ConfirmationState(cookieId, ConfirmationType.COOKIE, now, true);
             this.confirmations.add(this.lastSentConfirmation);
         }
         return this.lastSentConfirmation;

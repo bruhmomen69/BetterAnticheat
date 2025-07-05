@@ -5,6 +5,9 @@ import better.anticheat.core.command.BetterAnticheatCommand;
 import better.anticheat.core.configuration.ConfigSection;
 import better.anticheat.core.configuration.ConfigurationFile;
 import better.anticheat.core.player.PlayerManager;
+import better.anticheat.core.player.tracker.impl.confirmation.CookieAllocatorConfig;
+import better.anticheat.core.player.tracker.impl.confirmation.CookieSequenceData;
+import better.anticheat.core.player.tracker.impl.confirmation.LyricManager;
 import better.anticheat.core.util.ml.MLTrainer;
 import better.anticheat.core.util.ml.ModelConfig;
 import com.github.retrooper.packetevents.PacketEvents;
@@ -25,6 +28,7 @@ public class BetterAnticheat {
 
     @Getter
     private final DataBridge dataBridge;
+    @Getter
     private final Path directory;
 
     private boolean enabled;
@@ -40,6 +44,12 @@ public class BetterAnticheat {
     private boolean punishmentModulo, testMode, useCommand;
     @Getter
     private Map<String, ModelConfig> modelConfigs = new HashMap<>();
+    @Getter
+    private CookieAllocatorConfig cookieAllocatorConfig;
+    @Getter
+    private CookieSequenceData cookieSequenceData;
+    @Getter
+    private final LyricManager lyricManager;
 
     public BetterAnticheat(DataBridge dataBridge, Path directory) {
         this.dataBridge = dataBridge;
@@ -47,6 +57,8 @@ public class BetterAnticheat {
         this.enabled = true;
 
         instance = this;
+
+        this.lyricManager = new LyricManager();
 
         /*
          * We only support 1.21+.
@@ -88,6 +100,7 @@ public class BetterAnticheat {
         useCommand = settings.getObject(Boolean.class, "enable-commands", true); // Default to true for people who have not updated their config.
 
         loadML(settings);
+        loadCookieAllocator(settings);
 
         CheckManager.load(this);
         PlayerManager.load(this);
@@ -131,6 +144,102 @@ public class BetterAnticheat {
         });
     }
 
+    /**
+     * Loads the cookie allocator configuration from the provided base configuration.
+     *
+     * @param baseConfig The base configuration section.
+     */
+    public void loadCookieAllocator(final ConfigSection baseConfig) {
+        final var cookieNode = baseConfig.getConfigSection("cookie-allocator");
+
+        if (cookieNode == null) {
+            dataBridge.logInfo("No cookie allocator configuration found, using default sequential allocator");
+            this.cookieAllocatorConfig = CookieAllocatorConfig.createDefault();
+            return;
+        }
+
+        final var type = cookieNode.getObject(String.class, "type", "sequential");
+        final var parametersNode = cookieNode.getConfigSection("parameters");
+
+        final Map<String, Object> parameters = new HashMap<>();
+        if (parametersNode != null) {
+            // For file-based allocator
+            if (parametersNode.hasNode("filename")) {
+                parameters.put("filename", parametersNode.getObject(String.class, "filename", "cookie_sequences.txt"));
+            }
+
+            // For sequential allocator
+            if (parametersNode.hasNode("startValue")) {
+                parameters.put("startValue", parametersNode.getObject(Long.class, "startValue", 0L));
+            }
+
+            // For random allocator
+            if (parametersNode.hasNode("cookieLength")) {
+                parameters.put("cookieLength", parametersNode.getObject(Integer.class, "cookieLength", 8));
+            }
+            if (parametersNode.hasNode("maxRetries")) {
+                parameters.put("maxRetries", parametersNode.getObject(Integer.class, "maxRetries", 100));
+            }
+
+            // For timestamp allocator
+            if (parametersNode.hasNode("randomBytesLength")) {
+                parameters.put("randomBytesLength", parametersNode.getObject(Integer.class, "randomBytesLength", 4));
+            }
+
+            // For lyric allocator
+            if (parametersNode.hasNode("artist")) {
+                parameters.put("artist", parametersNode.getObject(String.class, "artist", ""));
+            }
+            if (parametersNode.hasNode("title")) {
+                parameters.put("title", parametersNode.getObject(String.class, "title", ""));
+            }
+            if (parametersNode.hasNode("maxLines")) {
+                parameters.put("maxLines", parametersNode.getObject(Integer.class, "maxLines", 0));
+            }
+        }
+
+        this.cookieAllocatorConfig = new CookieAllocatorConfig(type, parameters);
+
+        // If this is a file-based allocator, load the cookie sequence data during initialization
+        if ("file".equalsIgnoreCase(type) || "file_based".equalsIgnoreCase(type)) {
+            final var filename = (String) parameters.getOrDefault("filename", "cookie_sequences.txt");
+            try {
+                this.cookieSequenceData = new CookieSequenceData(filename);
+                dataBridge.logInfo("Loaded cookie sequence data for file-based allocator: " + filename);
+            } catch (final Exception e) {
+                dataBridge.logWarning("Failed to load cookie sequence data for file '" + filename + "': " + e.getMessage());
+                dataBridge.logWarning("Falling back to default sequential allocator");
+                this.cookieAllocatorConfig = CookieAllocatorConfig.createTimestamp(10);
+                this.cookieSequenceData = null;
+            }
+        } else if ("lyric".equalsIgnoreCase(type) || "lyric_based".equalsIgnoreCase(type)) {
+            final var artist = (String) parameters.get("artist");
+            final var title = (String) parameters.get("title");
+            final var maxLines = (Integer) parameters.getOrDefault("maxLines", 0);
+
+            if (artist == null || title == null) {
+                dataBridge.logWarning("Artist and title must be specified for lyric cookie allocator. Falling back to default sequential allocator.");
+                this.cookieAllocatorConfig = CookieAllocatorConfig.createTimestamp(10);
+                return;
+            }
+
+            final var lyrics = this.lyricManager.getLyricSequenceData(artist, title, maxLines);
+            if (lyrics == null) {
+                dataBridge.logWarning("Lyric sequence data not loaded for '" + artist + " - " + title + "'. Falling back to default sequential allocator.");
+                this.cookieAllocatorConfig = CookieAllocatorConfig.createTimestamp(10);
+                return;
+            }
+
+            if (lyrics.getAvailableLyricCount() < 50) {
+                dataBridge.logWarning("Not enough lyric sequences available for '" + artist + " - " + title + "'. Consider choosing a different song, or setting maxLines to 0.");
+                this.cookieAllocatorConfig = CookieAllocatorConfig.createSequential(Integer.MIN_VALUE / 2);
+                return;
+            }
+        }
+
+        dataBridge.logInfo("Loaded cookie allocator configuration: type=" + type + ", parameters=" + parameters);
+    }
+
     public ConfigurationFile getFile(String name) {
         return new ConfigurationFile(name, directory);
     }
@@ -138,4 +247,5 @@ public class BetterAnticheat {
     public ConfigurationFile getFile(String name, InputStream input) {
         return new ConfigurationFile(name, directory, input);
     }
+
 }

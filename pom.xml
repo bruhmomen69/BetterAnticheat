@@ -87,6 +87,7 @@
         <module>paper</module>
         <module>models</module>
         <module>velocity</module>
+        <module>cookies</module>
     </modules>
 
     <properties>

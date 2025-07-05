@@ -1,0 +1,33 @@
+# Cookie sequence file for FileBasedCookieAllocator
+# This file contains cookie IDs that will be used in sequence
+# Supported formats:
+# - Hex strings: deadbeef, de:ad:be:ef, de ad be ef
+# - Base64 strings: 3q2+7w==
+# - Decimal bytes: 222,173,190,239
+# Lines starting with # are comments and will be ignored
+# Variable length lines are supported - shorter ones will be padded to match the longest
+
+# Variable length cookie IDs (will be padded to match the longest - 10 bytes)
+
+deadbeef
+0123456789abcdef
+fedcba9876543210aa
+1111
+aaaaaaaaaaaaaaaa
+bb
+cccccccccccccccc
+dd:dd:dd:dd
+eeeeeeeeeeeeeeee
+ffffffffffffffffffffffff
+
+# You can also use separators in hex
+# aa:bb:cc:dd:ee:ff:00:11
+# 11 22 33 44 55 66 77 88
+
+# Or decimal format (variable length)
+# 170,187,204,221
+# 238,255,0,17,18,19
+
+# Or base64 format (variable length)
+# 3q2+7w==
+# qrvM3e7/ABE=

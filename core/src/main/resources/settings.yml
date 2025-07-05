@@ -98,3 +98,43 @@ ml:
       # The punishment command to run when a player is flagged by this model.
       punishments:
         '1:say %username% might be using a combat cheat!'
+cookie-allocator:
+  # The type of cookie ID allocator to use.
+  # Options: "sequential", "random", "timestamp", "file", "lyric"
+  type: lyric
+  parameters:
+    # For "sequential" allocator:
+    # The starting value for the sequential cookie IDs. Default: 0
+    startValue: -147483648
+
+    # For "random" allocator:
+    # The length of generated cookie IDs in bytes. Default: 8
+    cookieLength: 8
+    # Maximum retries for ensuring uniqueness of random cookie IDs. Default: 100
+    maxRetries: 100
+
+    # For "timestamp" allocator:
+    # The number of random bytes to append to the timestamp. Default: 4
+    randomBytesLength: 8
+
+    # For "file" allocator:
+    # The name of the file containing cookie sequences. Default: alphabet.txt
+    # Files can be placed in src/main/resources/ (for inclusion in the plugin JAR)
+    # or in {BetterAnticheat.directory}/cookiesequence/ (for external loading).
+    filename: alphabet.txt
+
+    # For "lyric" allocator:
+
+    # Recommended #1: Artist: "Lana Del Rey", Song: "God Bless America - And All The Beautiful Women In It"
+    # Recommended #2: Artist: "2 Live Crew", Song: "The Fuck Shop"
+    # Recommended #3: Artist: "Metallica" - Song: "So What"
+    # Recommended #4: Artist: "Mao Ze" - Song: "Red Sun in the Sky"
+    # Recommended #5: Artist: "Rihanna" - Song: "Diamonds"
+
+    # The artist of the song for lyric cookies. Default: ""
+    artist: ""
+    # The title of the song for lyric cookies. Default: "Hatikvah"
+    # The song must have at least 50 lines of lyrics.
+    title: "Hatikvah"
+    # The maximum number of lyric lines to use (0 for all). Default: 0
+    maxLines: 0

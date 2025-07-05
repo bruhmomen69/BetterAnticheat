@@ -60,6 +60,14 @@ public class PlayerManager {
         return null;
     }
 
+    public static Player getPlayerByUsername(String username) {
+        for (Player value : USER_MAP.values()) {
+            if (value.getUser().getName().equalsIgnoreCase(username)) return value;
+        }
+
+        return null;
+    }
+
     public static void load(BetterAnticheat plugin) {
         for (Player player : USER_MAP.values()) player.load();
         plugin.getDataBridge().logInfo("Loaded checks for " + USER_MAP.size() + " players.");
@@ -72,7 +80,8 @@ public class PlayerManager {
          * a staff member.
          */
         for (User user : PacketEvents.getAPI().getProtocolManager().getUsers()) {
-            if (!BetterAnticheat.getInstance().getDataBridge().hasPermission(user, BetterAnticheat.getInstance().getAlertPermission())) continue;
+            final var player = getPlayer(user);
+            if (player == null || !player.isAlerts()) continue;
             user.sendMessage(text);
         }
     }
