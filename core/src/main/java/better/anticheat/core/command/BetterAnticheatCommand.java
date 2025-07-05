@@ -58,6 +58,36 @@ public class BetterAnticheatCommand {
         sendReply(actor, Component.text("BetterAnticheat v" + dataBridge.getVersion()).color(TextColor.color(0x00FF00)));
     }
 
+    @Subcommand("alerts")
+    public void alerts(final CommandActor actor, @Optional final String targetPlayerName) {
+        if (!hasPermission(actor)) return;
+
+        final var player = getUserFromActor(actor);
+        if (player == null) {
+            sendReply(actor, Component.text("You must be a player to run this command.").color(TextColor.color(0xFF0000)));
+            return;
+        }
+
+        if (targetPlayerName == null) {
+            player.setAlerts(!player.isAlerts());
+            sendReply(actor, Component.text("Alerts have been " + (player.isAlerts() ? "enabled" : "disabled") + ".").color(TextColor.color(0x00FF00)));
+        } else {
+            if (!dataBridge.hasPermission(player.getUser(), BetterAnticheat.getInstance().getAlertPermission())) {
+                sendReply(actor, Component.text("You do not have permission to toggle alerts for other players.").color(TextColor.color(0xFF0000)));
+                return;
+            }
+
+            final var targetPlayer = PlayerManager.getPlayerByUsername(targetPlayerName);
+            if (targetPlayer == null) {
+                sendReply(actor, Component.text("Player '" + targetPlayerName + "' not found.").color(TextColor.color(0xFF0000)));
+                return;
+            }
+
+            targetPlayer.setAlerts(!targetPlayer.isAlerts());
+            sendReply(actor, Component.text("Alerts for " + targetPlayerName + " have been " + (targetPlayer.isAlerts() ? "enabled" : "disabled") + ".").color(TextColor.color(0x00FF00)));
+        }
+    }
+
     @Subcommand("recording-reset")
     public void recordingReset(final CommandActor actor) {
         if (!hasPermission(actor)) return;

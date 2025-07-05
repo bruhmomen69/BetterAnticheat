@@ -43,16 +43,27 @@ public class BetterAnticheatVelocity {
 
     @Subscribe
     public void onProxyInitialization(final ProxyInitializeEvent event) {
+        final var dataBridge = new VelocityDataBridge(this, server, logger);
         this.core = new BetterAnticheat(
-            new VelocityDataBridge(this, server, logger),
-            dataDirectory
+            dataBridge,
+            this.dataDirectory
         );
 
         this.core.enable();
 
+        this.server.getEventManager().register(this, new PlayerJoinListener(dataBridge));
+
         this.metrics = metricsFactory.make(this, B_STATS_ID);
     }
 
+/* <<<<<<<<<<<<<<  ✨ Windsurf Command ⭐ >>>>>>>>>>>>>>>> */
+    /**
+     * Listens for {@link ProxyReloadEvent} and reloads the entire
+     * anticheat configuration and data.
+     *
+     * @param event the event instance
+     */
+/* <<<<<<<<<<  29ef2c4f-5288-430c-915f-61a433e3a619  >>>>>>>>>>> */
     @Subscribe
     public void onProxyReload(final ProxyReloadEvent event) {
         this.core.load();
