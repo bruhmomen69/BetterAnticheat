@@ -13,11 +13,12 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 public class PacketListener extends SimplePacketListenerAbstract {
-    private final DataBridge dataBridge;
+
+    private final BetterAnticheat plugin;
 
     @Override
     public void onPacketPlayReceive(PacketPlayReceiveEvent event) {
-        Player player = PlayerManager.getPlayer(event.getUser());
+        Player player = plugin.getPlayerManager().getPlayer(event.getUser());
         if (player == null) return;
         player.handleReceivePacket(event);
     }
@@ -25,11 +26,11 @@ public class PacketListener extends SimplePacketListenerAbstract {
     @Override
     public void onPacketPlaySend(PacketPlaySendEvent event) {
         if (event.getPacketType() == PacketType.Play.Server.JOIN_GAME) {
-            PlayerManager.addUser(event.getUser(), dataBridge);
+            plugin.getPlayerManager().addUser(event.getUser(), plugin.getDataBridge());
             return;
         }
 
-        Player player = PlayerManager.getPlayer(event.getUser());
+        Player player = plugin.getPlayerManager().getPlayer(event.getUser());
         if (player == null) return;
         player.handleSendPacket(event);
     }
@@ -37,7 +38,7 @@ public class PacketListener extends SimplePacketListenerAbstract {
     @Override
     public void onUserDisconnect(UserDisconnectEvent event) {
         try {
-            PlayerManager.removeUser(event.getUser());
+            plugin.getPlayerManager().removeUser(event.getUser());
         } catch (final Exception e) {
             log.error("Error while removing player: ", e);
         }

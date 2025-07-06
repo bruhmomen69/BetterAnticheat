@@ -33,7 +33,7 @@ public class CombatDamageListener {
         final var user = PacketEvents.getAPI().getPlayerManager().getUser(spongePlayer.uniqueId());
         if (user == null) return;
         
-        final var player = PlayerManager.getPlayer(user);
+        final var player = BetterAnticheat.getInstance().getPlayerManager().getPlayer(user);
         if (player == null) return;
         
         final var cmlTracker = player.getCmlTracker();

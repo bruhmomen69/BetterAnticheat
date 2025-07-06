@@ -14,7 +14,7 @@ public class PlayerJoinListener implements Listener {
         var user = PacketEvents.getAPI().getPlayerManager().getUser(event.getPlayer());
         if (user == null) return;
 
-        var player = PlayerManager.getPlayer(user);
+        var player = BetterAnticheat.getInstance().getPlayerManager().getPlayer(user);
         if (player == null) return;
 
         if (event.getPlayer().hasPermission(BetterAnticheat.getInstance().getAlertPermission())) {

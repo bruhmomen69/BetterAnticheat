@@ -15,8 +15,14 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class PlayerManager {
 
-    private static final Map<User, Player> USER_MAP = new ConcurrentHashMap<>();
-    private static final List<Quantifier> QUANTIFIERS = new ArrayList<>();
+    private final BetterAnticheat plugin;
+
+    private final Map<User, Player> userMap = new ConcurrentHashMap<>();
+    private final List<Quantifier> quantifiers = new ArrayList<>();
+
+    public PlayerManager(BetterAnticheat plugin) {
+        this.plugin = plugin;
+    }
 
     /*
      * Quantifier code.
@@ -29,51 +35,51 @@ public class PlayerManager {
         boolean check(User user);
     }
 
-    public static void registerQuantifier(Quantifier quantifier) {
-        QUANTIFIERS.add(quantifier);
+    public void registerQuantifier(Quantifier quantifier) {
+        quantifiers.add(quantifier);
     }
 
     /*
      * Player management.
      */
 
-    public static void addUser(User user, DataBridge dataBridge) {
-        for (Quantifier quantifier : QUANTIFIERS) if (!quantifier.check(user)) return;
-        USER_MAP.put(user, new Player(user, dataBridge));
+    public void addUser(User user, DataBridge dataBridge) {
+        for (Quantifier quantifier : quantifiers) if (!quantifier.check(user)) return;
+        userMap.put(user, new Player(user, dataBridge));
     }
 
-    public static void removeUser(User user) throws IOException {
-        final var removedPlayer = USER_MAP.remove(user);
+    public void removeUser(User user) throws IOException {
+        final var removedPlayer = userMap.remove(user);
         if (removedPlayer == null) return;
         removedPlayer.close();
     }
 
-    public static Player getPlayer(User user) {
-        return USER_MAP.get(user);
+    public Player getPlayer(User user) {
+        return userMap.get(user);
     }
 
-    public static Player getPlayerByName(String name) {
-        for (Player value : USER_MAP.values()) {
+    public Player getPlayerByName(String name) {
+        for (Player value : userMap.values()) {
             if (value.getUser().getName().equalsIgnoreCase(name)) return value;
         }
 
         return null;
     }
 
-    public static Player getPlayerByUsername(String username) {
-        for (Player value : USER_MAP.values()) {
+    public Player getPlayerByUsername(String username) {
+        for (Player value : userMap.values()) {
             if (value.getUser().getName().equalsIgnoreCase(username)) return value;
         }
 
         return null;
     }
 
-    public static void load(BetterAnticheat plugin) {
-        for (Player player : USER_MAP.values()) player.load();
-        plugin.getDataBridge().logInfo("Loaded checks for " + USER_MAP.size() + " players.");
+    public void load() {
+        for (Player player : userMap.values()) player.load();
+        plugin.getDataBridge().logInfo("Loaded checks for " + userMap.size() + " players.");
     }
 
-    public static void sendAlert(Component text) {
+    public void sendAlert(Component text) {
         /*
          * We use the PacketEvents user collection as to include players who may be excluded via Quantifiers. Just
          * because a player may be logged in via something like Geyser doesn't have anything to do with whether they're

@@ -29,7 +29,7 @@ public class BetterAnticheatSpigot extends JavaPlugin {
             getServer().getPluginManager().registerEvents(new ReloadListener(core), this);
         }
 
-        PlayerManager.registerQuantifier(user -> !GeyserUtil.isGeyserPlayer(user.getUUID()));
+        core.getPlayerManager().registerQuantifier(user -> !GeyserUtil.isGeyserPlayer(user.getUUID()));
     }
 
     @Override

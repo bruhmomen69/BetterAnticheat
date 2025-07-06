@@ -22,7 +22,7 @@ public final class CombatDamageListener extends PacketListenerAbstract {
         if (event.getPacketType() == PacketType.Play.Client.INTERACT_ENTITY) {
             WrapperPlayClientInteractEntity wrapper = new WrapperPlayClientInteractEntity(event);
             if (wrapper.getAction() == WrapperPlayClientInteractEntity.InteractAction.ATTACK) {
-                final var playerData = PlayerManager.getPlayer(event.getUser());
+                final var playerData = BetterAnticheat.getInstance().getPlayerManager().getPlayer(event.getUser());
                 if (playerData != null) {
                     final var cmlTracker = playerData.getCmlTracker();
                     if (cmlTracker != null) {

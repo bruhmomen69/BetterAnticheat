@@ -77,7 +77,7 @@ public class BetterAnticheatCommand {
                 return;
             }
 
-            final var targetPlayer = PlayerManager.getPlayerByUsername(targetPlayerName);
+            final var targetPlayer = BetterAnticheat.getInstance().getPlayerManager().getPlayerByUsername(targetPlayerName);
             if (targetPlayer == null) {
                 sendReply(actor, Component.text("Player '" + targetPlayerName + "' not found.").color(TextColor.color(0xFF0000)));
                 return;
@@ -558,7 +558,7 @@ public class BetterAnticheatCommand {
     }
 
     private @Nullable Player getUserFromActor(final CommandActor actor) {
-        return PlayerManager.getPlayerByName(actor.name());
+        return BetterAnticheat.getInstance().getPlayerManager().getPlayerByName(actor.name());
     }
 
     private boolean hasPermission(final CommandActor actor) {

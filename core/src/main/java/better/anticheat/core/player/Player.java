@@ -98,7 +98,7 @@ public class Player implements Closeable {
      */
 
     public void load() {
-        if (checks == null) checks = CheckManager.getChecks(this);
+        if (checks == null) checks = BetterAnticheat.getInstance().getCheckManager().getChecks(this);
         else for (Check check : checks) check.load();
 
         // Load CML generated checks.

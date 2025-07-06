@@ -22,49 +22,37 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Getter
 public class BetterAnticheat {
 
     @Getter
     private static BetterAnticheat instance;
 
-    @Getter
+    // Constructor-related objs
     private final DataBridge dataBridge;
-    @Getter
     private final Path directory;
-
     private boolean enabled;
 
-    // Settings
-    @Getter
-    private int alertCooldown;
-    @Getter
-    private List<String> alertHover;
-    @Getter
-    private String alertMessage, alertPermission, clickCommand;
-    @Getter
-    private boolean punishmentModulo, testMode, useCommand;
-    @Getter
-    private Map<String, ModelConfig> modelConfigs = new HashMap<>();
-    @Getter
-    private boolean mlCombatDamageEnabled;
-    @Getter
-    private double mlCombatDamageThreshold;
-    @Getter
-    private double mlCombatDamageCancellationMultiplier;
-    @Getter
-    private double mlCombatDamageReductionMultiplier;
-    @Getter
-    private boolean velocityTickCheckEnabled;
-    @Getter
-    private int minTicksSinceLastAttack;
-    @Getter
-    private double minAverageForTickCheck;
-    @Getter
-    private CookieAllocatorConfig cookieAllocatorConfig;
-    @Getter
-    private CookieSequenceData cookieSequenceData;
-    @Getter
+    // Managers
+    private final CheckManager checkManager;
     private final LyricManager lyricManager;
+    private final PlayerManager playerManager;
+
+    // Settings
+    private int alertCooldown;
+    private List<String> alertHover;
+    private String alertMessage, alertPermission, clickCommand;
+    private boolean punishmentModulo, testMode, useCommand;
+    private Map<String, ModelConfig> modelConfigs = new HashMap<>();
+    private boolean mlCombatDamageEnabled;
+    private double mlCombatDamageThreshold;
+    private double mlCombatDamageCancellationMultiplier;
+    private double mlCombatDamageReductionMultiplier;
+    private boolean velocityTickCheckEnabled;
+    private int minTicksSinceLastAttack;
+    private double minAverageForTickCheck;
+    private CookieAllocatorConfig cookieAllocatorConfig;
+    private CookieSequenceData cookieSequenceData;
 
     public BetterAnticheat(DataBridge dataBridge, Path directory) {
         this.dataBridge = dataBridge;
@@ -73,7 +61,9 @@ public class BetterAnticheat {
 
         instance = this;
 
+        this.checkManager = new CheckManager(this);
         this.lyricManager = new LyricManager();
+        this.playerManager = new PlayerManager(this);
 
         /*
          * We only support 1.21+.
@@ -87,11 +77,11 @@ public class BetterAnticheat {
 
     public void enable() {
         if (!enabled) return;
-        PacketEvents.getAPI().getEventManager().registerListener(new PacketListener(this.dataBridge));
+        PacketEvents.getAPI().getEventManager().registerListener(new PacketListener(this));
         load();
 
         // Ensure players are 1.21.4+.
-        PlayerManager.registerQuantifier((user -> user.getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_21_4)));
+        playerManager.registerQuantifier((user -> user.getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_21_4)));
 
         if (useCommand) {
             dataBridge.registerCommands(null, null, new BetterAnticheatCommand(this.dataBridge, this.directory));
@@ -120,8 +110,8 @@ public class BetterAnticheat {
         loadML(settings);
         loadCookieAllocator(settings);
 
-        CheckManager.load(this);
-        PlayerManager.load(this);
+        checkManager.load();
+        playerManager.load();
 
         dataBridge.logInfo("Load finished!");
     }

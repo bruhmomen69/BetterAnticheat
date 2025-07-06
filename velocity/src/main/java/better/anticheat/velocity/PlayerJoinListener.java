@@ -19,7 +19,7 @@ public class PlayerJoinListener {
         var user = PacketEvents.getAPI().getPlayerManager().getUser(event.getPlayer());
         if (user == null) return;
 
-        var player = PlayerManager.getPlayer(user);
+        var player = BetterAnticheat.getInstance().getPlayerManager().getPlayer(user);
         if (player == null) return;
 
         if (dataBridge.hasPermission(user, BetterAnticheat.getInstance().getAlertPermission())) {

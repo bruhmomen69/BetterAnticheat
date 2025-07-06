@@ -24,12 +24,13 @@ import java.util.*;
 
 public class CheckManager {
 
-    private static final List<Check> CHECKS;
+    private final BetterAnticheat plugin;
+    private final List<Check> checks;
 
-    private CheckManager() {}
+    public CheckManager(BetterAnticheat plugin) {
+        this.plugin = plugin;
 
-    static {
-        CHECKS = Arrays.asList(
+        checks = Arrays.asList(
                 // Chat Checks
                 new HiddenChatCheck(),
                 new ImpossibleCompletionCheck(),
@@ -80,11 +81,11 @@ public class CheckManager {
         );
     }
 
-    public static Collection<Check> getAllChecks() {
-        return Collections.unmodifiableList(CHECKS);
+    public Collection<Check> getAllChecks() {
+        return Collections.unmodifiableList(checks);
     }
 
-    public static List<Check> getChecks(Player player) {
+    public List<Check> getChecks(Player player) {
         /*
          * Do NOT return the existing array list. That would lead to multiple users using the same list, creating
          * concurrency issues.
@@ -92,7 +93,7 @@ public class CheckManager {
          * original copies present in the CHECKS list will be reloaded.
          */
         List<Check> returnList = new ArrayList<>();
-        for (Check check : CHECKS) {
+        for (Check check : checks) {
             returnList.add(check.initialCopy(player));
         }
 
@@ -102,11 +103,11 @@ public class CheckManager {
     /**
      * Load all checks in the CHECKS list via their preferred configuration files.
      */
-    public static void load(BetterAnticheat plugin) {
+    public void load() {
         Map<String, ConfigurationFile> configMap = new HashMap<>();
         Set<String> modified = new HashSet<>();
         int enabled = 0;
-        for (Check check : CHECKS) {
+        for (Check check : checks) {
             // Ensure the check has a defined config in its CheckInfo.
             if (check.getConfig() == null) {
                 plugin.getDataBridge().logWarning("Could not load " + check.getName() + " due to null config!");
@@ -143,6 +144,6 @@ public class CheckManager {
         }
 
         for (String file : modified) configMap.get(file).save();
-        plugin.getDataBridge().logInfo("Loaded " + CHECKS.size() + " checks, with " + enabled + " being enabled.");
+        plugin.getDataBridge().logInfo("Loaded " + checks.size() + " checks, with " + enabled + " being enabled.");
     }
 }

@@ -132,7 +132,7 @@ public abstract class Check implements Cloneable {
                     finalMessage = finalMessage.hoverEvent(HoverEvent.hoverEvent(HoverEvent.Action.SHOW_TEXT, Component.text(translateColors(hoverBuild.substring(0, hoverBuild.length() - 1)))));
 
                 if (BetterAnticheat.getInstance().isTestMode()) player.getUser().sendMessage(finalMessage);
-                else PlayerManager.sendAlert(finalMessage);
+                else BetterAnticheat.getInstance().getPlayerManager().sendAlert(finalMessage);
             }
 
             lastAlertMS = currentMS;
