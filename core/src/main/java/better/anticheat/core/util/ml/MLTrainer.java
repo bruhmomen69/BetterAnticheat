@@ -161,13 +161,13 @@ public class MLTrainer {
         xArrays = xArrayListForm.toArray(new int[0][]);
         final var df = DataFrame.of(xArrays);
         log.debug("DataFrame: {}", df.toString(0, 20, true));
-        this.giniTree = DecisionTree.fit(Formula.lhs("V1"), df, new DecisionTree.Options(SplitRule.GINI, 20, 0, 5));
-        this.entropyTree = DecisionTree.fit(Formula.lhs("V1"), df, new DecisionTree.Options(SplitRule.ENTROPY, 20, 0, 3));
+        this.giniTree = DecisionTree.fit(Formula.lhs("V1"), df, new DecisionTree.Options(SplitRule.GINI, 26, 0, 4));
+        this.entropyTree = DecisionTree.fit(Formula.lhs("V1"), df, new DecisionTree.Options(SplitRule.ENTROPY, 27, 0, 3));
 
         // Shitty Forests
         if (!trainRandomForest) return;
-        this.giniForest = RandomForest.fit(Formula.lhs("V1"), df, new RandomForest.Options(125, 0, SplitRule.GINI, 20, 0, 5, 1.0, null, null, null));
-        this.entropyForest = RandomForest.fit(Formula.lhs("V1"), df, new RandomForest.Options(125, 0, SplitRule.ENTROPY, 20, 0, 3, 1.0, null, null, null));
+        this.giniForest = RandomForest.fit(Formula.lhs("V1"), df, new RandomForest.Options(125, 0, SplitRule.GINI, 22, 0, 4, 1.0, null, null, null));
+        this.entropyForest = RandomForest.fit(Formula.lhs("V1"), df, new RandomForest.Options(125, 0, SplitRule.ENTROPY, 22, 0, 4, 1.0, null, null, null));
     }
 
     /**

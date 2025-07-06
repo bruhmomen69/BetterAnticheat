@@ -55,7 +55,7 @@ public class BetterAnticheat {
     @Getter
     private boolean velocityTickCheckEnabled;
     @Getter
-    private int maxTicksSinceLastAttack;
+    private int minTicksSinceLastAttack;
     @Getter
     private double minAverageForTickCheck;
     @Getter
@@ -139,7 +139,7 @@ public class BetterAnticheat {
                         child.getObject(Boolean.class, "statistics", false),
                         child.getObject(Boolean.class, "shrink", true),
                         child.getObject(Integer.class, "samples", 10),
-                        child.getObject(Integer.class, "threshold", 7),
+                        child.getObject(Double.class, "threshold", 7.5),
                         child
                 ));
             }
@@ -161,13 +161,13 @@ public class BetterAnticheat {
 
         if (mlCombatNode == null) {
             // Default values if configuration section doesn't exist
-            this.mlCombatDamageEnabled = false;
-            this.mlCombatDamageThreshold = 5.0;
+            this.mlCombatDamageEnabled = true;
+            this.mlCombatDamageThreshold = 7.0;
             this.mlCombatDamageCancellationMultiplier = 3.0;
             this.mlCombatDamageReductionMultiplier = 5.0;
-            this.velocityTickCheckEnabled = false;
-            this.maxTicksSinceLastAttack = 3;
-            this.minAverageForTickCheck = 7.5;
+            this.velocityTickCheckEnabled = true;
+            this.minTicksSinceLastAttack = 3;
+            this.minAverageForTickCheck = 8.0;
         } else {
             this.mlCombatDamageEnabled = mlCombatNode.getObject(Boolean.class, "enabled", false);
             this.mlCombatDamageThreshold = mlCombatNode.getObject(Double.class, "threshold", 5.0);
@@ -177,11 +177,11 @@ public class BetterAnticheat {
             final var velocityTickCheckNode = mlCombatNode.getConfigSection("velocity-tick-check");
             if (velocityTickCheckNode != null) {
                 this.velocityTickCheckEnabled = velocityTickCheckNode.getObject(Boolean.class, "enabled", true);
-                this.maxTicksSinceLastAttack = velocityTickCheckNode.getObject(Integer.class, "max-ticks-since-last-attack", 3);
+                this.minTicksSinceLastAttack = velocityTickCheckNode.getObject(Integer.class, "min-ticks-since-last-attack", 3);
                 this.minAverageForTickCheck = velocityTickCheckNode.getObject(Double.class, "min-average-for-tick-check", 7.5);
             } else {
                 this.velocityTickCheckEnabled = false;
-                this.maxTicksSinceLastAttack = 3;
+                this.minTicksSinceLastAttack = 3;
                 this.minAverageForTickCheck = 7.5;
             }
 
@@ -190,7 +190,7 @@ public class BetterAnticheat {
                     ", cancellation-multiplier=" + mlCombatDamageCancellationMultiplier +
                     ", damage-reduction-multiplier=" + mlCombatDamageReductionMultiplier +
                     ", velocity-tick-check-enabled=" + velocityTickCheckEnabled +
-                    ", max-ticks-since-last-attack=" + maxTicksSinceLastAttack +
+                    ", max-ticks-since-last-attack=" + minTicksSinceLastAttack +
                     ", min-average-for-tick-check=" + minAverageForTickCheck);
         }
     }

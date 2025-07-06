@@ -2,15 +2,11 @@ package better.anticheat.velocity;
 
 import better.anticheat.core.BetterAnticheat;
 import better.anticheat.core.player.PlayerManager;
-import better.anticheat.core.player.tracker.impl.ml.CMLTracker;
-import com.github.retrooper.packetevents.event.PacketListener;
 import com.github.retrooper.packetevents.event.PacketListenerAbstract;
 import com.github.retrooper.packetevents.event.PacketReceiveEvent;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientInteractEntity;
-
-import java.util.Arrays;
 
 public final class CombatDamageListener extends PacketListenerAbstract {
 
@@ -46,7 +42,7 @@ public final class CombatDamageListener extends PacketListenerAbstract {
 
                             if (totalCount > 0) {
                                 final double overallAverage = totalSum / totalCount;
-                                if (cmlTracker.getTicksSinceLastAttack() > betterAnticheat.getMaxTicksSinceLastAttack() && overallAverage > betterAnticheat.getMinAverageForTickCheck()) {
+                                if (cmlTracker.getTicksSinceLastAttack() < betterAnticheat.getMinTicksSinceLastAttack() && overallAverage > betterAnticheat.getMinAverageForTickCheck()) {
                                     event.setCancelled(true);
                                 }
                             }

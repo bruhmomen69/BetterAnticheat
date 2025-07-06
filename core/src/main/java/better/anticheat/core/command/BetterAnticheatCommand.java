@@ -311,9 +311,9 @@ public class BetterAnticheatCommand {
         double[][] cheatingTestData = trainer.getCheatingData();
 
         actor.reply("---- Decision Tree (Gini):");
-        testModelI32(trainer.getGiniTree(), legitTestData, cheatingTestData, 10, actor);
+        testModelI32(trainer.getGiniTree(), legitTestData, cheatingTestData, 6, actor);
         actor.reply("---- Decision Tree (Entropy):");
-        testModelI32(trainer.getEntropyTree(), legitTestData, cheatingTestData, 10, actor);
+        testModelI32(trainer.getEntropyTree(), legitTestData, cheatingTestData, 6, actor);
 
         actor.reply("---- Random Forest (Gini) - OVERFITTING WARNING:");
         testModelI32(trainer.getGiniForest(), legitTestData, cheatingTestData, 1, actor);
@@ -442,7 +442,7 @@ public class BetterAnticheatCommand {
         }
 
         // Benchmark
-        final var times = new double[10];
+        final var times = new double[6];
         final var benchmarkRuns = 100;
         for (int i = 0; i < times.length; i++) {
             var start = System.currentTimeMillis();
