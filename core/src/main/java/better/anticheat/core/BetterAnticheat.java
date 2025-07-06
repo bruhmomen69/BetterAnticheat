@@ -12,6 +12,7 @@ import better.anticheat.core.util.ml.MLTrainer;
 import better.anticheat.core.util.ml.ModelConfig;
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.manager.server.ServerVersion;
+import com.github.retrooper.packetevents.protocol.player.ClientVersion;
 import lombok.Getter;
 
 import java.io.IOException;
@@ -88,6 +89,9 @@ public class BetterAnticheat {
         if (!enabled) return;
         PacketEvents.getAPI().getEventManager().registerListener(new PacketListener(this.dataBridge));
         load();
+
+        // Ensure players are 1.21.4+.
+        PlayerManager.registerQuantifier((user -> user.getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_21_4)));
 
         if (useCommand) {
             dataBridge.registerCommands(null, null, new BetterAnticheatCommand(this.dataBridge, this.directory));
