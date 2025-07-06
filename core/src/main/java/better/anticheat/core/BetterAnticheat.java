@@ -45,6 +45,20 @@ public class BetterAnticheat {
     @Getter
     private Map<String, ModelConfig> modelConfigs = new HashMap<>();
     @Getter
+    private boolean mlCombatDamageEnabled;
+    @Getter
+    private double mlCombatDamageThreshold;
+    @Getter
+    private double mlCombatDamageCancellationMultiplier;
+    @Getter
+    private double mlCombatDamageReductionMultiplier;
+    @Getter
+    private boolean velocityTickCheckEnabled;
+    @Getter
+    private int maxTicksSinceLastAttack;
+    @Getter
+    private double minAverageForTickCheck;
+    @Getter
     private CookieAllocatorConfig cookieAllocatorConfig;
     @Getter
     private CookieSequenceData cookieSequenceData;
@@ -142,6 +156,43 @@ public class BetterAnticheat {
                 e.printStackTrace();
             }
         });
+
+        final var mlCombatNode = mlNode.getConfigSection("combat-damage-mitigation");
+
+        if (mlCombatNode == null) {
+            // Default values if configuration section doesn't exist
+            this.mlCombatDamageEnabled = false;
+            this.mlCombatDamageThreshold = 5.0;
+            this.mlCombatDamageCancellationMultiplier = 3.0;
+            this.mlCombatDamageReductionMultiplier = 5.0;
+            this.velocityTickCheckEnabled = false;
+            this.maxTicksSinceLastAttack = 3;
+            this.minAverageForTickCheck = 7.5;
+        } else {
+            this.mlCombatDamageEnabled = mlCombatNode.getObject(Boolean.class, "enabled", false);
+            this.mlCombatDamageThreshold = mlCombatNode.getObject(Double.class, "threshold", 5.0);
+            this.mlCombatDamageCancellationMultiplier = mlCombatNode.getObject(Double.class, "cancellation-multiplier", 3.0);
+            this.mlCombatDamageReductionMultiplier = mlCombatNode.getObject(Double.class, "damage-reduction-multiplier", 5.0);
+
+            final var velocityTickCheckNode = mlCombatNode.getConfigSection("velocity-tick-check");
+            if (velocityTickCheckNode != null) {
+                this.velocityTickCheckEnabled = velocityTickCheckNode.getObject(Boolean.class, "enabled", true);
+                this.maxTicksSinceLastAttack = velocityTickCheckNode.getObject(Integer.class, "max-ticks-since-last-attack", 3);
+                this.minAverageForTickCheck = velocityTickCheckNode.getObject(Double.class, "min-average-for-tick-check", 7.5);
+            } else {
+                this.velocityTickCheckEnabled = false;
+                this.maxTicksSinceLastAttack = 3;
+                this.minAverageForTickCheck = 7.5;
+            }
+
+            dataBridge.logInfo("Loaded ML combat damage configuration: enabled=" + mlCombatDamageEnabled +
+                    ", threshold=" + mlCombatDamageThreshold +
+                    ", cancellation-multiplier=" + mlCombatDamageCancellationMultiplier +
+                    ", damage-reduction-multiplier=" + mlCombatDamageReductionMultiplier +
+                    ", velocity-tick-check-enabled=" + velocityTickCheckEnabled +
+                    ", max-ticks-since-last-attack=" + maxTicksSinceLastAttack +
+                    ", min-average-for-tick-check=" + minAverageForTickCheck);
+        }
     }
 
     /**

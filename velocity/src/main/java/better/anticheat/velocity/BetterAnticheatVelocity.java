@@ -9,10 +9,12 @@ import com.velocitypowered.api.event.proxy.ProxyShutdownEvent;
 import com.velocitypowered.api.plugin.Plugin;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.ProxyServer;
+import com.github.retrooper.packetevents.PacketEvents;
 import org.bstats.velocity.Metrics;
 import org.slf4j.Logger;
 
 import java.nio.file.Path;
+import java.time.Duration;
 
 @Plugin(
     id = "betteranticheat",
@@ -51,6 +53,7 @@ public class BetterAnticheatVelocity {
 
         this.core.enable();
 
+        PacketEvents.getAPI().getEventManager().registerListener(new CombatDamageListener(this.core));
         this.server.getEventManager().register(this, new PlayerJoinListener(dataBridge));
 
         this.metrics = metricsFactory.make(this, B_STATS_ID);

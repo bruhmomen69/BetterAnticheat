@@ -53,6 +53,7 @@ public class BetterAnticheatSponge {
         core.enable();
         Sponge.eventManager().registerListeners(pluginContainer, new ReloadListener(core));
         Sponge.eventManager().registerListeners(pluginContainer, new PlayerJoinListener());
+        Sponge.eventManager().registerListeners(pluginContainer, new CombatDamageListener());
     }
 
     @Listener

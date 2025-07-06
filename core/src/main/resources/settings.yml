@@ -98,6 +98,27 @@ ml:
       # The punishment command to run when a player is flagged by this model.
       punishments:
         '1:say %username% might be using a combat cheat!'
+  # ML Combat Damage Modification
+  # This feature modifies combat damage based on ML tracker averages
+  combat-damage-mitigation:
+    # Whether to enable ML-based combat damage modification
+    # Only works when ML is enabled.
+    enabled: true
+    # The threshold average value above which damage modification is applied
+    threshold: 5.0
+    # Multiplier for hit cancellation chance (average * multiplier = % chance), average is 1-10, where 10 is definitely cheating, and 1 is not cheating.
+    cancellation-multiplier: 3.0
+    # Multiplier for damage reduction calculation (100 - (average * multiplier))% of original damage, average is 1-10, where 10 is definitely cheating, and 1 is not cheating.
+    # Not supported on Sponge and Velocity.
+    damage-reduction-multiplier: 5.0
+    # Velocity-specific settings for tick-based attack cancellation
+    velocity-tick-check:
+      enabled: true
+      # Maximum number of ticks allowed since the last attack.
+      max-ticks-since-last-attack: 3
+      # The minimum ML average required to apply the tick check.
+      min-average-for-tick-check: 7.5
+
 cookie-allocator:
   # The type of cookie ID allocator to use.
   # Options: "sequential", "random", "timestamp", "file", "lyric"

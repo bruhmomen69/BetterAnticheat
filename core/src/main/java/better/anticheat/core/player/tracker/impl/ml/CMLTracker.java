@@ -42,6 +42,7 @@ public class CMLTracker extends Tracker {
     private final OrderedArrayDoubleEvictingList previousEnhancedYawOffsets = new OrderedArrayDoubleEvictingList(5);
     private int lastEntityId;
     private boolean recordingNow = false;
+    private int ticksSinceLastAttack = 0;
 
     public void onPlayerInit() {
         this.expectedModels.forEach((name, modelConfig) -> this.internalChecks.add(new MLCheck(getPlayer(), modelConfig)));
@@ -62,6 +63,7 @@ public class CMLTracker extends Tracker {
                 }
 
                 if (wrapper.getAction() != WrapperPlayClientInteractEntity.InteractAction.ATTACK || switchedIds) return;
+                this.ticksSinceLastAttack = 0;
 
                 final var recordingEntry = new double[][]{
                         Arrays.copyOf(previousYaws.getArray(), previousYaws.getArray().length),
@@ -105,6 +107,8 @@ public class CMLTracker extends Tracker {
                 this.previousYaws.push(rots.getDeltaYaw());
                 this.previousEnhancedYawOffsets.push(offsets[0] - rots.getDeltaYaw());
             }
+
+            case CLIENT_TICK_END -> this.ticksSinceLastAttack++;
         }
     }
 
@@ -115,6 +119,7 @@ public class CMLTracker extends Tracker {
 
     public static class MLCheck extends Check {
         private final ModelConfig modelConfig;
+        @Getter
         private final ArrayDoubleEvictingList history;
         private final DecimalFormat df = new DecimalFormat("#.####");
 
