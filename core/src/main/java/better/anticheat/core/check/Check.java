@@ -204,7 +204,7 @@ public abstract class Check implements Cloneable {
             List<String> defaultPunishments = new ArrayList<>();
             defaultPunishments.add("1:say %username% would be kicked for " + name + "!");
             defaultPunishments.add("5:say %username% would be banned for " + name + "!");
-            section.setList(String.class, "punishments", new ArrayList<>());
+            section.setList(String.class, "punishments", defaultPunishments);
             modified = true;
         }
         punishments.clear();
