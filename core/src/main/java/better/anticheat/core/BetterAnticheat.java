@@ -1,7 +1,7 @@
 package better.anticheat.core;
 
 import better.anticheat.core.check.CheckManager;
-import better.anticheat.core.command.BetterAnticheatCommand;
+import better.anticheat.core.command.CommandManager;
 import better.anticheat.core.configuration.ConfigSection;
 import better.anticheat.core.configuration.ConfigurationFile;
 import better.anticheat.core.player.PlayerManager;
@@ -14,6 +14,7 @@ import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.manager.server.ServerVersion;
 import com.github.retrooper.packetevents.protocol.player.ClientVersion;
 import lombok.Getter;
+import revxrsal.commands.Lamp;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,10 +32,12 @@ public class BetterAnticheat {
     // Constructor-related objs
     private final DataBridge dataBridge;
     private final Path directory;
+    private final Lamp<?> lamp;
     private boolean enabled;
 
     // Managers
     private final CheckManager checkManager;
+    private final CommandManager commandManager;
     private final LyricManager lyricManager;
     private final PlayerManager playerManager;
 
@@ -54,14 +57,16 @@ public class BetterAnticheat {
     private CookieAllocatorConfig cookieAllocatorConfig;
     private CookieSequenceData cookieSequenceData;
 
-    public BetterAnticheat(DataBridge dataBridge, Path directory) {
+    public BetterAnticheat(DataBridge dataBridge, Path directory, Lamp<?> lamp) {
         this.dataBridge = dataBridge;
         this.directory = directory;
+        this.lamp = lamp;
         this.enabled = true;
 
         instance = this;
 
         this.checkManager = new CheckManager(this);
+        this.commandManager = new CommandManager(this);
         this.lyricManager = new LyricManager();
         this.playerManager = new PlayerManager(this);
 
@@ -82,10 +87,6 @@ public class BetterAnticheat {
 
         // Ensure players are 1.21.4+.
         playerManager.registerQuantifier((user -> user.getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_21_4)));
-
-        if (useCommand) {
-            dataBridge.registerCommands(null, null, new BetterAnticheatCommand(this.dataBridge, this.directory));
-        }
     }
 
     public void disable() {
@@ -111,6 +112,7 @@ public class BetterAnticheat {
         loadCookieAllocator(settings);
 
         checkManager.load();
+        commandManager.load();
         playerManager.load();
 
         dataBridge.logInfo("Load finished!");

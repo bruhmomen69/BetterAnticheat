@@ -5,6 +5,7 @@ import com.github.retrooper.packetevents.protocol.player.User;
 import com.velocitypowered.api.proxy.ProxyServer;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
+import revxrsal.commands.Lamp;
 import revxrsal.commands.exception.CommandExceptionHandler;
 import revxrsal.commands.parameter.ParameterTypes;
 import revxrsal.commands.velocity.VelocityLamp;
@@ -82,17 +83,6 @@ public class VelocityDataBridge implements DataBridge<VelocityCommandActor> {
             .schedule();
         
         return task::cancel;
-    }
-
-    @Override
-    public void registerCommands(@Nullable CommandExceptionHandler<VelocityCommandActor> commandExceptionHandler, @Nullable Consumer<ParameterTypes.Builder<VelocityCommandActor>> parameterBuilder, Object... commands) {
-        var lampBuilder = VelocityLamp.builder(plugin, server);
-
-        if (commandExceptionHandler != null) lampBuilder = lampBuilder.exceptionHandler(commandExceptionHandler);
-        if (parameterBuilder != null) lampBuilder = lampBuilder.parameterTypes(parameterBuilder);
-
-        final var lamp = lampBuilder.build();
-        lamp.register(commands);
     }
 
     @Override

@@ -23,7 +23,5 @@ public interface DataBridge<T extends CommandActor> {
     @Nullable Closeable registerTickListener(User user, Runnable runnable);
     @Nullable Closeable runTaskLater(User user, Runnable runnable, int delayTicks);
 
-    void registerCommands(@Nullable CommandExceptionHandler<T> commandExceptionHandler, @Nullable Consumer<ParameterTypes.Builder<T>> parameterBuilder, Object... commands);
-
     String getVersion();
 }

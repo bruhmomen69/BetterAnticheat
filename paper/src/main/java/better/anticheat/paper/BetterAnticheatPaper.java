@@ -6,6 +6,7 @@ import io.github.retrooper.packetevents.util.GeyserUtil;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
+import revxrsal.commands.bukkit.BukkitLamp;
 
 public class BetterAnticheatPaper  extends JavaPlugin {
 
@@ -17,7 +18,11 @@ public class BetterAnticheatPaper  extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        core = new BetterAnticheat(new PaperDataBridge(this), getDataFolder().toPath());
+        core = new BetterAnticheat(
+                new PaperDataBridge(this),
+                getDataFolder().toPath(),
+                BukkitLamp.builder(this).build()
+        );
         core.enable();
 
         metrics = new Metrics(this, BSTATS_ID);

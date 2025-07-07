@@ -1,23 +1,16 @@
-package better.anticheat.core.command;
+package better.anticheat.core.command.impl;
 
 import better.anticheat.core.BetterAnticheat;
-import better.anticheat.core.DataBridge;
-import better.anticheat.core.player.Player;
-import better.anticheat.core.player.PlayerManager;
+import better.anticheat.core.command.Command;
+import better.anticheat.core.command.CommandInfo;
 import better.anticheat.core.util.MathUtil;
 import better.anticheat.core.util.ml.MLTrainer;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.github.luben.zstd.Zstd;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.ComponentLike;
-import net.kyori.adventure.text.format.TextColor;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.jetbrains.annotations.Nullable;
-import revxrsal.commands.annotation.Command;
 import revxrsal.commands.annotation.Optional;
 import revxrsal.commands.annotation.Range;
 import revxrsal.commands.annotation.Subcommand;
@@ -36,81 +29,42 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ForkJoinPool;
 
-@RequiredArgsConstructor
-@Command({"betteranticheat", "bac", "betterac", "antispam"})
-@Slf4j
-public class BetterAnticheatCommand {
-    private final DataBridge<?> dataBridge;
-    private final Path directory;
-    // Fallback kyori serializer
-    private final LegacyComponentSerializer legacyComponentSerializer = LegacyComponentSerializer.builder().hexColors().extractUrls().build();
+@CommandInfo(name = "recording", config = "commands", parent = BACCommand.class)
+public class RecordingCommand extends Command {
 
-    @Subcommand("info")
-    public void help(final CommandActor actor) {
-        if (!hasPermission(actor)) return;
-        sendReply(actor, Component.text("BetterAnticheat v" + dataBridge.getVersion()).color(TextColor.color(0x00FF00)));
+    public RecordingCommand(BetterAnticheat plugin) {
+        super(plugin);
     }
 
-    @Subcommand("alerts")
-    public void alerts(final CommandActor actor, @Optional final String targetPlayerName) {
-        if (!hasPermission(actor)) return;
-
-        final var player = getUserFromActor(actor);
-        if (player == null) {
-            sendReply(actor, Component.text("You must be a player to run this command.").color(TextColor.color(0xFF0000)));
-            return;
-        }
-
-        if (targetPlayerName == null) {
-            player.setAlerts(!player.isAlerts());
-            sendReply(actor, Component.text("Alerts have been " + (player.isAlerts() ? "enabled" : "disabled") + ".").color(TextColor.color(0x00FF00)));
-        } else {
-            if (!dataBridge.hasPermission(player.getUser(), BetterAnticheat.getInstance().getAlertPermission())) {
-                sendReply(actor, Component.text("You do not have permission to toggle alerts for other players.").color(TextColor.color(0xFF0000)));
-                return;
-            }
-
-            final var targetPlayer = BetterAnticheat.getInstance().getPlayerManager().getPlayerByUsername(targetPlayerName);
-            if (targetPlayer == null) {
-                sendReply(actor, Component.text("Player '" + targetPlayerName + "' not found.").color(TextColor.color(0xFF0000)));
-                return;
-            }
-
-            targetPlayer.setAlerts(!targetPlayer.isAlerts());
-            sendReply(actor, Component.text("Alerts for " + targetPlayerName + " have been " + (targetPlayer.isAlerts() ? "enabled" : "disabled") + ".").color(TextColor.color(0x00FF00)));
-        }
-    }
-
-    @Subcommand("recording-reset")
+    @Subcommand("reset")
     public void recordingReset(final CommandActor actor) {
         if (!hasPermission(actor)) return;
-        final var player = getUserFromActor(actor);
+        final var player = getPlayerFromActor(actor);
         if (player == null) return;
         player.getCmlTracker().setRecordingNow(true);
         player.getCmlTracker().getRecording().clear();
         sendReply(actor, Component.text("Recording reset, and begun!"));
     }
 
-    @Subcommand("recording-toggle")
+    @Subcommand("toggle")
     public void recordingToggle(final CommandActor actor) {
         if (!hasPermission(actor)) return;
-        final var player = getUserFromActor(actor);
+        final var player = getPlayerFromActor(actor);
         if (player == null) return;
         player.getCmlTracker().setRecordingNow(!player.getCmlTracker().isRecordingNow());
         sendReply(actor, Component.text("Recording " + (player.getCmlTracker().isRecordingNow() ? "enabled" : "disabled") + "!"));
     }
 
-    @Subcommand("recording-save")
+    @Subcommand("save")
     public void recordingSave(final CommandActor actor, final String name) throws IOException {
         if (!hasPermission(actor)) return;
-        final var player = getUserFromActor(actor);
+        final var player = getPlayerFromActor(actor);
         if (player == null) return;
         final var yawsArrays = new JSONArray();
         final var offsetsArrays = new JSONArray();
@@ -136,7 +90,7 @@ public class BetterAnticheatCommand {
             enhancedOffsetsArrays.add(enhancedOffsetsArray);
         }
 
-        final var recordingDirectory = directory.resolve("recording");
+        final var recordingDirectory = plugin.getDirectory().resolve("recording");
         if (!recordingDirectory.toFile().exists()) {
             recordingDirectory.toFile().mkdirs();
         }
@@ -166,7 +120,7 @@ public class BetterAnticheatCommand {
         sendReply(actor, Component.text("Recording saved! Remember to reset!"));
     }
 
-    @Subcommand("recording-merge")
+    @Subcommand("merge")
     public void recordingMerge(final CommandActor actor, final String source1, final String source2, final String dest) throws IOException {
         if (!hasPermission(actor)) return;
 
@@ -199,7 +153,7 @@ public class BetterAnticheatCommand {
         mergedJson.put("offsets", offsets1);
         mergedJson.put("enhancedOffsets", enhancedOffsets1);
 
-        final var recordingDirectory = directory.resolve("recording");
+        final var recordingDirectory = plugin.getDirectory().resolve("recording");
         if (!recordingDirectory.toFile().exists()) {
             recordingDirectory.toFile().mkdirs();
         }
@@ -209,7 +163,7 @@ public class BetterAnticheatCommand {
         sendReply(actor, Component.text("Merged " + source1 + " and " + source2 + " into " + dest));
     }
 
-    @Subcommand("recording-export")
+    @Subcommand("export")
     public void recordingExport(final CommandActor actor, final String source, @Optional String dest) throws IOException {
         if (!hasPermission(actor)) return;
 
@@ -223,7 +177,7 @@ public class BetterAnticheatCommand {
             return;
         }
 
-        final var exportDirectory = directory.resolve("export");
+        final var exportDirectory = plugin.getDirectory().resolve("export");
         if (!exportDirectory.toFile().exists()) {
             exportDirectory.toFile().mkdirs();
         }
@@ -239,7 +193,7 @@ public class BetterAnticheatCommand {
         sendReply(actor, Component.text("Exported " + source + " to compressed file " + dest + ".json.zst"));
     }
 
-    @Subcommand("recording-validate")
+    @Subcommand("validate")
     public void recordingValidate(final CommandActor actor, final String legit, @Range(min = 0, max = 2) final short column, final List<String> cheating) throws IOException {
         final var legitData = loadData(legit);
         if (legitData == null) {
@@ -304,7 +258,7 @@ public class BetterAnticheatCommand {
         try {
             pane.window();
         } catch (InterruptedException | InvocationTargetException e) {
-            log.error("Error while opening window", e);
+            plugin.getDataBridge().logWarning("Error while opening window: " + e);
         }
 
         double[][] legitTestData = trainer.getLegitData();
@@ -328,7 +282,7 @@ public class BetterAnticheatCommand {
             testModel(trainer.trainLDA(), legitTestData, cheatingTestData, actor, trainer, "LDA");
         } catch (Exception e) {
             actor.reply("Error while testing LDA: " + e.getMessage());
-            log.error("Error while testing LDA: ", e);
+            plugin.getDataBridge().logWarning("Error while testing LDA: " + e);
         }
     }
 
@@ -389,14 +343,14 @@ public class BetterAnticheatCommand {
 
         actor.reply(
                 String.format(
-                "Results for (%s): %d legit as legit, %d legit as cheating, %d cheating as legit, %d cheating as cheating. %s legit avg, %s cheating avg.\n" +
+                        "Results for (%s): %d legit as legit, %d legit as cheating, %d cheating as legit, %d cheating as cheating. %s legit avg, %s cheating avg.\n" +
                                 "Took %s ms (avg %s ms) across samples to calculate %d predictions (%s per).",
-                        model.getClass().getSimpleName(), 
-                        legitAsLegit, 
+                        model.getClass().getSimpleName(),
+                        legitAsLegit,
                         legitAsCheating,
-                        cheatingAsLegit, 
-                        cheatingAsCheating, 
-                        df.format(legitAvg), 
+                        cheatingAsLegit,
+                        cheatingAsCheating,
+                        df.format(legitAvg),
                         df.format(cheatingAvg),
                         Arrays.toString(times),
                         df.format(MathUtil.getAverage(times)),
@@ -482,7 +436,7 @@ public class BetterAnticheatCommand {
     }
 
     private @Nullable double[][][] loadData(final String name) throws IOException {
-        final var recordingDirectory = directory.resolve("recording");
+        final var recordingDirectory = plugin.getDirectory().resolve("recording");
         if (!recordingDirectory.toFile().exists()) {
             recordingDirectory.toFile().mkdirs();
         }
@@ -496,7 +450,7 @@ public class BetterAnticheatCommand {
     }
 
     private @Nullable JSONObject loadRecordingJson(final String name) throws IOException {
-        final var recordingDirectory = directory.resolve("recording");
+        final var recordingDirectory = plugin.getDirectory().resolve("recording");
         if (!recordingDirectory.toFile().exists()) {
             recordingDirectory.toFile().mkdirs();
         }
@@ -544,27 +498,5 @@ public class BetterAnticheatCommand {
         }
 
         return new double[][][]{yaws, offsets, enhancedOffsets};
-    }
-
-    private void sendReply(final CommandActor actor, final ComponentLike message) {
-        try {
-            final var method = actor.getClass().getMethod("reply", ComponentLike.class);
-            method.trySetAccessible();
-            method.invoke(actor, message);
-        } catch (final Exception e) {
-            log.error("Failed to find reply method, is your server up to date?", e);
-            actor.reply(legacyComponentSerializer.serialize(message.asComponent()));
-        }
-    }
-
-    private @Nullable Player getUserFromActor(final CommandActor actor) {
-        return BetterAnticheat.getInstance().getPlayerManager().getPlayerByName(actor.name());
-    }
-
-    private boolean hasPermission(final CommandActor actor) {
-        if (actor.name().equalsIgnoreCase("console")) return true;
-        var user = getUserFromActor(actor);
-        if (user == null) return false;
-        return dataBridge.hasPermission(user.getUser(), BetterAnticheat.getInstance().getAlertPermission());
     }
 }

@@ -16,8 +16,13 @@ import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.ProxyServer;
 import org.bstats.velocity.Metrics;
 import org.slf4j.Logger;
+import revxrsal.commands.Lamp;
+import revxrsal.commands.velocity.VelocityLamp;
+import revxrsal.commands.velocity.actor.VelocityCommandActor;
 
 import java.nio.file.Path;
+
+import static revxrsal.commands.velocity.VelocityVisitors.brigadier;
 
 @Plugin(
         id = "betteranticheat",
@@ -58,9 +63,12 @@ public class BetterAnticheatVelocity {
     @Subscribe
     public void onProxyInitialization(final ProxyInitializeEvent event) {
         final var dataBridge = new VelocityDataBridge(this, server, logger);
+        Lamp<VelocityCommandActor> lamp = VelocityLamp.builder(this, server).build();
+        lamp.accept(brigadier(server));
         this.core = new BetterAnticheat(
                 dataBridge,
-                this.dataDirectory
+                this.dataDirectory,
+                lamp
         );
 
         this.core.enable();

@@ -82,17 +82,6 @@ public class SpongeDataBridge implements DataBridge<SpongeCommandActor> {
     }
 
     @Override
-    public void registerCommands(CommandExceptionHandler<SpongeCommandActor> exceptionHandler, Consumer<ParameterTypes.Builder<SpongeCommandActor>> parameterBuilder, Object... commands) {
-        var lampBuilder = SpongeLamp.builder(plugin);
-
-        if (exceptionHandler != null) lampBuilder = lampBuilder.exceptionHandler(exceptionHandler);
-        if (parameterBuilder != null) lampBuilder = lampBuilder.parameterTypes(parameterBuilder);
-
-        final var lamp = lampBuilder.build();
-        lamp.register(commands);
-    }
-
-    @Override
     public String getVersion() {
         return game.pluginManager().fromInstance(plugin).map((pl) -> pl.metadata().version().toString()).orElse("Sponge");
     }

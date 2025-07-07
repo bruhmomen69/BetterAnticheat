@@ -14,6 +14,7 @@ import org.spongepowered.api.event.lifecycle.StartingEngineEvent;
 import org.spongepowered.api.event.lifecycle.StoppingEngineEvent;
 import org.spongepowered.plugin.PluginContainer;
 import org.spongepowered.plugin.builtin.jvm.Plugin;
+import revxrsal.commands.sponge.SpongeLamp;
 
 import java.nio.file.Path;
 
@@ -44,7 +45,8 @@ public class BetterAnticheatSponge {
     public void onServerLoad(final StartingEngineEvent<Server> event) {
         core = new BetterAnticheat(
                 new SpongeDataBridge(this, game, logger),
-                configDirectory
+                configDirectory,
+                SpongeLamp.builder(this).build()
         );
     }
 

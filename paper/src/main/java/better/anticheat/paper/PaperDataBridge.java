@@ -130,17 +130,6 @@ public class PaperDataBridge implements DataBridge<BukkitCommandActor> {
     }
 
     @Override
-    public void registerCommands(CommandExceptionHandler<BukkitCommandActor> exceptionHandler, Consumer<ParameterTypes.Builder<BukkitCommandActor>> parameterBuilder, Object... commands) {
-        var lampBuilder = BukkitLamp.builder(this.plugin);
-
-        if (exceptionHandler != null) lampBuilder = lampBuilder.exceptionHandler(exceptionHandler);
-        if (parameterBuilder != null) lampBuilder = lampBuilder.parameterTypes(parameterBuilder);
-
-        final var lamp = lampBuilder.build();
-        lamp.register(commands);
-    }
-
-    @Override
     public String getVersion() {
         return plugin.getPluginMeta().getVersion();
     }
