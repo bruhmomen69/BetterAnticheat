@@ -65,6 +65,7 @@ public abstract class Check implements Cloneable {
      */
 
     public void load() {
+        if (reference == null) return;
         enabled = reference.enabled;
         alertVL = reference.alertVL;
         punishments = reference.punishments;
