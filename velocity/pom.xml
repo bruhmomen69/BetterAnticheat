@@ -74,6 +74,11 @@
         </dependency>
         <dependency>
             <groupId>io.github.revxrsal</groupId>
+            <artifactId>lamp.brigadier</artifactId>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.github.revxrsal</groupId>
             <artifactId>lamp.velocity</artifactId>
             <scope>compile</scope>
         </dependency>

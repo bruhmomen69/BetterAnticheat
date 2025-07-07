@@ -31,7 +31,7 @@ public abstract class Check implements Cloneable {
     @Getter
     private final boolean experimental;
 
-    @Getter
+    @Getter @Setter
     private boolean enabled = false;
     private int alertVL = 0;
     private Map<Integer, List<String>> punishments = new HashMap<>();

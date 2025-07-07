@@ -21,15 +21,20 @@ public class HiddenChatCheck extends Check {
 
         switch (event.getPacketType()) {
             case CLIENT_SETTINGS:
-                WrapperPlayClientSettings wrapper = new WrapperPlayClientSettings(event);
-                switch (wrapper.getChatVisibility()) {
-                    case FULL:
-                    case SYSTEM:
-                        canChat = true;
-                        break;
-                    case HIDDEN:
-                        canChat = false;
-                        break;
+                try {
+                    WrapperPlayClientSettings wrapper = new WrapperPlayClientSettings(event);
+                    switch (wrapper.getChatVisibility()) {
+                        case FULL:
+                        case SYSTEM:
+                            canChat = true;
+                            break;
+                        case HIDDEN:
+                            canChat = false;
+                            break;
+                    }
+                } catch (final Exception e) {
+                    setEnabled(false);
+                    return;
                 }
                 break;
             case CHAT_MESSAGE:

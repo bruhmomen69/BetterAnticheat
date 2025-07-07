@@ -63,7 +63,7 @@ public class BetterAnticheatVelocity {
     @Subscribe
     public void onProxyInitialization(final ProxyInitializeEvent event) {
         final var dataBridge = new VelocityDataBridge(this, server, logger);
-        Lamp<VelocityCommandActor> lamp = VelocityLamp.builder(this, server).build();
+        final var lamp = VelocityLamp.builder(this, server).build();
         lamp.accept(brigadier(server));
         this.core = new BetterAnticheat(
                 dataBridge,
