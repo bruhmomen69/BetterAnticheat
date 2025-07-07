@@ -1,26 +1,39 @@
 package better.anticheat.velocity;
 
 import better.anticheat.core.BetterAnticheat;
+import better.anticheat.velocity.listener.CombatDamageListener;
+import better.anticheat.velocity.listener.PlayerJoinListener;
+import better.anticheat.velocity.quantifier.FloodgateQuantifier;
+import com.github.retrooper.packetevents.PacketEvents;
 import com.google.inject.Inject;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
 import com.velocitypowered.api.event.proxy.ProxyReloadEvent;
 import com.velocitypowered.api.event.proxy.ProxyShutdownEvent;
+import com.velocitypowered.api.plugin.Dependency;
 import com.velocitypowered.api.plugin.Plugin;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.ProxyServer;
-import com.github.retrooper.packetevents.PacketEvents;
 import org.bstats.velocity.Metrics;
 import org.slf4j.Logger;
 
 import java.nio.file.Path;
 
 @Plugin(
-    id = "betteranticheat",
-    name = "BetterAnticheat",
-    version = "1.0.0",
-    description = "An auxiliary anticheat designed with stability as its focus.",
-    authors = {"am noah"}
+        id = "betteranticheat",
+        name = "BetterAnticheat",
+        version = "1.0.0",
+        description = "An auxiliary anticheat designed with stability as its focus.",
+        dependencies = {
+                @Dependency(
+                        id = "packetevents"
+                ),
+                @Dependency(
+                        id = "floodgate",
+                        optional = true
+                )
+        },
+        authors = {"am noah"}
 )
 public class BetterAnticheatVelocity {
 
@@ -46,8 +59,8 @@ public class BetterAnticheatVelocity {
     public void onProxyInitialization(final ProxyInitializeEvent event) {
         final var dataBridge = new VelocityDataBridge(this, server, logger);
         this.core = new BetterAnticheat(
-            dataBridge,
-            this.dataDirectory
+                dataBridge,
+                this.dataDirectory
         );
 
         this.core.enable();
@@ -56,6 +69,11 @@ public class BetterAnticheatVelocity {
         this.server.getEventManager().register(this, new PlayerJoinListener(dataBridge));
 
         this.metrics = metricsFactory.make(this, B_STATS_ID);
+
+        // PacketEvent GeyserUtil does not exist on the velocity platform.
+        if (this.server.getPluginManager().getPlugin("floodgate").isPresent()) {
+            this.core.getPlayerManager().registerQuantifier(new FloodgateQuantifier());
+        }
     }
 
     /**

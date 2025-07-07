@@ -29,7 +29,7 @@ public class BetterAnticheatPaper  extends JavaPlugin {
             getServer().getPluginManager().registerEvents(new ReloadListener(core), this);
         }
 
-        BetterAnticheat.getInstance().getPlayerManager().registerQuantifier(user -> !GeyserUtil.isGeyserPlayer(user.getUUID()));
+        core.getPlayerManager().registerQuantifier(user -> !GeyserUtil.isGeyserPlayer(user.getUUID()));
     }
 
     @Override

@@ -1,7 +1,6 @@
-package better.anticheat.velocity;
+package better.anticheat.velocity.listener;
 
 import better.anticheat.core.BetterAnticheat;
-import better.anticheat.core.player.PlayerManager;
 import com.github.retrooper.packetevents.event.PacketListenerAbstract;
 import com.github.retrooper.packetevents.event.PacketReceiveEvent;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;

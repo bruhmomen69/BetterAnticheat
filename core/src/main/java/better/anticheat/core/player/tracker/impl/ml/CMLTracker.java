@@ -148,18 +148,18 @@ public class CMLTracker extends Tracker {
             }
 
             if (!this.history.isFull()) {
-                log.info("[BetterAnticheat] [ML] {} still recording {} as {}", player.getUser().getName(), getName(), this.history.getCount());
+                log.debug("[BetterAnticheat] [ML] {} still recording {} as {}", player.getUser().getName(), getName(), this.history.getCount());
                 return;
             }
 
             final var avg = MathUtil.getAverage(this.history.getArray());
 
             if (avg < modelConfig.getThreshold()) {
-                log.info("[BetterAnticheat] [ML] {} passed {} as {}", player.getUser().getName(), getName(), df.format(avg));
+                log.debug("[BetterAnticheat] [ML] {} passed {} as {}", player.getUser().getName(), getName(), df.format(avg));
                 return;
             }
 
-            fail("ML-" + history);
+            fail("ML-" + df.format(avg) + "-" + this.history);
         }
     }
 }

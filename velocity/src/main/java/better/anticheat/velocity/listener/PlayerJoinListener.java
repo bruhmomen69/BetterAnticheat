@@ -1,7 +1,7 @@
-package better.anticheat.velocity;
+package better.anticheat.velocity.listener;
 
 import better.anticheat.core.BetterAnticheat;
-import better.anticheat.core.player.PlayerManager;
+import better.anticheat.velocity.VelocityDataBridge;
 import com.github.retrooper.packetevents.PacketEvents;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.connection.PostLoginEvent;
