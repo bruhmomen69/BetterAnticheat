@@ -13,7 +13,9 @@ import revxrsal.commands.command.CommandActor;
 import revxrsal.commands.orphan.OrphanCommand;
 import revxrsal.commands.orphan.Orphans;
 
+import java.security.InvalidParameterException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -46,25 +48,32 @@ public abstract class Command implements OrphanCommand {
 
     /**
      * Construct the command via info provided in CommandInfo annotation.
+     * This is the recommended approach but requires a @CommadInfo annotation on implementations.
      */
     public Command(BetterAnticheat plugin) {
         this.plugin = plugin;
 
         CommandInfo info = this.getClass().getAnnotation(CommandInfo.class);
-        // TODO: Decide if we should just terminate the command if CommandInfo is absent.
-        if (info == null) {
-            name = getClass().getSimpleName();
-            defaultNames.add(name);
-            config = null;
-            parentClass = null;
-            return;
-        }
+        if (info == null) throw new InvalidParameterException("No CommandInfo annotation!");
 
         // Copy values from annotation and attempt to find an object of our parent.
         name = info.name();
         defaultNames.add(name);
         config = info.config();
         parentClass = info.parent();
+        defaultNames.addAll(Arrays.asList(info.aliases()));
+    }
+
+    /**
+     * Construct the command via parameters.
+     */
+    public Command(BetterAnticheat plugin, String name, String config, Class<? extends Command> parent, String... aliases) {
+        this.plugin = plugin;
+        this.name = name;
+        defaultNames.add(name);
+        this.config = config;
+        this.parentClass = parent;
+        defaultNames.addAll(Arrays.asList(aliases));
     }
 
     /**
@@ -88,7 +97,7 @@ public abstract class Command implements OrphanCommand {
     /**
      * Return whether a given CommandActor has any of this command's permissions.
      */
-    protected boolean hasPermission(final CommandActor actor) {
+    public boolean hasPermission(final CommandActor actor) {
         if (actor.name().equalsIgnoreCase("console")) return true;
         var user = getUserFromActor(actor);
         if (user == null) return false;

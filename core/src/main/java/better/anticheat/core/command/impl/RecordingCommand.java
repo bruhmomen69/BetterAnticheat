@@ -35,7 +35,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ForkJoinPool;
 
-@CommandInfo(name = "recording", config = "commands", parent = BACCommand.class)
+@CommandInfo(name = "recording", parent = BACCommand.class)
 public class RecordingCommand extends Command {
 
     public RecordingCommand(BetterAnticheat plugin) {

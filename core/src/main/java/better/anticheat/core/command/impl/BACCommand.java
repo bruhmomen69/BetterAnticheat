@@ -13,14 +13,11 @@ import revxrsal.commands.command.CommandActor;
  * Things like the alerts command should run as subcommands, being accessible like "/bac alerts".
  * I'm not sure how Lamp handles commands without defined logic, so we have this placeholder message.
  */
-@CommandInfo(name = "bac", config = "commands")
+@CommandInfo(name = "bac", aliases = {"betteranticheat", "betterac", "antispam"})
 public class BACCommand extends Command {
 
     public BACCommand(BetterAnticheat plugin) {
         super(plugin);
-        defaultNames.add("betteranticheat");
-        defaultNames.add("betterac");
-        defaultNames.add("antispam");
     }
 
     @CommandPlaceholder

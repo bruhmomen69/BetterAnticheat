@@ -70,6 +70,7 @@ public class CommandManager {
             if (command.load(node)) modified.add(fileName);
             if (command.isEnabled()) {
                 enabled++;
+                // Register the command if
                 plugin.getLamp().register(command.getOrphans().handler(command));
             }
         }

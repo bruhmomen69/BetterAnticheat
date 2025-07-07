@@ -17,7 +17,7 @@ import java.util.List;
  * This command toggles alerts for players, assuming they have the correct permissions.
  * Without sending this command, players will not get sent any alerts of players cheating.
  */
-@CommandInfo(name = "alerts", config = "commands", parent = BACCommand.class)
+@CommandInfo(name = "alerts", parent = BACCommand.class)
 public class AlertsCommand extends Command {
 
     private String[] changeOthersPerms;
