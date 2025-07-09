@@ -10,10 +10,10 @@ import better.anticheat.core.player.tracker.impl.entity.type.EntityTrackerState;
 import better.anticheat.core.player.tracker.impl.entity.type.SplitEntityUpdate;
 import better.anticheat.core.util.BoundingBoxSize;
 import better.anticheat.core.util.MathUtil;
-import better.anticheat.core.util.type.xstate.bistate.DoubleBiState;
 import better.anticheat.core.util.type.entity.AxisAlignedBB;
 import better.anticheat.core.util.type.fastlist.FastObjectArrayList;
 import better.anticheat.core.util.type.incrementer.LongIncrementer;
+import better.anticheat.core.util.type.xstate.bistate.DoubleBiState;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.event.simple.PacketPlaySendEvent;
 import com.github.retrooper.packetevents.protocol.entity.type.EntityType;
@@ -119,12 +119,19 @@ public class EntityTracker extends Tracker {
         }
     }
 
+    public void createEntity(final int entityId, final @NotNull Vector3d position, final @NotNull EntityType type) {
+        this.createEntity(entityId, position, type, 0);
+    }
+
     /**
      * Creates an entity
      */
-    public void createEntity(final int entityId, final @NotNull Vector3d position, final @NotNull EntityType type) {
+    public void createEntity(final int entityId, final @NotNull Vector3d position, final @NotNull EntityType type, final int retries) {
         if (this.entities.containsKey(entityId)) {
-            bridge.runTaskLater(getPlayer().getUser(), () -> createEntity(entityId, position, type), 4);
+            // Prevent performance issues.
+            if (retries < 10) {
+                bridge.runTaskLater(getPlayer().getUser(), () -> createEntity(entityId, position, type, retries + 1), 5);
+            }
             return;
         }
 
@@ -168,7 +175,7 @@ public class EntityTracker extends Tracker {
             recursivelyRelMovePre(entity.getRootState(), 0);
             newState.addAll(stateBuffer);
             stateBuffer.clear();
-            
+
             this.awaitingUpdates.add(new SplitEntityUpdate(entity, originalRoot, entity.getServerPosX().getCurrent(),
                     entity.getServerPosY().getCurrent(), entity.getServerPosZ().getCurrent()));
         });

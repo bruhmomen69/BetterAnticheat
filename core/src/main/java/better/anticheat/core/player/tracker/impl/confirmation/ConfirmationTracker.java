@@ -23,7 +23,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 public class ConfirmationTracker extends Tracker {
@@ -32,7 +31,7 @@ public class ConfirmationTracker extends Tracker {
     /**
      * A list of awaiting confirmations.
      */
-    private final Set<ConfirmationState> confirmations = ConcurrentHashMap.newKeySet();
+    private final Set<ConfirmationState> confirmations = Collections.synchronizedSet(new HashSet<>());
     /**
      * 30 seconds of recent confirmations, assuming one confirmation per tick, but it is usually less than this, meaning it can provide an even longer window
      */
@@ -55,7 +54,7 @@ public class ConfirmationTracker extends Tracker {
     }
 
     @Override
-    public final void handlePacketPlayReceive(final PacketPlayReceiveEvent event) {
+    public final synchronized void handlePacketPlayReceive(final PacketPlayReceiveEvent event) {
         switch (event.getPacketType()) {
             case PONG: {
                 final var pongWrapper = new WrapperPlayClientPong(event);
@@ -146,7 +145,7 @@ public class ConfirmationTracker extends Tracker {
     }
 
     @Override
-    public final void handlePacketPlaySend(final PacketPlaySendEvent event) {
+    public final synchronized void handlePacketPlaySend(final PacketPlaySendEvent event) {
         // Log shit that has been sent
         switch (event.getPacketType()) {
             case PING: {
@@ -248,7 +247,7 @@ public class ConfirmationTracker extends Tracker {
      * @return The confirmation state.
      */
     public ConfirmationState sendCookieOrLatest(final long now) {
-        if (this.lastSentConfirmation == null || now - this.lastSentConfirmation.getTimestamp() > 10) {
+        if (this.lastSentConfirmation == null || now - this.lastSentConfirmation.getTimestamp() > 12) {
             log.trace("[BetterAntiCheat] Sending cookie");
             final var cookieId = this.cookieIdAllocator.allocateNext();
             getPlayer().getUser().writePacket(new WrapperPlayServerStoreCookie(
@@ -264,7 +263,7 @@ public class ConfirmationTracker extends Tracker {
         return this.lastSentConfirmation;
     }
 
-    public void sendTickKeepaliveNoFlush() {
+    public synchronized void sendTickKeepaliveNoFlush() {
         // First, check if we can skip, because we already sent a keepalive and a cookie last tick
         final var now = System.currentTimeMillis();
         if (EasyLoops.anyMatch(this.confirmations, (c) -> c.getType() == ConfirmationType.KEEPALIVE & now - c.getTimestamp() < 55)
@@ -284,7 +283,13 @@ public class ConfirmationTracker extends Tracker {
                     id
             ));
         } catch (final NullPointerException ignoredFailedClose) {
-
+            try {
+                // The player is a ghost.
+                this.getPlayer().close();
+                this.getPlayer().getUser().closeConnection();
+            } catch (final Exception e) {
+                log.error("[BetterAntiCheat] Failed to and log off player", e);
+            }
         }
     }
 }

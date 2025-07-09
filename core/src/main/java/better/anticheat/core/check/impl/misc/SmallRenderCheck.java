@@ -12,9 +12,13 @@ public class SmallRenderCheck extends Check {
     @Override
     public void handleReceivePlayPacket(PacketPlayReceiveEvent event) {
         if (event.getPacketType() != PacketType.Play.Client.CLIENT_SETTINGS) return;
-        WrapperPlayClientSettings wrapper = new WrapperPlayClientSettings(event);
+        try {
+            WrapperPlayClientSettings wrapper = new WrapperPlayClientSettings(event);
 
-        // The minimum view distance a vanilla player can send is 2.
-        if (wrapper.getViewDistance() < 2) fail();
+            // The minimum view distance a vanilla player can send is 2.
+            if (wrapper.getViewDistance() < 2) fail();
+        } catch (final Exception e) {
+            return;
+        }
     }
 }

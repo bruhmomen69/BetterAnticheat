@@ -71,6 +71,8 @@ public class BetterAnticheatVelocity {
                 lamp
         );
 
+        PacketEvents.getAPI().getSettings().kickOnPacketException(true);
+
         this.core.enable();
 
         PacketEvents.getAPI().getEventManager().registerListener(new CombatDamageListener(this.core));
