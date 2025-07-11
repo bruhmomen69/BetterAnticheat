@@ -130,7 +130,7 @@ public class CMLTracker extends Tracker {
             this.player = player;
 
             super.load(this.modelConfig.getConfigSection());
-            
+
             if (!isEnabled()) {
                 log.info("[BetterAnticheat] [ML] {} is currently disabled", getName());
             }

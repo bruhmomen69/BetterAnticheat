@@ -75,7 +75,6 @@ public class PostCheck extends Check {
             case TAB_COMPLETE:
             case UPDATE_SIGN:
             case PONG:
-            case COOKIE_RESPONSE:
                 if (!login) break;
                 if (sentFlying) post.add(event.getPacketType());
                 break;
