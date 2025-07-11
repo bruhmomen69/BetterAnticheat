@@ -1,5 +1,6 @@
 package better.anticheat.core.check.broken;
 
+import better.anticheat.core.BetterAnticheat;
 import better.anticheat.core.check.Check;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.event.simple.PacketPlaySendEvent;
@@ -13,6 +14,10 @@ import java.util.List;
 public class PingPongOrderCheck extends Check {
 
     private final List<Integer> transactionIDs = new ArrayList<>();
+
+    public PingPongOrderCheck(BetterAnticheat plugin) {
+        super(plugin);
+    }
 
 
     @Override

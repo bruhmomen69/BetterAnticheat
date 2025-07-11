@@ -1,5 +1,6 @@
 package better.anticheat.core.check.broken;
 
+import better.anticheat.core.BetterAnticheat;
 import better.anticheat.core.check.Check;
 import better.anticheat.core.check.CheckInfo;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
@@ -7,9 +8,13 @@ import com.github.retrooper.packetevents.protocol.player.DiggingAction;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientEntityAction;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerDigging;
 
-@CheckInfo(name = "NoSlow", category = "combat", config = "checks")
+@CheckInfo(name = "NoSlow", category = "combat")
 public class NoSlowCheck extends Check {
     private boolean blocking = false, sprinting = false;
+
+    public NoSlowCheck(BetterAnticheat plugin) {
+        super(plugin);
+    }
 
     @Override
     public void handleReceivePlayPacket(PacketPlayReceiveEvent event) {

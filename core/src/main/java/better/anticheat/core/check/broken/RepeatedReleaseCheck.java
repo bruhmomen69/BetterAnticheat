@@ -1,5 +1,6 @@
 package better.anticheat.core.check.broken;
 
+import better.anticheat.core.BetterAnticheat;
 import better.anticheat.core.check.Check;
 import better.anticheat.core.check.CheckInfo;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
@@ -10,9 +11,13 @@ import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPl
  * NOTE: This check is currenlty not enabled due to false flag issues.
  * Use Item mechanics may have changed since this was originally designed?
  */
-@CheckInfo(name = "RepeatedRelease", category = "dig", config = "checks")
+@CheckInfo(name = "RepeatedRelease", category = "dig")
 public class RepeatedReleaseCheck extends Check {
     private boolean useItem = true;
+
+    public RepeatedReleaseCheck(BetterAnticheat plugin) {
+        super(plugin);
+    }
 
     @Override
     public void handleReceivePlayPacket(PacketPlayReceiveEvent event) {

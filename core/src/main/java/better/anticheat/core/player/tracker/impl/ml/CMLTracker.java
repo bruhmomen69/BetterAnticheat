@@ -124,15 +124,13 @@ public class CMLTracker extends Tracker {
         private final DecimalFormat df = new DecimalFormat("#.####");
 
         public MLCheck(final Player player, final ModelConfig modelConfig) {
-            super();
+            super(BetterAnticheat.getInstance(), "ML Aim: " + modelConfig.getDisplayName(), "", "", false);
 
             this.modelConfig = modelConfig;
             this.player = player;
 
             super.load(this.modelConfig.getConfigSection());
-
-            this.setName("ML Aim: " + modelConfig.getDisplayName());
-
+            
             if (!isEnabled()) {
                 log.info("[BetterAnticheat] [ML] {} is currently disabled", getName());
             }
