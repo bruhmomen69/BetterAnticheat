@@ -67,6 +67,29 @@ public class MLTrainer {
      * @param trainRandomForest should we train a random forest, resulting in many unwanted logs.
      */
     public MLTrainer(final double[][][] legitData, final double[][][] cheatingData, final int slice, final boolean shrink, final boolean intlify, final boolean statistics, boolean trainRandomForest) {
+        this(legitData, cheatingData, slice, shrink, intlify, statistics, trainRandomForest, 40, 40, 4, 4, 30, 30, 4, 4);
+    }
+
+    /**
+     * @param legitData           the non cheating training data
+     * @param cheatingData        the cheating training data
+     * @param slice               the slice of the data to use. Options: 0, 1, or 2.
+     * @param shrink              should we shrink the data to the smallest of the two?
+     * @param intlify             should we do some changes improve compatibility of weirdly shaped doubles. NOTE: This trims the decimal places to the first 7 only, among other tasks.
+     * @param statistics          should we generate statistics for the data, instead of using raw data.
+     * @param trainRandomForest   should we train a random forest, resulting in many unwanted logs.
+     * @param giniMaxDepth        max depth for gini decision tree
+     * @param entropyMaxDepth     max depth for entropy decision tree
+     * @param giniNodeSize        min node size for gini decision tree
+     * @param entropyNodeSize     min node size for entropy decision tree
+     * @param giniForestMaxDepth  max depth for gini random forest
+     * @param entropyForestMaxDepth max depth for entropy random forest
+     * @param giniForestNodeSize  min node size for gini random forest
+     * @param entropyForestNodeSize min node size for entropy random forest
+     */
+    public MLTrainer(final double[][][] legitData, final double[][][] cheatingData, final int slice, final boolean shrink, final boolean intlify, final boolean statistics, boolean trainRandomForest, 
+                     int giniMaxDepth, int entropyMaxDepth, int giniNodeSize, int entropyNodeSize,
+                     int giniForestMaxDepth, int entropyForestMaxDepth, int giniForestNodeSize, int entropyForestNodeSize) {
         this.legitData = legitData[slice];
         this.cheatingData = cheatingData[slice];
 
@@ -104,7 +127,8 @@ public class MLTrainer {
             this.labels[i + this.legitTrain.length] = 10;
         }
 
-        this.buildDTree(trainRandomForest);
+        this.buildDTree(trainRandomForest, giniMaxDepth, entropyMaxDepth, giniNodeSize, entropyNodeSize, 
+                        giniForestMaxDepth, entropyForestMaxDepth, giniForestNodeSize, entropyForestNodeSize);
 
         // Intlify ONLY after building the tree
         if (this.intlify) {
@@ -150,7 +174,8 @@ public class MLTrainer {
         };
     }
 
-    private void buildDTree(final boolean trainRandomForest) {
+    private void buildDTree(final boolean trainRandomForest, int giniMaxDepth, int entropyMaxDepth, int giniNodeSize, int entropyNodeSize,
+                            int giniForestMaxDepth, int entropyForestMaxDepth, int giniForestNodeSize, int entropyForestNodeSize) {
         var xArrays = new int[this.train.length][];
         for (int i = 0; i < this.train.length; i++) {
             final var array = this.train[i];
@@ -161,13 +186,13 @@ public class MLTrainer {
         xArrays = xArrayListForm.toArray(new int[0][]);
         final var df = DataFrame.of(xArrays);
         log.debug("DataFrame: {}", df.toString(0, 20, true));
-        this.giniTree = DecisionTree.fit(Formula.lhs("V1"), df, new DecisionTree.Options(SplitRule.GINI, 26, 0, 4));
-        this.entropyTree = DecisionTree.fit(Formula.lhs("V1"), df, new DecisionTree.Options(SplitRule.ENTROPY, 27, 0, 3));
+        this.giniTree = DecisionTree.fit(Formula.lhs("V1"), df, new DecisionTree.Options(SplitRule.GINI, giniMaxDepth, 0, giniNodeSize));
+        this.entropyTree = DecisionTree.fit(Formula.lhs("V1"), df, new DecisionTree.Options(SplitRule.ENTROPY, entropyMaxDepth, 0, entropyNodeSize));
 
         // Shitty Forests
         if (!trainRandomForest) return;
-        this.giniForest = RandomForest.fit(Formula.lhs("V1"), df, new RandomForest.Options(125, 0, SplitRule.GINI, 22, 0, 4, 1.0, null, null, null));
-        this.entropyForest = RandomForest.fit(Formula.lhs("V1"), df, new RandomForest.Options(125, 0, SplitRule.ENTROPY, 22, 0, 4, 1.0, null, null, null));
+        this.giniForest = RandomForest.fit(Formula.lhs("V1"), df, new RandomForest.Options(125, 0, SplitRule.GINI, giniForestMaxDepth, 0, giniForestNodeSize, 1.0, null, null, null));
+        this.entropyForest = RandomForest.fit(Formula.lhs("V1"), df, new RandomForest.Options(125, 0, SplitRule.ENTROPY, entropyForestMaxDepth, 0, entropyForestNodeSize, 1.0, null, null, null));
     }
 
     /**
@@ -269,7 +294,7 @@ public class MLTrainer {
         double[][][] mergedLegitData = mergeData(legitDataList);
         double[][][] mergedCheatingData = mergeData(cheatingDataList);
 
-        final var trainer = new MLTrainer(mergedLegitData, mergedCheatingData, slice, true, intlify, statistics, modelType.toLowerCase().contains("forest"));
+        final var trainer = new MLTrainer(mergedLegitData, mergedCheatingData, slice, shrink, intlify, statistics, modelType.toLowerCase().contains("forest"));
 
         return switch (modelType.toLowerCase()) {
             case "decision_tree_gini" -> {
