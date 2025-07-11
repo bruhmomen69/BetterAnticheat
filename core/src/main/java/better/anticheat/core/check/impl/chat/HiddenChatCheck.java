@@ -1,22 +1,32 @@
 package better.anticheat.core.check.impl.chat;
 
+import better.anticheat.core.BetterAnticheat;
 import better.anticheat.core.check.Check;
 import better.anticheat.core.check.CheckInfo;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientSettings;
 
-@CheckInfo(name = "HiddenChat", category = "chat", config = "checks")
+/**
+ * This check looks for chatting with no chat box.
+ */
+@CheckInfo(name = "HiddenChat", category = "chat")
 public class HiddenChatCheck extends Check {
 
     private boolean canChat = true, initalFlag = false;
+
+    public HiddenChatCheck(BetterAnticheat plugin) {
+        super(plugin);
+    }
 
     @Override
     public void handleReceivePlayPacket(PacketPlayReceiveEvent event) {
 
         /*
-         * You can only chat while your chat is visible. It is impossible to chat with a vanilla client when your chat
-         * is Hidden.
-         * TODO: Look into potential issues with servers that are offline.
+         * In Minecraft, there are three chat modes:
+         * FULL - Full access to the chat with other players.
+         * SYSTEM - You should only be able to interact with the Minecraft server, not other players.
+         * HIDDEN - You cannot interact with anything.
+         * So, if a player interacts with the chat on Hidden, they're cheating!
          */
 
         switch (event.getPacketType()) {

@@ -1,16 +1,30 @@
 package better.anticheat.core.check.impl.combat;
 
+import better.anticheat.core.BetterAnticheat;
 import better.anticheat.core.check.Check;
 import better.anticheat.core.check.CheckInfo;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 
-@CheckInfo(name = "SlotInteractOrder", category = "combat", config = "checks")
+/**
+ * This check looks for the order of slot change and interact entity packets.
+ */
+@CheckInfo(name = "SlotInteractOrder", category = "combat")
 public class SlotInteractOrderCheck extends Check {
 
     private boolean slotChange = false;
 
+    public SlotInteractOrderCheck(BetterAnticheat plugin) {
+        super(plugin);
+    }
+
     @Override
     public void handleReceivePlayPacket(PacketPlayReceiveEvent event) {
+
+        /*
+         * Minecraft's networking will send packets in a certain order within the tick. One notable order that some
+         * cheats often break is that attack packets must be sent before slot change packets.
+         */
+
         switch (event.getPacketType()) {
             case CLIENT_TICK_END:
                 slotChange = false;

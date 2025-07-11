@@ -32,52 +32,52 @@ public class CheckManager {
 
         checks = Arrays.asList(
                 // Chat Checks
-                new HiddenChatCheck(),
-                new ImpossibleCompletionCheck(),
-                new ImpossibleMessageCheck(),
+                new HiddenChatCheck(plugin),
+                new ImpossibleCompletionCheck(plugin),
+                new ImpossibleMessageCheck(plugin),
 
                 // Combat Checks
-                new ActionInteractOrderCheck(),
-                new DualClickCheck(),
-                new InvalidReleaseValuesCheck(),
-                new InvalidUseActionsCheck(),
-                new MultipleActionCheck(),
-                new MultipleHitCheck(),
-                new NoSwingCombatCheck(),
-                new SelfHitCheck(),
-                new SlotInteractOrderCheck(),
+                new ActionInteractOrderCheck(plugin),
+                new DualClickCheck(plugin),
+                new InvalidReleaseValuesCheck(plugin),
+                new InvalidUseActionsCheck(plugin),
+                new MultipleActionCheck(plugin),
+                new MultipleHitCheck(plugin),
+                new NoSwingCombatCheck(plugin),
+                new SelfHitCheck(plugin),
+                new SlotInteractOrderCheck(plugin),
 
                 // Dig Checks
-                new DigBlockFacePositionCheck(),
-                new DigOrderCheck(),
-                new MultiBreakCheck(),
-                new RepeatedDigCheck(),
+                new DigBlockFacePositionCheck(plugin),
+                new DigOrderCheck(plugin),
+                new MultiBreakCheck(plugin),
+                new RepeatedDigCheck(plugin),
 
                 // Flying Checks
-                new ArtificialFlyingCheck(),
-                new ArtificialPositionCheck(),
-                new FlyingSequenceCheck(),
-                new ImpossiblePositionCheck(),
-                new ImpossibleRotationCheck(),
-                new RepeatedRotationCheck(),
-                new RepeatedSteerCheck(),
+                new ArtificialFlyingCheck(plugin),
+                new ArtificialPositionCheck(plugin),
+                new FlyingSequenceCheck(plugin),
+                new ImpossiblePositionCheck(plugin),
+                new ImpossibleRotationCheck(plugin),
+                new RepeatedRotationCheck(plugin),
+                new RepeatedSteerCheck(plugin),
 
                 // Heuristic Checks
-                new CombatAccelerationCheck(),
+                new CombatAccelerationCheck(plugin),
 
                 // Misc Checks
-                new ImpossibleHorseJumpCheck(),
-                new ImpossibleSlotCheck(),
-                new LargeNameCheck(),
-                new MultipleSlotCheck(),
-                new SmallRenderCheck(),
+                new ImpossibleHorseJumpCheck(plugin),
+                new ImpossibleSlotCheck(plugin),
+                new LargeNameCheck(plugin),
+                new MultipleSlotCheck(plugin),
+                new SmallRenderCheck(plugin),
 
                 // Packet Checks
-                new BalanceCheck(),
-                new PostCheck(),
+                new BalanceCheck(plugin),
+                new PostCheck(plugin),
 
                 // Place Checks
-                new PlaceBlockFacePositionCheck()
+                new PlaceBlockFacePositionCheck(plugin)
         );
     }
 

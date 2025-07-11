@@ -1,16 +1,32 @@
 package better.anticheat.core.check.impl.flying;
 
+import better.anticheat.core.BetterAnticheat;
 import better.anticheat.core.check.Check;
 import better.anticheat.core.check.CheckInfo;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 
-@CheckInfo(name = "FlyingSequence", category = "flying", config = "checks")
+/**
+ * This check looks for missing position packets.
+ */
+@CheckInfo(name = "FlyingSequence", category = "flying")
 public class FlyingSequenceCheck extends Check {
 
     private int ticks = -1;
 
+    public FlyingSequenceCheck(BetterAnticheat plugin) {
+        super(plugin);
+    }
+
     @Override
     public void handleReceivePlayPacket(PacketPlayReceiveEvent event) {
+
+        /*
+         * One technique Mojang has implement to prevent position desyncs was adding a position packet that sends once
+         * a second regardless of whether a player moves or not. Given that the client ticks 20 times in a second, we
+         * can then check if the client passes 20 ticks without sending a position packet to see if it may be trying to
+         * hide its position (maybe a badly coded blink cheat) or trying to just avoid sending related packets.
+         */
+
         switch (event.getPacketType()) {
             case PLAYER_LOADED:
                 ticks = 0;

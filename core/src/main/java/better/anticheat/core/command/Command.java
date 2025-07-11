@@ -24,6 +24,11 @@ import java.util.List;
  * config generation/handling, permission processing, and run-time name and permission resolution. If it weren't for the
  * fact that Bukkit sucks for listening to commands in the pre-process stage, this likely would've been avoided with the
  * sharkbyte packet-based command system.
+ * <p>
+ * When using the Command class there are a few core things to understand:
+ * 1. To use the constructor with only BetterAnticheat, you must use the @CommandInfo annotation on the class.
+ * 2. The command handling system is that from Lamp. Their wiki will be your best help.
+ * 3. If you override the config handling, you must super.load()!
  */
 @Getter
 public abstract class Command implements OrphanCommand {

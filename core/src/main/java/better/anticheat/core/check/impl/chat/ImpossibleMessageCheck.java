@@ -1,13 +1,21 @@
 package better.anticheat.core.check.impl.chat;
 
+import better.anticheat.core.BetterAnticheat;
 import better.anticheat.core.check.Check;
 import better.anticheat.core.check.CheckInfo;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientChatMessage;
 
-@CheckInfo(name = "ImpossibleMessage", category = "chat", config = "checks")
+/**
+ * This check looks for impossible chat messages.
+ */
+@CheckInfo(name = "ImpossibleMessage", category = "chat")
 public class ImpossibleMessageCheck extends Check {
+
+    public ImpossibleMessageCheck(BetterAnticheat plugin) {
+        super(plugin);
+    }
 
     @Override
     public void handleReceivePlayPacket(PacketPlayReceiveEvent event) {

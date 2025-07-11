@@ -1,20 +1,29 @@
 package better.anticheat.core.check.impl.combat;
 
+import better.anticheat.core.BetterAnticheat;
 import better.anticheat.core.check.Check;
 import better.anticheat.core.check.CheckInfo;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientInteractEntity;
 
-@CheckInfo(name = "ActionInteractOrder", category = "combat", config = "checks")
+/**
+ * This check looks for the order of entity action and interact entity packets.
+ */
+@CheckInfo(name = "ActionInteractOrder", category = "combat")
 public class ActionInteractOrderCheck extends Check {
 
     private boolean sentEntityAction = false;
+
+    public ActionInteractOrderCheck(BetterAnticheat plugin) {
+        super(plugin);
+    }
 
     @Override
     public void handleReceivePlayPacket(PacketPlayReceiveEvent event) {
 
         /*
-         * Minecraft's processing does not allow
+         * Minecraft's networking will send packets in a certain order within the tick. One notable order that some
+         * cheats often break is that attack packets must be sent before entity action packets.
          */
 
         switch (event.getPacketType()) {

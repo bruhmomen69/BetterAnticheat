@@ -1,15 +1,23 @@
 package better.anticheat.core.check.impl.dig;
 
+import better.anticheat.core.BetterAnticheat;
 import better.anticheat.core.check.Check;
 import better.anticheat.core.check.CheckInfo;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerDigging;
 
-@CheckInfo(name = "DigOrder", category = "dig", config = "checks")
+/**
+ * This check ensures dig packets are sent in the correct order.
+ */
+@CheckInfo(name = "DigOrder", category = "dig")
 public class DigOrderCheck extends Check {
 
     private boolean started = true;
+
+    public DigOrderCheck(BetterAnticheat plugin) {
+        super(plugin);
+    }
 
     @Override
     public void handleReceivePlayPacket(PacketPlayReceiveEvent event) {

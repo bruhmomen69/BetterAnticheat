@@ -1,5 +1,6 @@
 package better.anticheat.core.check.impl.combat;
 
+import better.anticheat.core.BetterAnticheat;
 import better.anticheat.core.check.Check;
 import better.anticheat.core.check.CheckInfo;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
@@ -7,19 +8,30 @@ import com.github.retrooper.packetevents.protocol.player.DiggingAction;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientInteractEntity;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerDigging;
 
-@CheckInfo(name = "InvalidUseActions", category = "combat", config = "checks")
+/**
+ * This check looks for attacking while using an item.
+ */
+@CheckInfo(name = "InvalidUseActions", category = "combat")
 public class InvalidUseActionsCheck extends Check {
 
     private boolean blocking = false, attacked = false, placed = false;
+
+    public InvalidUseActionsCheck(BetterAnticheat plugin) {
+        super(plugin);
+    }
 
     @Override
     public void handleReceivePlayPacket(PacketPlayReceiveEvent event) {
 
         /*
-         * Primarily an auto block check.
-         * Rather than checking for blocking in the same tick as the attack, we actively track blocking over longer periods.
-         * However, we don't know if the player is actually blocking. That's why it's important that we only flag if the
-         * player released their used item... meaning they were blocking.
+         * In Minecraft, a pretty general rule is that you can't attack entities while using an item (pulling back a
+         * bow, eating food, blocking a shield, etc). This sounds extremely simple to detect, until you start looking
+         * into Minecraft's netcode. When using certain consumables like enderpearls, you send an initial use but never
+         * release. This means that just because a player started using an item doesn't mean they're going to actually
+         * be using it. So, we only know they were actually using an item when they release it. So our check likes this:
+         * 1. We listen for an initial use item packet and start tracking at that point.
+         * 2. We listen for action packets like block placements and attacks.
+         * 3. On release, we see if they performed any actions and flag them if they did.
          */
 
         switch (event.getPacketType()) {

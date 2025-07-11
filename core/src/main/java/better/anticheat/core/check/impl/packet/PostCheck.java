@@ -1,5 +1,6 @@
 package better.anticheat.core.check.impl.packet;
 
+import better.anticheat.core.BetterAnticheat;
 import better.anticheat.core.check.Check;
 import better.anticheat.core.check.CheckInfo;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
@@ -8,14 +9,33 @@ import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import java.util.ArrayList;
 import java.util.List;
 
-@CheckInfo(name = "Post", category = "packet", config = "checks")
+/**
+ * This check looks for packets sent at the wrong stage of a tick.
+ */
+@CheckInfo(name = "Post", category = "packet")
 public class PostCheck extends Check {
 
     private boolean sentFlying = false, held = true, login = false;
     private final List<PacketType.Play.Client> post = new ArrayList<>();
 
+    public PostCheck(BetterAnticheat plugin) {
+        super(plugin);
+    }
+
     @Override
     public void handleReceivePlayPacket(PacketPlayReceiveEvent event) {
+
+        /*
+         * In Minecraft networking, certain packets are sent at certain stages of the tick. The two most important are
+         * the Flying packet (Flying, Position, Rotation, and Position and Rotation) and the End Tick packet. The flying
+         * packet and its subtypes are sent near the end of the tick, while the End Tick packet is sent at the absolute
+         * end of the tick. Thus, we can check if various types of packets are sent between the Flying and End Tick
+         * packet when they should be sent earlier in the tick. This can be indicative of a cheat artificially sending
+         * packets when it shouldn't be.
+         *
+         * This also includes a patch for the change slot packet where the first one may be sent out of order.
+         */
+
         switch (event.getPacketType()) {
             case PLAYER_LOADED:
                 login = true;

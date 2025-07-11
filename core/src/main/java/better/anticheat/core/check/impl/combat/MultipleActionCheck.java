@@ -1,17 +1,30 @@
 package better.anticheat.core.check.impl.combat;
 
+import better.anticheat.core.BetterAnticheat;
 import better.anticheat.core.check.Check;
 import better.anticheat.core.check.CheckInfo;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientEntityAction;
 
-@CheckInfo(name = "MultipleAction", category = "combat", config = "checks")
+/**
+ * This check looks for multiple actions within a tick.
+ */
+@CheckInfo(name = "MultipleAction", category = "combat")
 public class MultipleActionCheck extends Check {
 
     private boolean changedSneak = false, changedSprint = false;
 
+    public MultipleActionCheck(BetterAnticheat plugin) {
+        super(plugin);
+    }
+
     @Override
     public void handleReceivePlayPacket(PacketPlayReceiveEvent event) {
+
+        /*
+         * You cannot send multiple sprint changes or sneak changes within a tick.
+         */
+
         switch (event.getPacketType()) {
             case CLIENT_TICK_END:
                 changedSneak = changedSprint = false;

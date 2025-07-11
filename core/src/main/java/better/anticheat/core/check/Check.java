@@ -4,6 +4,7 @@ import better.anticheat.core.BetterAnticheat;
 import better.anticheat.core.configuration.ConfigSection;
 import better.anticheat.core.player.Player;
 import better.anticheat.core.player.PlayerManager;
+import better.anticheat.core.util.ChatUtil;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.event.simple.PacketPlaySendEvent;
 import lombok.Getter;
@@ -12,6 +13,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 
+import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -19,10 +21,18 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * This is the basis for a check in the anticheat. There are a few core components to understand:
+ * 1. To use the constructor with only BetterAnticheat, you must use the @CheckInfo annotation on the class.
+ * 2. The "vl" is the amount of violations a player has on this check. This will automatically increase when flagged.
+ * 3. You can listen to packets coming from the client through handleReceivePlayPacket.
+ * 4. You can listen to packets coming from the server through handleSendPlayPacket.
+ * 5. The fail method indicates that a player is cheating.
+ * 6. If you override the config handling, you must super.load()!
+ */
 public abstract class Check implements Cloneable {
 
-    private final static Pattern TRANSLATE = Pattern.compile("(?i)&[0-9A-FK-ORX]");
-
+    protected BetterAnticheat plugin;
     protected Check reference;
     protected Player player;
 
@@ -40,20 +50,31 @@ public abstract class Check implements Cloneable {
     private int vl = 0;
     private long lastAlertMS = 0;
 
-    public Check() {
+    /**
+     * Construct the check via info provided in CheckInfo annotation.
+     * This is the recommended approach but requires a @CheckInfo annotation on implementations.
+     */
+    public Check(BetterAnticheat plugin) {
+        this.plugin = plugin;
         CheckInfo info = this.getClass().getAnnotation(CheckInfo.class);
-        if (info == null) {
-            name = getClass().getSimpleName();
-            category = "UNSUPPORTED";
-            config = null;
-            experimental = true;
-            return;
-        }
+        if (info == null) throw new InvalidParameterException("No CheckInfo annotation!");
 
+        // Copy values from annotation.
         name = info.name();
         category = info.category();
         config = info.config();
         experimental = info.experimental();
+    }
+
+    /**
+     * Construct the check via parameters.
+     */
+    public Check(BetterAnticheat plugin, String name, String category, String config, boolean experimental) {
+        this.plugin = plugin;
+        this.name = name;
+        this.category = category;
+        this.config = config;
+        this.experimental = experimental;
     }
 
     public void handleReceivePlayPacket(PacketPlayReceiveEvent event) {}
@@ -104,19 +125,26 @@ public abstract class Check implements Cloneable {
      * Handles failing the check for the player with a debug.
      */
     protected void fail(Object debug) {
+        // Prevent unnecessary vl increases.
         vl = Math.min(10000, vl + 1);
         long currentMS = System.currentTimeMillis();
 
-        if (alertVL != -1 && vl >= alertVL && (currentMS - lastAlertMS) > BetterAnticheat.getInstance().getAlertCooldown()) {
+        /*
+         * 1. Ensure alerts are enabled (alertVL != -1)
+         * 2. Ensure vl is high enough to alert (vl >= alertVL)
+         * 3. Ensure the anti-spam cooldown has elapsed (elapsed >= alertCooldown)
+         */
+        if (alertVL != -1 && vl >= alertVL && (currentMS - lastAlertMS) >= BetterAnticheat.getInstance().getAlertCooldown()) {
             String message = BetterAnticheat.getInstance().getAlertMessage();
             if (!message.isEmpty()) {
+                // Build the basic message body.
                 message = message.replaceAll("%vl%", String.valueOf(vl));
                 message = message.replaceAll("%type%", name);
                 message = message.replaceAll("%username%", player.getUser().getName());
-                message = translateColors(message);
+                message = ChatUtil.translateColors(message);
                 Component finalMessage = Component.text(message);
 
-                // Add the click command.
+                // Add the click command to the message. Kyori Adventure's syntax is horrible.
                 String click = BetterAnticheat.getInstance().getClickCommand();
                 if (!click.isEmpty())
                     finalMessage = finalMessage.clickEvent(ClickEvent.clickEvent(ClickEvent.Action.RUN_COMMAND, "/" + click.replaceAll("%username%", player.getUser().getName())));
@@ -129,8 +157,10 @@ public abstract class Check implements Cloneable {
                                     .replaceAll("%debug%", debug == null ? "NO DEBUG" : debug.toString()))
                             .append("\n");
                 }
+
+                // An empty message will be length 2 due to the \n on the end.
                 if (hoverBuild.length() > 2)
-                    finalMessage = finalMessage.hoverEvent(HoverEvent.hoverEvent(HoverEvent.Action.SHOW_TEXT, Component.text(translateColors(hoverBuild.substring(0, hoverBuild.length() - 1)))));
+                    finalMessage = finalMessage.hoverEvent(HoverEvent.hoverEvent(HoverEvent.Action.SHOW_TEXT, Component.text(ChatUtil.translateColors(hoverBuild.substring(0, hoverBuild.length() - 1)))));
 
                 if (BetterAnticheat.getInstance().isTestMode()) player.getUser().sendMessage(finalMessage);
                 else BetterAnticheat.getInstance().getPlayerManager().sendAlert(finalMessage);
@@ -139,6 +169,11 @@ public abstract class Check implements Cloneable {
             lastAlertMS = currentMS;
         }
 
+        /*
+         * We have two punishment systems: modulo and strict.
+         * Modulo assumes the punishment should be run whenever the vl is divisible by the setting amount.
+         * Strict assumes the punishment should be run whenever the vl is the setting amount.
+         */
         if (BetterAnticheat.getInstance().isPunishmentModulo()) {
             for (int punishVL : punishments.keySet()) {
                 if (vl % punishVL != 0) continue;
@@ -147,6 +182,9 @@ public abstract class Check implements Cloneable {
         } else runPunishment(vl);
     }
 
+    /**
+     * Runs the punishment associated with the given vl for the player that this check corresponds to.
+     */
     private void runPunishment(int vl) {
         List<String> punishment = punishments.get(vl);
         if (punishment != null) {
@@ -155,22 +193,6 @@ public abstract class Check implements Cloneable {
                 BetterAnticheat.getInstance().getDataBridge().sendCommand(command);
             }
         }
-    }
-
-    private static String translateColors(String text) {
-        if (text == null) return null;
-
-        Matcher matcher = TRANSLATE.matcher(text);
-        StringBuffer output = new StringBuffer();
-
-        while (matcher.find()) {
-            String match = matcher.group();
-            String replacement = "§" + match.substring(1);
-            matcher.appendReplacement(output, replacement);
-        }
-
-        matcher.appendTail(output);
-        return output.toString();
     }
 
     /**

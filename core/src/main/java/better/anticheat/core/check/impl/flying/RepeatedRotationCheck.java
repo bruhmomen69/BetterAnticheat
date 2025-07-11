@@ -1,17 +1,31 @@
 package better.anticheat.core.check.impl.flying;
 
+import better.anticheat.core.BetterAnticheat;
 import better.anticheat.core.check.Check;
 import better.anticheat.core.check.CheckInfo;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 
-@CheckInfo(name = "RepeatedRotation", category = "flying", config = "checks")
+/**
+ * This check looks for rotation packets with no rotation changes.
+ */
+@CheckInfo(name = "RepeatedRotation", category = "flying")
 public class RepeatedRotationCheck extends Check {
 
     private boolean loaded = false;
     private int exemptTicks = 0;
 
+    public RepeatedRotationCheck(BetterAnticheat plugin) {
+        super(plugin);
+    }
+
     @Override
     public void handleReceivePlayPacket(PacketPlayReceiveEvent event) {
+
+        /*
+         * To send a pure rotation packet, you must, well, rotate. That is unless you're in a vehicle of course. But if
+         * you don't rotate, you're faking the packet.
+         */
+
         switch (event.getPacketType()) {
             case PLAYER_LOADED:
                 loaded = true;

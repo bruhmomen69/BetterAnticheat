@@ -1,5 +1,6 @@
 package better.anticheat.core.check.impl.combat;
 
+import better.anticheat.core.BetterAnticheat;
 import better.anticheat.core.check.Check;
 import better.anticheat.core.check.CheckInfo;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
@@ -8,23 +9,32 @@ import com.github.retrooper.packetevents.protocol.player.DiggingAction;
 import com.github.retrooper.packetevents.protocol.world.BlockFace;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerDigging;
 
-@CheckInfo(name = "InvalidReleaseValues", category = "combat", config = "checks")
+/**
+ * This check looks for improperly filled release packets.
+ */
+@CheckInfo(name = "InvalidReleaseValues", category = "combat")
 public class InvalidReleaseValuesCheck extends Check {
+
+    public InvalidReleaseValuesCheck(BetterAnticheat plugin) {
+        super(plugin);
+    }
 
     @Override
     public void handleReceivePlayPacket(PacketPlayReceiveEvent event) {
+
+        /*
+         * Release packets have defined inputs that can NEVER be deviated from. Some auto block and item cheats
+         * improperly assume values and mess this up. These are what the values should be:
+         * BlockFace = DOWN
+         * X = 0
+         * Y = 0
+         * Z = 0
+         */
+
         if (event.getPacketType() != PacketType.Play.Client.PLAYER_DIGGING) return;
         WrapperPlayClientPlayerDigging wrapper = new WrapperPlayClientPlayerDigging(event);
 
         if (wrapper.getAction().equals(DiggingAction.RELEASE_USE_ITEM)) {
-
-            /*
-             * Release packets have defined inputs that should never be different:
-             * BlockFace = DOWN
-             * X = 0
-             * Y = 0
-             * Z = 0
-             */
 
             if (
                     !wrapper.getBlockFace().equals(BlockFace.DOWN) ||

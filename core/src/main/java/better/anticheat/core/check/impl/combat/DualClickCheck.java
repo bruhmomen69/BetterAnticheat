@@ -1,18 +1,32 @@
 package better.anticheat.core.check.impl.combat;
 
+import better.anticheat.core.BetterAnticheat;
 import better.anticheat.core.check.Check;
 import better.anticheat.core.check.CheckInfo;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientInteractEntity;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerDigging;
 
-@CheckInfo(name = "DualClick", category = "combat", config = "checks")
+/**
+ * This check looks for illegal click combinations.
+ */
+@CheckInfo(name = "DualClick", category = "combat")
 public class DualClickCheck extends Check {
 
     private boolean leftClickAtk = false, leftClickDig = false, rightClickUse = false, rightClickPlace = false;
 
+    public DualClickCheck(BetterAnticheat plugin) {
+        super(plugin);
+    }
+
     @Override
     public void handleReceivePlayPacket(PacketPlayReceiveEvent event) {
+
+        /*
+         * This check looks for different packets associated with left and right clicks, and then checks whether the
+         * combinations sent within the tick are possible.
+         */
+
         switch (event.getPacketType()) {
             case CLIENT_TICK_END:
                 if (leftClickDig && (rightClickPlace || rightClickUse)) fail("atk");

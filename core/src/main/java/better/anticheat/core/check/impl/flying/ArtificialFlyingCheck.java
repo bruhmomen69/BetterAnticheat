@@ -1,20 +1,43 @@
 package better.anticheat.core.check.impl.flying;
 
+import better.anticheat.core.BetterAnticheat;
 import better.anticheat.core.check.Check;
 import better.anticheat.core.check.CheckInfo;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 
-@CheckInfo(name = "ArtificialFlying", category = "flying", config = "checks")
+/**
+ * This check looks for excessive flying packets in a tick.
+ */
+@CheckInfo(name = "ArtificialFlying", category = "flying")
 public class ArtificialFlyingCheck extends Check {
 
     private boolean sentFlying = false, teleported = true;
 
+    public ArtificialFlyingCheck(BetterAnticheat plugin) {
+        super(plugin);
+    }
+
     @Override
     public void handleReceivePlayPacket(PacketPlayReceiveEvent event) {
+
         /*
-         * Now that Mojang removed their use item desync patch, it is impossible to send multiple flying packets in a
-         * tick. This could indicate a badly designed movement/rotation alteration.
+         * The idea that the client can only send one position/rotation/flying packet per tick seems pretty basic at
+         * first - until you look into the protocol a bit further. Our first issue is that teleporting players can
+         * sometimes override this functionality, leading to multiple flying packets in a single tick. I don't 100% know
+         * the specific details for what causes this as it can't always be recreated, but it's best to just exempt on
+         * teleports. The second is due to a historical problem due to a Mojang desync patch.
+         *
+         * Minecraft has historically had a problem where blocks may sometimes not actually place because the server
+         * believes you're excessively far from where you place - even when you aren't. This is related to 0.03 - an
+         * issue that is better described in the ArtificialPositionCheck. Essentially, due to a quirk of Minecraft the
+         * server did not know how far you actually are as the client would choose not to send its position.
+         *
+         * Seeing this as an issue, Mojang decided the best fix would be to send you position whenever you attempted to
+         * place a place or use an item. This would allow you to send infinitely many positions in a tick, destroying
+         * the idea that a flying packet was once a tick. I'm not sure when this was removed, but as of 1.21.4 it is no
+         * longer in the game at least!
          */
+
         switch (event.getPacketType()) {
             case PLAYER_FLYING:
             case PLAYER_POSITION:

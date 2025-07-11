@@ -1,5 +1,6 @@
 package better.anticheat.core.check.impl.dig;
 
+import better.anticheat.core.BetterAnticheat;
 import better.anticheat.core.check.Check;
 import better.anticheat.core.check.CheckInfo;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
@@ -7,11 +8,18 @@ import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.util.Vector3i;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerDigging;
 
-@CheckInfo(name = "MultiBreak", category = "dig", config = "checks")
+/**
+ * This check looks for multiple blocks being dug at once.
+ */
+@CheckInfo(name = "MultiBreak", category = "dig")
 public class MultiBreakCheck extends Check {
 
     private boolean hasStarted = false;
     private Vector3i latestStartPosition;
+
+    public MultiBreakCheck(BetterAnticheat plugin) {
+        super(plugin);
+    }
 
     @Override
     public void handleReceivePlayPacket(PacketPlayReceiveEvent event) {
