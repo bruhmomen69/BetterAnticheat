@@ -16,8 +16,7 @@ import java.util.Objects;
 @Data
 @AllArgsConstructor
 @RequiredArgsConstructor
-public class ConfirmationState {
-
+public class ConfirmationState implements Comparable<ConfirmationState> {
     private final Object id; // Can be Long or byte[]
     private final ConfirmationType type;
     private final long timestamp;
@@ -134,6 +133,55 @@ public class ConfirmationState {
             return Objects.hash(Arrays.hashCode((byte[]) id), type);
         } else {
             return Objects.hash(id, type);
+        }
+    }
+
+    /**
+     * Compares this confirmation state with another confirmation state.
+     * Comparison is primarily based on timestamp, then on ID if timestamps are equal.
+     *
+     * @param other the confirmation state to be compared
+     * @return a negative integer, zero, or a positive integer as this confirmation state
+     *         is less than, equal to, or greater than the specified confirmation state
+     */
+    @Override
+    public int compareTo(ConfirmationState other) {
+        // First compare by timestamp
+        int result = Long.compare(this.timestamp, other.timestamp);
+        if (result != 0) {
+            return result;
+        }
+        
+        // If timestamps are equal, compare by ID
+        switch (this.id) {
+            case Long l when other.id instanceof Long -> {
+                return Long.compare(l, (Long) other.id);
+            }
+            case byte[] thisBytes when other.id instanceof byte[] otherBytes -> {
+                // First compare by length
+                result = Integer.compare(thisBytes.length, otherBytes.length);
+                if (result != 0) {
+                    return result;
+                }
+
+                // Then compare byte by byte
+                for (int i = 0; i < thisBytes.length; i++) {
+                    result = Byte.compare(thisBytes[i], otherBytes[i]);
+                    if (result != 0) {
+                        return result;
+                    }
+                }
+                return 0;
+            }
+            case Long l -> {
+                // Long is considered "less than" byte[]
+                return -1;
+                // Long is considered "less than" byte[]
+            }
+            case null, default -> {
+                // byte[] is considered "greater than" Long
+                return 1;
+            }
         }
     }
 }

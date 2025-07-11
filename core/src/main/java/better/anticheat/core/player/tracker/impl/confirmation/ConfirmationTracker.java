@@ -14,13 +14,13 @@ import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientCo
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientKeepAlive;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPong;
 import com.github.retrooper.packetevents.wrapper.play.server.*;
+import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 import lombok.extern.slf4j.Slf4j;
 import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
@@ -31,7 +31,10 @@ public class ConfirmationTracker extends Tracker {
     /**
      * A list of awaiting confirmations.
      */
-    private final Set<ConfirmationState> confirmations = Collections.synchronizedSet(new HashSet<>());
+    private final Set<ConfirmationState> confirmations = Collections.synchronizedSet(
+            // Default size is 16, so 32 is 2x the default, which is average of normal players and abusers.
+            new ObjectLinkedOpenHashSet<>(32)
+    );
     /**
      * 30 seconds of recent confirmations, assuming one confirmation per tick, but it is usually less than this, meaning it can provide an even longer window
      */
