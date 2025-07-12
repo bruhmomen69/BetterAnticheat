@@ -67,7 +67,7 @@ ml:
       # Required average of samples to flag the player (9.5 == Definitely cheating, 3 == Probably not cheating).
       threshold: 7.5
       # Enable this model check?
-      enabled: true
+      enabled: false
       # The minimum vl required to run an alert, after the samples/threshold requirement have been met.
       alert-vl: 1
       # The punishment command to run when a player is flagged by this model.
