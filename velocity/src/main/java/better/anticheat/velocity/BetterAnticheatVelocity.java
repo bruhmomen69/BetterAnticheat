@@ -76,7 +76,7 @@ public class BetterAnticheatVelocity {
         this.core.enable();
 
         PacketEvents.getAPI().getEventManager().registerListener(new CombatDamageListener(this.core));
-        this.server.getEventManager().register(this, new PlayerJoinListener(dataBridge));
+        this.server.getEventManager().register(this, new PlayerJoinListener(dataBridge, this.server, this));
 
         this.metrics = metricsFactory.make(this, B_STATS_ID);
 

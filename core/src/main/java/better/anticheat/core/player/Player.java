@@ -62,6 +62,15 @@ public class Player implements Closeable {
         load();
 
         closeables.add(dataBridge.registerTickListener(user, this.confirmationTracker::sendTickKeepaliveNoFlush));
+
+        // Attempt to check permissions now, may fail (due to threading or join state), that is okay, as we will re-check later.
+        // This was meant to be here in the initial release, but I forgot lol.
+        try {
+            if (dataBridge.hasPermission(user, BetterAnticheat.getInstance().getAlertPermission())) {
+                // Do not turn alerts off, in case during init it was already toggled, and if this fails in an undefined way due to threading on a weird platform, we could have issues.
+                this.alerts = true;
+            }
+        } catch (Exception ignored) {}
     }
 
     /*

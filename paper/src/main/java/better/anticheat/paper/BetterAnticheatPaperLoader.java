@@ -24,14 +24,15 @@ public class BetterAnticheatPaperLoader implements PluginLoader {
     public void classloader(final PluginClasspathBuilder classpathBuilder) {
         final var resolver = new MavenLibraryResolver();
 
+        resolver.addRepository(new RemoteRepository.Builder("cloudera", "default", "https://repository.cloudera.com/content/repositories/public/").build());
         resolver.addRepository(new RemoteRepository.Builder("atlassian-3rdp-mirror", "default", "https://packages.atlassian.com/maven-3rdparty/").build());
-        resolver.addRepository(new RemoteRepository.Builder("jcenter", "default", "https://jcenter.bintray.com/").build());
-        resolver.addRepository(new RemoteRepository.Builder("atlassian-external-mirror", "default", "https://packages.atlassian.com/mvn/maven-atlassian-external/").build());
-        resolver.addRepository(new RemoteRepository.Builder("wso2-mirror", "default", "https://maven.wso2.org/nexus/content/repositories/releases/").build());
-        resolver.addRepository(new RemoteRepository.Builder("spigot", "default", "https://hub.spigotmc.org/nexus/content/repositories/snapshots/").build());
         resolver.addRepository(new RemoteRepository.Builder("gcs-central-mirror", "default", "https://maven-central.storage-download.googleapis.com/maven2/").build());
+        resolver.addRepository(new RemoteRepository.Builder("atlassian-external-mirror", "default", "https://packages.atlassian.com/mvn/maven-atlassian-external/").build());
+        resolver.addRepository(new RemoteRepository.Builder("wso2-releases", "default", "https://maven.wso2.org/nexus/content/repositories/releases/").build());
+        resolver.addRepository(new RemoteRepository.Builder("wso2-public", "default", "https://maven.wso2.org/nexus/content/repositories/public/").build());
+        resolver.addRepository(new RemoteRepository.Builder("spigot", "default", "https://hub.spigotmc.org/nexus/content/repositories/snapshots/").build());
         resolver.addRepository(new RemoteRepository.Builder("mulesoft", "default", "https://repository.mulesoft.org/nexus/content/repositories/public/").build());
-        resolver.addRepository(new RemoteRepository.Builder("thanks-my-friend-mirror", "default", "https://german-code-repo.haldor.xyz/repository/maven-central/").build());
+        resolver.addRepository(new RemoteRepository.Builder("jcenter", "default", "https://jcenter.bintray.com/").build());
         resolver.addRepository(new RemoteRepository.Builder("paper", "default", "https://repo.papermc.io/repository/maven-public/").build());
         resolver.addRepository(new RemoteRepository.Builder("sonatype-mirror", "default", "https://oss.sonatype.org/content/groups/public/").build());
 
