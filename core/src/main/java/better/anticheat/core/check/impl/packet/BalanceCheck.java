@@ -80,10 +80,10 @@ public class BalanceCheck extends Check {
 
         // Fetch max balance.
         if (!section.hasNode("max-balance")) {
-            section.setObject(Integer.class, "max-balance", 150);
+            section.setObject(Integer.class, "max-balance", 300);
             modified = true;
         }
-        maxBalance = section.getObject(Integer.class, "max-balance", 150);
+        maxBalance = section.getObject(Integer.class, "max-balance", 300);
 
         // Fetch max balance.
         if (!section.hasNode("min-balance")) {
