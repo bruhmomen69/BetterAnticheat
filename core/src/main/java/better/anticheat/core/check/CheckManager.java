@@ -14,6 +14,7 @@ import better.anticheat.core.check.impl.heuristic.CombatAccelerationCheck;
 import better.anticheat.core.check.impl.misc.*;
 import better.anticheat.core.check.impl.packet.BalanceCheck;
 import better.anticheat.core.check.impl.packet.PostCheck;
+import better.anticheat.core.check.impl.place.CursorPositionCheck;
 import better.anticheat.core.check.impl.place.PlaceBlockFacePositionCheck;
 import better.anticheat.core.configuration.ConfigSection;
 import better.anticheat.core.configuration.ConfigurationFile;
@@ -77,6 +78,7 @@ public class CheckManager {
                 new PostCheck(plugin),
 
                 // Place Checks
+                new CursorPositionCheck(plugin),
                 new PlaceBlockFacePositionCheck(plugin)
         );
     }
