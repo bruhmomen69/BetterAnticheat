@@ -8,6 +8,7 @@ import better.anticheat.core.util.EntityMath;
 import better.anticheat.core.util.MathUtil;
 import better.anticheat.core.util.ml.ModelConfig;
 import better.anticheat.core.util.type.fastlist.ArrayDoubleEvictingList;
+import better.anticheat.core.util.type.fastlist.FastObjectArrayList;
 import better.anticheat.core.util.type.fastlist.ord.OrderedArrayDoubleEvictingList;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.event.simple.PacketPlaySendEvent;
@@ -20,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -35,7 +37,7 @@ public class CMLTracker extends Tracker {
     }
 
     private final Map<String, ModelConfig> expectedModels;
-    private final ArrayList<MLCheck> internalChecks = new ArrayList<>();
+    private final List<MLCheck> internalChecks = new FastObjectArrayList<>();
     private final ArrayList<double[][]> recording = new ArrayList<>();
     private final OrderedArrayDoubleEvictingList previousYaws = new OrderedArrayDoubleEvictingList(5);
     private final OrderedArrayDoubleEvictingList previousYawOffsets = new OrderedArrayDoubleEvictingList(5);
