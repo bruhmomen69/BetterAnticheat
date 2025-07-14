@@ -5,6 +5,7 @@ import better.anticheat.core.check.Check;
 import better.anticheat.core.check.CheckInfo;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
+import com.github.retrooper.packetevents.protocol.world.BlockFace;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerBlockPlacement;
 
 /**
@@ -35,6 +36,7 @@ public class CursorPositionCheck extends Check {
         if (event.getPacketType() != PacketType.Play.Client.PLAYER_BLOCK_PLACEMENT) return;
         WrapperPlayClientPlayerBlockPlacement wrapper = new WrapperPlayClientPlayerBlockPlacement(event);
 
+        if (wrapper.getFace().equals(BlockFace.OTHER)) return;
         if (outOfBounds(wrapper.getCursorPosition().getX())) fail("x " + wrapper.getCursorPosition().getX());
         if (outOfBounds(wrapper.getCursorPosition().getY())) fail("y " + wrapper.getCursorPosition().getY());
         if (outOfBounds(wrapper.getCursorPosition().getZ())) fail("z " + wrapper.getCursorPosition().getZ());
