@@ -45,7 +45,7 @@ public class PlayerManager {
 
     public void addUser(User user, DataBridge dataBridge) {
         for (Quantifier quantifier : quantifiers) if (!quantifier.check(user)) return;
-        userMap.put(user, new Player(user, dataBridge));
+        userMap.put(user, new Player(plugin, user, dataBridge));
     }
 
     public void removeUser(User user) throws IOException {

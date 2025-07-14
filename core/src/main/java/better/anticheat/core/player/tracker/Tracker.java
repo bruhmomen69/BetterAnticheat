@@ -5,9 +5,10 @@ import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.event.simple.PacketPlaySendEvent;
 import lombok.Getter;
 
+@Getter
 public class Tracker {
-    @Getter
-    private final Player player;
+
+    protected final Player player;
 
     public Tracker(Player player) {
         this.player = player;

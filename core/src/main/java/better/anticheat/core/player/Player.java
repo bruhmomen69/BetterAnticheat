@@ -3,7 +3,6 @@ package better.anticheat.core.player;
 import better.anticheat.core.BetterAnticheat;
 import better.anticheat.core.DataBridge;
 import better.anticheat.core.check.Check;
-import better.anticheat.core.check.CheckManager;
 import better.anticheat.core.player.tracker.impl.PositionTracker;
 import better.anticheat.core.player.tracker.impl.RotationTracker;
 import better.anticheat.core.player.tracker.impl.confirmation.ConfirmationTracker;
@@ -26,17 +25,20 @@ import java.util.List;
 public class Player implements Closeable {
 
     @Getter
+    private final BetterAnticheat plugin;
+    @Getter
     private final User user;
+
     @Getter
-    private final PositionTracker positionTracker;
-    @Getter
-    private final RotationTracker rotationTracker;
+    private final CMLTracker cmlTracker;
     @Getter
     private final ConfirmationTracker confirmationTracker;
     @Getter
     private final EntityTracker entityTracker;
     @Getter
-    private final CMLTracker cmlTracker;
+    private final PositionTracker positionTracker;
+    @Getter
+    private final RotationTracker rotationTracker;
 
     @Getter
     private List<Check> checks = null;
@@ -46,11 +48,12 @@ public class Player implements Closeable {
 
     private final List<Closeable> closeables = new ArrayList<>();
 
-    public Player(final User user, final DataBridge dataBridge) {
+    public Player(final BetterAnticheat plugin, final User user, final DataBridge dataBridge) {
+        this.plugin = plugin;
         this.user = user;
         this.positionTracker = new PositionTracker(this);
         this.rotationTracker = new RotationTracker(this);
-        
+
         // Create a separate cookie allocator instance for this player
         var cookieAllocator = createCookieAllocator(
             BetterAnticheat.getInstance().getCookieAllocatorConfig()
