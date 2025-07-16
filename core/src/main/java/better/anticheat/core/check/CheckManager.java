@@ -19,7 +19,6 @@ import better.anticheat.core.check.impl.place.PlaceBlockFacePositionCheck;
 import better.anticheat.core.configuration.ConfigSection;
 import better.anticheat.core.configuration.ConfigurationFile;
 import better.anticheat.core.player.Player;
-import com.sun.security.auth.login.ConfigFile;
 
 import java.util.*;
 
@@ -40,6 +39,7 @@ public class CheckManager {
                 // Combat Checks
                 new ActionInteractOrderCheck(plugin),
                 new DualClickCheck(plugin),
+                new InvalidInteractionPositionCheck(plugin),
                 new InvalidReleaseValuesCheck(plugin),
                 new InvalidUseActionsCheck(plugin),
                 new MultipleActionCheck(plugin),

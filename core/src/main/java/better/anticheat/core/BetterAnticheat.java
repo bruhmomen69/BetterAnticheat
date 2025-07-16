@@ -13,6 +13,7 @@ import better.anticheat.core.util.ml.ModelConfig;
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.manager.server.ServerVersion;
 import com.github.retrooper.packetevents.protocol.player.ClientVersion;
+import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import lombok.Getter;
 import revxrsal.commands.Lamp;
 
@@ -46,7 +47,7 @@ public class BetterAnticheat {
     private List<String> alertHover;
     private String alertMessage, alertPermission, clickCommand;
     private boolean punishmentModulo, testMode, useCommand;
-    private Map<String, ModelConfig> modelConfigs = new HashMap<>();
+    private final Map<String, ModelConfig> modelConfigs = new Object2ObjectArrayMap<>();
     private boolean mlCombatDamageEnabled;
     private double mlCombatDamageThreshold;
     private double mlCombatDamageCancellationMultiplier;
@@ -125,30 +126,33 @@ public class BetterAnticheat {
         final var models = mlNode.getConfigSection("models");
 
         if (mlEnabled) {
+            this.modelConfigs.clear();
+
             for (final var child : models.getChildren()) {
-                modelConfigs.put(child.getKey(), new ModelConfig(
-                        child.getObject(String.class, "displayName", "example-model"),
+                this.modelConfigs.put(child.getKey(), new ModelConfig(
+                        child.getObject(String.class, "display-name", "example-model"),
                         child.getObject(String.class, "type", "model-type"),
                         child.getObject(Integer.class, "slice", 1),
-                        child.getList(String.class, "legitDatasetNames"),
-                        child.getList(String.class, "cheatDatasetNames"),
+                        child.getList(String.class, "legit-dataset-names"),
+                        child.getList(String.class, "cheat-dataset-names"),
                         child.getObject(Boolean.class, "statistics", false),
                         child.getObject(Boolean.class, "shrink", true),
                         child.getObject(Integer.class, "samples", 10),
                         child.getObject(Double.class, "threshold", 7.5),
+                        child.getObject(Integer.class, "tree-depth", 40),
                         child
                 ));
             }
         }
 
-        modelConfigs.forEach((name, config) -> {
+        this.modelConfigs.forEach((name, config) -> {
             try {
-                dataBridge.logInfo("Loading model for " + name + "...");
-                final var model = MLTrainer.create(config.getLegitDatasetNames(), config.getCheatDatasetNames(), config.getType(), config.getSlice(), config.isStatistics(), config.isStatistics(), config.isShrink(), this.directory);
+                this.dataBridge.logInfo("Loading model for " + name + "...");
+                final var model = MLTrainer.create(config.getLegitDatasetNames(), config.getCheatDatasetNames(), config.getType(), config.getSlice(), config.isStatistics(), config.isStatistics(), config.isShrink(), config.getTreeDepth(), this.directory);
                 config.setClassifierFunction(model);
-                dataBridge.logInfo("Model for " + name + " loaded!");
+                this.dataBridge.logInfo("Model for " + name + " loaded!");
             } catch (IOException e) {
-                dataBridge.logInfo("Error while creating model trainer for " + name + ": " + e.getMessage());
+                this.dataBridge.logWarning("Error while creating model trainer for " + name + ": " + e.getMessage());
                 e.printStackTrace();
             }
         });

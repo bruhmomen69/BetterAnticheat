@@ -58,6 +58,8 @@ public class ModelConfig implements Serializable {
      */
     private final double threshold;
 
+    private final int treeDepth;
+
     private final ConfigSection configSection;
 
     private @Nullable Function<double[][], Double> classifierFunction = null;

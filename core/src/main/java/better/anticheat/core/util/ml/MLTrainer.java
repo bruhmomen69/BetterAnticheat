@@ -71,6 +71,23 @@ public class MLTrainer {
     }
 
     /**
+     * @param legitData         the non cheating training data
+     * @param cheatingData      the cheating training data
+     * @param slice             the slice of the data to use. Options: 0, 1, or 2.
+     * @param shrink            should we shrink the data to the smallest of the two?
+     * @param intlify           should we do some changes improve compatibility of weirdly shaped doubles. NOTE: This trims the decimal places to the first 7 only, among other tasks.
+     * @param statistics        should we generate statistics for the data, instead of using raw data.
+     * @param trainRandomForest should we train a random forest, resulting in many unwanted logs.
+     * @param giniMaxDepth         the maximum depth for the gini tree
+     * @param entropyMaxDepth      the maximum depth for the entropy tree
+     * @param giniForestMaxDepth   the maximum depth for the gini forest
+     * @param entropyForestMaxDepth the maximum depth for the entropy forest
+     */
+    public MLTrainer(final double[][][] legitData, final double[][][] cheatingData, final int slice, final boolean shrink, final boolean intlify, final boolean statistics, boolean trainRandomForest, int giniMaxDepth, int entropyMaxDepth, int giniForestMaxDepth, int entropyForestMaxDepth) {
+        this(legitData, cheatingData, slice, shrink, intlify, statistics, trainRandomForest, giniMaxDepth, entropyMaxDepth, 4, 4, 30, 30, giniForestMaxDepth, entropyForestMaxDepth);
+    }
+
+    /**
      * @param legitData           the non cheating training data
      * @param cheatingData        the cheating training data
      * @param slice               the slice of the data to use. Options: 0, 1, or 2.
@@ -258,6 +275,7 @@ public class MLTrainer {
      * @param intlify              Whether to intlify the data.
      * @param statistics           Whether to generate statistics from the data.
      * @param shrink
+     * @param maxDepth
      * @param dataDirectory        The directory where recording data is stored.
      * @return A function that takes raw input data and returns a prediction score.
      * @throws IOException if there is an error reading the data files.
@@ -269,7 +287,9 @@ public class MLTrainer {
             int slice,
             boolean intlify,
             boolean statistics,
-            boolean shrink, Path dataDirectory
+            boolean shrink,
+            int maxDepth,
+            Path dataDirectory
     ) throws IOException {
         List<double[][][]> legitDataList = new ArrayList<>();
         for (String name : legitDatasetNames) {
@@ -294,7 +314,7 @@ public class MLTrainer {
         double[][][] mergedLegitData = mergeData(legitDataList);
         double[][][] mergedCheatingData = mergeData(cheatingDataList);
 
-        final var trainer = new MLTrainer(mergedLegitData, mergedCheatingData, slice, shrink, intlify, statistics, modelType.toLowerCase().contains("forest"));
+        final var trainer = new MLTrainer(mergedLegitData, mergedCheatingData, slice, shrink, intlify, statistics, modelType.toLowerCase().contains("forest"), maxDepth, maxDepth, maxDepth, maxDepth);
 
         return switch (modelType.toLowerCase()) {
             case "decision_tree_gini" -> {
