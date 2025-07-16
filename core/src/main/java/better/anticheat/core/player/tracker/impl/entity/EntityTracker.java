@@ -16,6 +16,8 @@ import better.anticheat.core.util.type.incrementer.LongIncrementer;
 import better.anticheat.core.util.type.xstate.bistate.DoubleBiState;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.event.simple.PacketPlaySendEvent;
+import com.github.retrooper.packetevents.protocol.entity.data.EntityDataTypes;
+import com.github.retrooper.packetevents.protocol.entity.pose.EntityPose;
 import com.github.retrooper.packetevents.protocol.entity.type.EntityType;
 import com.github.retrooper.packetevents.protocol.entity.type.EntityTypes;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
@@ -96,6 +98,11 @@ public class EntityTracker extends Tracker {
                 this.teleport(wrapper.getEntityId(), wrapper.getPosition().getX(), wrapper.getPosition().getY(), wrapper.getPosition().getZ());
                 break;
             }
+            case ENTITY_METADATA: {
+                final var wrapper = new WrapperPlayServerEntityMetadata(event);
+                this.handleMetadata(wrapper);
+                break;
+            }
             default:
                 break;
         }
@@ -148,6 +155,31 @@ public class EntityTracker extends Tracker {
 
         entityData.setRootState(root);
         this.entities.put(entityId, entityData);
+    }
+
+
+    /**
+     * Handles entity metadata updates from the server.
+     * Processes only the metadata of type ENTITY_POSE and updates the entity's poses accordingly.
+     * Utilizes a confirmation mechanism to ensure consistency before and after metadata application.
+     *
+     * @param wrapper the metadata packet containing entity ID and metadata entries
+     */
+    public void handleMetadata(final WrapperPlayServerEntityMetadata wrapper) {
+        final var eid = wrapper.getEntityId();
+        final var entity = this.entities.get(eid);
+        if (entity == null) {
+            return;
+        }
+
+        for (final var entityMetadatum : wrapper.getEntityMetadata()) {
+            if (entityMetadatum.getType() == EntityDataTypes.ENTITY_POSE) {
+                final var confirmation = confirmationTracker.confirm();
+
+                confirmation.onBegin(() -> entity.getPoses().addNew((EntityPose) entityMetadatum.getValue()));
+                confirmation.onAfterConfirm(() -> entity.getPoses().flushOld());
+            }
+        }
     }
 
     /**

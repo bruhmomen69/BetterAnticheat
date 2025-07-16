@@ -4,22 +4,39 @@ import better.anticheat.core.BetterAnticheat;
 import better.anticheat.core.check.Check;
 import better.anticheat.core.check.CheckInfo;
 import better.anticheat.core.util.BoundingBoxSize;
+import better.anticheat.core.util.EasyLoops;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
+import com.github.retrooper.packetevents.protocol.entity.pose.EntityPose;
 import com.github.retrooper.packetevents.protocol.entity.type.EntityTypes;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientInteractEntity;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * This check validates the target field of the INTERACT_AT packet.
  * <a href="https://minecraft.wiki/w/Java_Edition_protocol/Packets?oldid=3062733#Interact">wiki.vg</a>
  */
 @CheckInfo(name = "InvalidInteractionPosition", category = "combat")
+@Slf4j
 public class InvalidInteractionPositionCheck extends Check {
     /**
      * Margin of error due to non-strict MC FP32/64 coercion precision.
      * Is somewhat a heuristic value.
      */
     public static final double FP_MARGIN = 0.0001;
+
+    public static final EntityPose[] STRAIGHT_POSES = {
+            EntityPose.STANDING,
+            EntityPose.FALL_FLYING,
+            EntityPose.SPIN_ATTACK,
+            EntityPose.LONG_JUMPING,
+            EntityPose.CROAKING,
+            EntityPose.USING_TONGUE,
+            EntityPose.DIGGING,
+            EntityPose.SNIFFING,
+            EntityPose.SHOOTING,
+            EntityPose.INHALING
+    };
 
     public InvalidInteractionPositionCheck(BetterAnticheat plugin) {
         super(plugin);
@@ -50,6 +67,26 @@ public class InvalidInteractionPositionCheck extends Check {
             final var entity = player.getEntityTracker().getEntities().get(wrapper.getEntityId());
             if (entity == null || entity.getType() == EntityTypes.ENDER_DRAGON) return;
 
+            // At this point, we may need to exempt some poses. Iterate twice to check if the pose is allowed. Scales well as STRAIGHT_POSES is of constant size.
+            if (
+                    EasyLoops.allMatch(
+                            entity.getPoses(),
+                            (pose) -> {
+                                for (final var straightPose : STRAIGHT_POSES) {
+                                    if (pose == straightPose | pose == null) {
+                                        return true;
+                                    }
+                                }
+
+                                return false;
+                            }
+                    )
+            ) {
+                log.debug("Entity {} has an invalid pose: {}", entity.getType().getName().getKey(), entity.getPoses());
+                return;
+            }
+
+            // Continue with the check.
             final var height = BoundingBoxSize.getHeight(entity);
             final var width = BoundingBoxSize.getWidth(entity);
 

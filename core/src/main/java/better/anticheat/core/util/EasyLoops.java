@@ -4,6 +4,7 @@ import lombok.experimental.UtilityClass;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Queue;
 import java.util.function.Predicate;
@@ -40,7 +41,7 @@ public class EasyLoops {
      * @param predicate the predicate to test each element against; must not be null
      * @return true if all elements match the predicate, false otherwise
      */
-    public <A> boolean allMatch(final Collection<A> collection, final Predicate<A> predicate) {
+    public <A> boolean allMatch(final Iterable<A> collection, final Predicate<A> predicate) {
         for (A predictedMotion : collection) {
             if (!predicate.test(predictedMotion)) return false;
         }

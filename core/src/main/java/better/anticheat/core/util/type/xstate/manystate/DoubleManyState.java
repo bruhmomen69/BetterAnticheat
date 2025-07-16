@@ -37,6 +37,9 @@ public class DoubleManyState implements ManyState<Double> {
         states[0] = neww;
         if (size < capacity()) {
             size++;
+        } else {
+            flushOld();
+            addNew(neww);
         }
     }
 

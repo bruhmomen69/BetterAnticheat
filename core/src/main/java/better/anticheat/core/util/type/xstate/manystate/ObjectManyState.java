@@ -19,7 +19,19 @@ public class ObjectManyState<A> implements ManyState<A> {
     @NotNull
     @Override
     public Iterator<A> iterator() {
-        return Arrays.asList(Arrays.copyOf(states, size)).iterator();
+        return new Iterator<>() {
+            private int currentIndex = 0;
+
+            @Override
+            public boolean hasNext() {
+                return currentIndex < size;
+            }
+
+            @Override
+            public A next() {
+                return states[currentIndex++];
+            }
+        };
     }
 
     @Override
@@ -38,6 +50,9 @@ public class ObjectManyState<A> implements ManyState<A> {
         states[0] = neww;
         if (size < capacity()) {
             size++;
+        } else {
+            flushOld();
+            addNew(neww);
         }
     }
 

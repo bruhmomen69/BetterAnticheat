@@ -37,6 +37,9 @@ public class ShortManyState implements ManyState<Short> {
         states[0] = neww;
         if (size < capacity()) {
             size++;
+        } else {
+            flushOld();
+            addNew(neww);
         }
     }
 

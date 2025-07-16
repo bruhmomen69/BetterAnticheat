@@ -3,6 +3,8 @@ package better.anticheat.core.player.tracker.impl.entity.type;
 import better.anticheat.core.util.type.xstate.bistate.DoubleBiState;
 import better.anticheat.core.util.type.fastlist.FastObjectArrayList;
 import better.anticheat.core.util.type.incrementer.IntIncrementer;
+import better.anticheat.core.util.type.xstate.manystate.ObjectManyState;
+import com.github.retrooper.packetevents.protocol.entity.pose.EntityPose;
 import com.github.retrooper.packetevents.protocol.entity.type.EntityType;
 import lombok.Data;
 import org.jetbrains.annotations.NotNull;
@@ -18,6 +20,7 @@ public class EntityData {
     private DoubleBiState serverPosX;
     private DoubleBiState serverPosY;
     private DoubleBiState serverPosZ;
+    private ObjectManyState<EntityPose> poses = new ObjectManyState<>(100);
     private float height;
     private float width;
     private EntityTrackerState rootState;

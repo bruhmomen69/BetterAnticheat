@@ -37,6 +37,9 @@ public class BooleanManyState implements ManyState<Boolean> {
         states[0] = neww;
         if (size < capacity()) {
             size++;
+        } else {
+            flushOld();
+            addNew(neww);
         }
     }
 

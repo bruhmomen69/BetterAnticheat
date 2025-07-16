@@ -37,6 +37,9 @@ public class FloatManyState implements ManyState<Float> {
         states[0] = neww;
         if (size < capacity()) {
             size++;
+        } else {
+            flushOld();
+            addNew(neww);
         }
     }
 

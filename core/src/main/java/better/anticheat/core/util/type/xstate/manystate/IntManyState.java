@@ -37,6 +37,9 @@ public class IntManyState implements ManyState<Integer> {
         states[0] = neww;
         if (size < capacity()) {
             size++;
+        } else {
+            flushOld();
+            addNew(neww);
         }
     }
 
