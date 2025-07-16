@@ -9,24 +9,28 @@ BetterAnticheat is an auxiliary anticheat. BetterAnticheat does not aim to and w
 reach, etc. BetterAnticheat exists to catch more niche cheats that many anticheats do not catch on their own, meaning it
 should be run alongside another anticheat.
 
-BetterAnticheat is written in a way where it does not send any packets other than chat messages and will not alter any
-packets coming to the server. This means that there should not be any incompatibilities with other plugins unless that
-other plugin creates an incompatibility.
+It is also designed to be lightweight, platform-independent, compatible with other anticheat systems, and most checks 
+are designed with a 0-buffer system - meaning if a check flags it means that a player is 100% cheating. Here is how
+BetterAnticheat accomplishes this:
+- Lag compensation. BA knows how the client perceives the world at any given time and can account for it.
+- Cookies. BA uses the cookie packet for compensation as to not interfere with Ping/Pong usage.
+- Runtime command registration. BA commands can have their paths altered live and can be enabled/disabled.
+- Industry-grade design. BA is designed by anticheat developers with significant experience and history.
+- Machine learning. BA uses machine learning to establish a trust level for users in combat.
 
-It is also designed to be lightweight, platform-independent, and designed with a 0-buffer system where if a check flags
-it means the player is running a non-vanilla client. It should be noted that it is entirely possible that the plugin
-will not help you at all - a lot of checks are extremely niche or patch exploits that aren't common anymore. However,
-all checks in the anticheat do protect your server from possibly malicious behavior.
-
-This project and its collaborators use the following regularly and are thankful for their maintenance:
+### This project and its collaborators use the following regularly and are thankful for their maintenance:
 - [PacketEvents](https://github.com/retrooper/packetevents)
 - [sharkbyte-configuration](https://github.com/amnoah/sharkbyte-configuration)
 
-There is a test server available at `192.18.159.249` for clients 1.21.4 and above.
+A public test server exists at `192.18.159.249` for clients 1.21.4 and above, but it is not always online due to being
+used for development too.
+
+NOTE: Please stop claiming this is a local ip address! It is not. You are thinking of IPs in the `192.168.0.0` - 
+`192.168.255.255` range.
 
 ## Requirements
 
-This plugin is designed for 1.21.4+ on Spigot, Paper/Folia, and Sponge.
+This plugin is designed for 1.21.4+ on Spigot, Paper/Folia, Sponge, and Velocity.
 
 It requires [PacketEvents](https://github.com/retrooper/packetevents)
 
@@ -50,6 +54,7 @@ These checks look for issues with combat. These may catch a variety of combat ch
 
 - ActionInteractOrder | Sending an EntityAction packet prior to an InteractEntity in a tick.
 - DualClick | Sending simultaneous left and right clicks.
+- InvalidInteractionPosition | Invalid client-calculated hitbox interactions.
 - InvalidReleaseValues | Releasing a used item with values filled out.
 - InvalidUseActions | Attacking or placing while using an item.
 - MultipleAction | Changing sneak or sprint status multiple times in a tick.
@@ -108,6 +113,7 @@ These checks look for general packet issues. These may catch packet order altera
 
 These checks look for issues with block placement. These may catch scaffold, fast place, ghost hand, and other cheats.
 
+- CursorPosition | Invalid client-calculated block raycasts.
 - PlaceBlockFacePosition | Placing on block faces which cannot be seen.
 
 # Documentation
