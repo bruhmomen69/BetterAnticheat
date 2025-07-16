@@ -26,6 +26,39 @@ public class MathUtil {
         return Math.sqrt(sum);
     }
 
+    /**
+     * Gets the number of consecutive values in the history array
+     * that are above the given minimum.
+     *
+     * @param min the minimum value to check
+     * @return the number of consecutive values above the minimum
+     */
+    public int getConsecutiveAboveX(final double min, final double[] array) {
+        var count = 0;
+
+        // Iterate from the end of the array to the beginning
+        for (int i = array.length - 1; i >= 0; i--) {
+            if (array[i] > min) {
+                count++;
+            } else {
+                // Stop counting when we find a value that's not above 7
+                break;
+            }
+        }
+
+        return count;
+    }
+
+    /**
+     * Calculates the variance of an array of double values.
+     *
+     * The variance is computed as the average of the squared differences
+     * from the mean. This method provides a measure of how much the values
+     * in the array deviate from the average value.
+     *
+     * @param data an array of double values for which the variance is to be calculated
+     * @return the variance as a double value
+     */
     public double getVariance(final double[] data) {
         int count = 0;
 
@@ -48,12 +81,33 @@ public class MathUtil {
         return variance;
     }
 
+    /**
+     * Calculates the standard deviation of an array of double values.
+     *
+     * The standard deviation is a measure of the amount of variation or dispersion
+     * in a set of values. This method computes the standard deviation by first
+     * calculating the variance using {@link #getVariance(double[])} and then taking
+     * the square root of the variance.
+     *
+     * @param data an array of double values for which the standard deviation is to be calculated
+     * @return the standard deviation as a double value
+     */
     public double getStandardDeviation(final double[] data) {
         final double variance = getVariance(data);
 
         return Math.sqrt(variance);
     }
 
+    /**
+     * Calculates the skewness of an array of double values.
+     *
+     * Skewness is a measure of the asymmetry of the probability distribution of a real-valued
+     * random variable about its mean. This method uses the Pearson's second coefficient of skewness,
+     * which is calculated as 3 times the difference between the mean and median, divided by the variance.
+     *
+     * @param data an array of double values for which the skewness is to be calculated
+     * @return the skewness as a double value, or Double.NaN if the array is empty
+     */
     public double getSkewness(double[] data) {
         if (data.length < 1) return Double.NaN;
 

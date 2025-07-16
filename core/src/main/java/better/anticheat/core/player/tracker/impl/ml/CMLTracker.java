@@ -7,7 +7,6 @@ import better.anticheat.core.player.tracker.Tracker;
 import better.anticheat.core.util.EntityMath;
 import better.anticheat.core.util.MathUtil;
 import better.anticheat.core.util.ml.ModelConfig;
-import better.anticheat.core.util.type.fastlist.ArrayDoubleEvictingList;
 import better.anticheat.core.util.type.fastlist.FastObjectArrayList;
 import better.anticheat.core.util.type.fastlist.ord.OrderedArrayDoubleEvictingList;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
@@ -122,7 +121,7 @@ public class CMLTracker extends Tracker {
     public static class MLCheck extends Check {
         private final ModelConfig modelConfig;
         @Getter
-        private final ArrayDoubleEvictingList history;
+        private final OrderedArrayDoubleEvictingList history;
         private final DecimalFormat df = new DecimalFormat("#.####");
 
         public MLCheck(final Player player, final ModelConfig modelConfig) {
@@ -137,7 +136,7 @@ public class CMLTracker extends Tracker {
                 log.info("[BetterAnticheat] [ML] {} is currently disabled", getName());
             }
 
-            this.history = new ArrayDoubleEvictingList(modelConfig.getSamples());
+            this.history = new OrderedArrayDoubleEvictingList(modelConfig.getSamples());
         }
 
         public void handle(final double[][] data) {
@@ -154,12 +153,18 @@ public class CMLTracker extends Tracker {
 
             final var avg = MathUtil.getAverage(this.history.getArray());
 
-            if (avg < modelConfig.getThreshold()) {
+            // We use `Math.round(modelConfig.getThreshold() - 0.5)` instead of `Math.floor(modelConfig.getThreshold())`, but they will both return the same integer result if all numbers are divisible by 0.5, but they are not.
+            final var extendedCheck = MathUtil.getConsecutiveAboveX(modelConfig.getThreshold() - 0.5, this.history.getArray())
+                    > Math.max(Math.min(3, modelConfig.getSamples() / 2), Math.round(modelConfig.getThreshold() - 0.5))
+                    && avg >= modelConfig.getThreshold();
+            final var basicCheck = avg >= modelConfig.getThreshold() + 0.5;
+
+            if (!basicCheck && !extendedCheck) {
                 log.debug("[BetterAnticheat] [ML] {} passed {} as {}", player.getUser().getName(), getName(), df.format(avg));
                 return;
             }
 
-            fail("ML-" + df.format(avg) + "-" + this.history);
+            fail("ML " + df.format(avg) + " via " + this.history);
         }
     }
 }
