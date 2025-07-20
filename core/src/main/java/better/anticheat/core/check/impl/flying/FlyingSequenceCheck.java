@@ -4,11 +4,13 @@ import better.anticheat.core.BetterAnticheat;
 import better.anticheat.core.check.Check;
 import better.anticheat.core.check.CheckInfo;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * This check looks for missing position packets.
  */
 @CheckInfo(name = "FlyingSequence", category = "flying")
+@Slf4j
 public class FlyingSequenceCheck extends Check {
 
     private int ticks = -1;
@@ -40,6 +42,14 @@ public class FlyingSequenceCheck extends Check {
             case CLIENT_TICK_END:
                 // Prevent until first position is sent.
                 if (ticks < 0) return;
+
+                // Fix dead player false flags
+                if (player.getPlayerStatusTracker().getIsDead().anyTrue()) {
+                    ticks = 0;
+                    log.info("[BetterAntiCheat] Player is dead, resetting ticks: {}", player.getPlayerStatusTracker().getIsDead());
+                    return;
+                }
+
                 if (++ticks > 20) fail(ticks);
                 break;
         }

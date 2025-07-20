@@ -5,6 +5,7 @@ import better.anticheat.core.player.tracker.Tracker;
 import better.anticheat.core.player.tracker.impl.confirmation.allocator.SequentialLongCookieAllocator;
 import better.anticheat.core.util.EasyLoops;
 import better.anticheat.core.util.type.EvictingDeque;
+import better.anticheat.core.util.type.SimpleFuture;
 import better.anticheat.core.util.type.incrementer.IntIncrementer;
 import better.anticheat.core.util.type.incrementer.LongIncrementer;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
@@ -117,10 +118,10 @@ public class ConfirmationTracker extends Tracker {
                             event.setCancelled(true);
                         }
                     } else {
-                        log.debug("[BetterAntiCheat] Received cookie response without confirmation: {}", Arrays.toString(payload));
+                        log.info("[BetterAntiCheat] Received cookie response without confirmation: {}", Arrays.toString(payload));
                     }
                 } else {
-                    log.debug("[BetterAntiCheat] Received cookie response with invalid payload length. Expected: {}, Got: {}",
+                    log.info("[BetterAntiCheat] Received cookie response with invalid payload length. Expected: {}, Got: {}",
                             cookieIdAllocator.getCookieIdLength(), payload != null ? payload.length : 0);
                 }
                 break;
@@ -176,9 +177,9 @@ public class ConfirmationTracker extends Tracker {
 
         if (hasRecentArrival) {
             final var post = sendCookieOrLatest(now);
-            final var acquiredConfirmation = new CombinedConfirmation(CompletableFuture.completedFuture(this.recentConfirmations.getLast()), new CompletableFuture<>(), new IntIncrementer(1));
+            final var acquiredConfirmation = new CombinedConfirmation(new SimpleFuture<>(this.recentConfirmations.getLast()), new SimpleFuture<>(), new IntIncrementer(1));
             post.getListeners().add(() -> {
-                acquiredConfirmation.getOnBegin().complete(this.recentConfirmations.isEmpty() ? null : this.recentConfirmations.getLast());
+                acquiredConfirmation.getOnAfterConfirm().complete(this.recentConfirmations.isEmpty() ? null : this.recentConfirmations.getLast());
                 acquiredConfirmation.getState().increment();
             });
 
@@ -194,14 +195,14 @@ public class ConfirmationTracker extends Tracker {
 
         if (sentOption != null) {
             final var post = sendCookieOrLatest(now);
-            final var acquiredConfirmation = new CombinedConfirmation(new CompletableFuture<>(), new CompletableFuture<>(), new IntIncrementer(0));
+            final var acquiredConfirmation = new CombinedConfirmation(new SimpleFuture<>(), new SimpleFuture<>(), new IntIncrementer(0));
             sentOption.getListeners().add(() -> {
                 acquiredConfirmation.getOnBegin().complete(this.recentConfirmations.isEmpty() ? null : this.recentConfirmations.getLast());
                 acquiredConfirmation.getState().increment();
             });
 
             post.getListeners().add(() -> {
-                if (!acquiredConfirmation.getOnBegin().isDone()) {
+                if (!acquiredConfirmation.getOnBegin().isComplete()) {
                     acquiredConfirmation.getOnBegin().complete(post);
                     acquiredConfirmation.getState().increment();
                 }
@@ -214,7 +215,7 @@ public class ConfirmationTracker extends Tracker {
         }
 
         // Send a keepalive for pre I guess lol, and hope nothing breaks. If we are getting updates every tick, this will not be needed.
-        final var acquiredConfirmation = new CombinedConfirmation(new CompletableFuture<>(), new CompletableFuture<>(), new IntIncrementer(0));
+        final var acquiredConfirmation = new CombinedConfirmation(new SimpleFuture<>(), new SimpleFuture<>(), new IntIncrementer(0));
         final var id = this.keepAliveIncrementer.increment();
         final var confirmationState = new ConfirmationState(id, ConfirmationType.KEEPALIVE, now, true);
         this.confirmations.add(confirmationState);
@@ -224,15 +225,18 @@ public class ConfirmationTracker extends Tracker {
         ));
 
         confirmationState.getListeners().add(() -> {
-            acquiredConfirmation.getOnBegin().complete(confirmationState);
-            acquiredConfirmation.getState().increment();
+            if (acquiredConfirmation.getOnBegin().completeIfIncomplete(confirmationState)) {
+                acquiredConfirmation.getState().increment();
+                log.debug("[BetterAntiCheat] Completed begin confirmation normally...");
+            }
         });
 
         final var post = sendCookieOrLatest(now);
         post.getListeners().add(() -> {
-            if (!acquiredConfirmation.getOnBegin().isDone()) {
-                acquiredConfirmation.getOnBegin().complete(post);
+            if (!acquiredConfirmation.getOnBegin().completeIfIncomplete(post)) {
                 acquiredConfirmation.getState().increment();
+
+                log.debug("[BetterAntiCheat] Completed begin confirmation early...");
             }
 
             acquiredConfirmation.getOnAfterConfirm().complete(post);

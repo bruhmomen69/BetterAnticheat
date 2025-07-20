@@ -12,6 +12,10 @@ public class BooleanManyState implements ManyState<Boolean> {
     private final boolean[] states;
     private int size = 0;
 
+    public BooleanManyState() {
+        this(80);
+    }
+
     public BooleanManyState(int capacity) {
         this.states = new boolean[capacity];
     }
@@ -41,6 +45,32 @@ public class BooleanManyState implements ManyState<Boolean> {
             flushOld();
             addNew(neww);
         }
+    }
+
+    /**
+     * Checks if any of the states (including the current one) are {@code true}.
+     *
+     * @return {@code true} if any of the states are {@code true}, {@code false} otherwise.
+     */
+    public boolean anyTrue() {
+        for (final var fuck : this) {
+            if (fuck) return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Checks if any of the states (including the current one) are {@code false}.
+     *
+     * @return {@code true} if any of the states are {@code false}, {@code false} otherwise.
+     */
+    public boolean anyFalse() {
+        for (final var fuck : this) {
+            if (!fuck) return true;
+        }
+
+        return false;
     }
 
     @Override

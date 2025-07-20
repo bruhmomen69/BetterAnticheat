@@ -12,6 +12,10 @@ public class IntManyState implements ManyState<Integer> {
     private final int[] states;
     private int size = 0;
 
+    public IntManyState() {
+        this(80);
+    }
+
     public IntManyState(int capacity) {
         this.states = new int[capacity];
     }

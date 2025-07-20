@@ -31,9 +31,43 @@ public class BooleanTriState implements TriState<Boolean> {
         return list.iterator();
     }
 
+    /**
+     * Checks if any of the states (including the current one) are {@code true}.
+     *
+     * @return {@code true} if any of the states are {@code true}, {@code false} otherwise.
+     */
+    public boolean anyTrue() {
+        if (hasOldest && oldest) {
+            return true;
+        }
+        if (hasOld && old) {
+            return true;
+        }
+        return current;
+    }
+
+    /**
+     * Checks if any of the states (including the current one) are {@code false}.
+     *
+     * @return {@code true} if any of the states are {@code false}, {@code false} otherwise.
+     */
+    public boolean anyFalse() {
+        if (hasOldest && !oldest) {
+            return true;
+        }
+        if (hasOld && !old) {
+            return true;
+        }
+        return !current;
+    }
+
     @Override
     public void flushOld() {
-        this.hasOldest = false;
+        if (this.hasOldest) {
+            this.hasOldest = false;
+        } else if (this.hasOld) {
+            this.hasOld = false;
+        }
     }
 
     @Override

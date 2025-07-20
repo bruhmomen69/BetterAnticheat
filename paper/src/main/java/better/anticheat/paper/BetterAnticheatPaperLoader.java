@@ -24,6 +24,7 @@ public class BetterAnticheatPaperLoader implements PluginLoader {
     public void classloader(final PluginClasspathBuilder classpathBuilder) {
         final var resolver = new MavenLibraryResolver();
 
+        resolver.addRepository(new RemoteRepository.Builder("mirror", "default", "https://german-code-repo.haldor.xyz/mirror").build());
         resolver.addRepository(new RemoteRepository.Builder("cloudera", "default", "https://repository.cloudera.com/content/repositories/public/").build());
         resolver.addRepository(new RemoteRepository.Builder("atlassian-3rdp-mirror", "default", "https://packages.atlassian.com/maven-3rdparty/").build());
         resolver.addRepository(new RemoteRepository.Builder("gcs-central-mirror", "default", "https://maven-central.storage-download.googleapis.com/maven2/").build());

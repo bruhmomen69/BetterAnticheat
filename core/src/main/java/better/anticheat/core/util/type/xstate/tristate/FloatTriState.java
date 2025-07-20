@@ -33,7 +33,11 @@ public class FloatTriState implements TriState<Float> {
 
     @Override
     public void flushOld() {
-        this.hasOldest = false;
+        if (this.hasOldest) {
+            this.hasOldest = false;
+        } else if (this.hasOld) {
+            this.hasOld = false;
+        }
     }
 
     @Override

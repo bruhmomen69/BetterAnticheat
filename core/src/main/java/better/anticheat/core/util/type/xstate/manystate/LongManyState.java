@@ -12,6 +12,10 @@ public class LongManyState implements ManyState<Long> {
     private final long[] states;
     private int size = 0;
 
+    public LongManyState() {
+        this(40);
+    }
+
     public LongManyState(int capacity) {
         this.states = new long[capacity];
     }

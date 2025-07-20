@@ -12,6 +12,10 @@ public class FloatManyState implements ManyState<Float> {
     private final float[] states;
     private int size = 0;
 
+    public FloatManyState() {
+        this(80);
+    }
+
     public FloatManyState(int capacity) {
         this.states = new float[capacity];
     }

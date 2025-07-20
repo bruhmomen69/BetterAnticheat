@@ -41,7 +41,11 @@ public class ObjectTriState<A> implements TriState<A> {
 
     @Override
     public void flushOld() {
-        this.oldest = null;
+        if (this.oldest != null) {
+            this.oldest = null;
+        } else if (this.old != null) {
+            this.old = null;
+        }
     }
 
     @Override

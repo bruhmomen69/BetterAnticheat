@@ -33,7 +33,11 @@ public class ShortTriState implements TriState<Short> {
 
     @Override
     public void flushOld() {
-        this.hasOldest = false;
+        if (this.hasOldest) {
+            this.hasOldest = false;
+        } else if (this.hasOld) {
+            this.hasOld = false;
+        }
     }
 
     @Override

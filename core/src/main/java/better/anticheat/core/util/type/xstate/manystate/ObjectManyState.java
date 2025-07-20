@@ -11,6 +11,10 @@ public class ObjectManyState<A> implements ManyState<A> {
     private final A[] states;
     private int size = 0;
 
+    public ObjectManyState() {
+        this(40);
+    }
+
     @SuppressWarnings("unchecked")
     public ObjectManyState(int capacity) {
         this.states = (A[]) new Object[capacity];

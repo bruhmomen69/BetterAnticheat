@@ -12,6 +12,10 @@ public class ShortManyState implements ManyState<Short> {
     private final short[] states;
     private int size = 0;
 
+    public ShortManyState() {
+        this(80);
+    }
+
     public ShortManyState(int capacity) {
         this.states = new short[capacity];
     }

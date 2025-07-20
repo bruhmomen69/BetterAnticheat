@@ -30,14 +30,16 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectRBTreeMap;
 import it.unimi.dsi.fastutil.objects.Object2BooleanFunction;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 public class EntityTracker extends Tracker {
-    public EntityTracker(final Player player, final ConfirmationTracker confirmationTracker, final PositionTracker positionTracker, final DataBridge bridge) {
+    public EntityTracker(final Player player, final ConfirmationTracker confirmationTracker, final PositionTracker positionTracker, final DataBridge<?> bridge) {
         super(player);
         this.confirmationTracker = confirmationTracker;
         this.positionTracker = positionTracker;
@@ -53,7 +55,7 @@ public class EntityTracker extends Tracker {
     // Session data
     private final ConfirmationTracker confirmationTracker;
     private final PositionTracker positionTracker;
-    private final DataBridge bridge;
+    private final DataBridge<?> bridge;
 
     // Temporary buffers to avoid allocating each time
     private final ObjectArrayList<EntityTrackerState> stateBuffer = new ObjectArrayList<>();
@@ -188,14 +190,15 @@ public class EntityTracker extends Tracker {
     public void relMove(final int entityId, final double deltaX, final double deltaY, final double deltaZ) {
         var confirmation = confirmationTracker.confirm();
         if (!this.entities.containsKey(entityId)) {
-            confirmation.getOnBegin().thenRun(() -> relMove(entityId, deltaX, deltaY, deltaZ));
+            confirmation.onBegin(() -> relMove(entityId, deltaX, deltaY, deltaZ));
             return;
         }
 
         final var entity = this.entities.get(entityId);
         final var newState = new FastObjectArrayList<EntityTrackerState>();
 
-        confirmation.getOnBegin().thenRun(() -> {
+        confirmation.onBegin(() -> {
+            log.debug("Started relative move for entity {} at {}, {}, {}", entityId, entity.getServerPosX().getCurrent(), entity.getServerPosY().getCurrent(), entity.getServerPosZ().getCurrent());
             final var originalRoot = entity.getRootState().cloneWithoutChildren();
 
             entity.getServerPosX().addNew(entity.getServerPosX().getCurrent() + deltaX);
@@ -212,7 +215,9 @@ public class EntityTracker extends Tracker {
                     entity.getServerPosY().getCurrent(), entity.getServerPosZ().getCurrent()));
         });
 
-        confirmation.getOnAfterConfirm().thenRun(() -> {
+        confirmation.onAfterConfirm(() -> {
+            log.debug("Completed relative move for entity {} at {}, {}, {}", entityId, entity.getServerPosX().getCurrent(), entity.getServerPosY().getCurrent(), entity.getServerPosZ().getCurrent());
+
             // Update all then shake tree
             entity.getServerPosX().flushOld();
             entity.getServerPosY().flushOld();
@@ -307,6 +312,7 @@ public class EntityTracker extends Tracker {
         final var newState = new FastObjectArrayList<EntityTrackerState>();
 
         confirmation.onBegin((a) -> {
+            log.debug("teleporting to {} {} {}", x, y, z);
             entity.getServerPosX().addNew(x);
             entity.getServerPosY().addNew(y);
             entity.getServerPosZ().addNew(z);
@@ -318,6 +324,8 @@ public class EntityTracker extends Tracker {
         });
 
         confirmation.onAfterConfirm((a) -> {
+            log.debug("flushed to {} {} {} due to teleport, beginning tree update", entity.getServerPosX().getCurrent(), entity.getServerPosY().getCurrent(), entity.getServerPosZ().getCurrent());
+
             // Update all then shake tree
             entity.getServerPosX().flushOld();
             entity.getServerPosY().flushOld();

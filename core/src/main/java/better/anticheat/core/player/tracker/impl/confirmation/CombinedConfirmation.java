@@ -1,5 +1,6 @@
 package better.anticheat.core.player.tracker.impl.confirmation;
 
+import better.anticheat.core.util.type.SimpleFuture;
 import better.anticheat.core.util.type.incrementer.IntIncrementer;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -14,8 +15,8 @@ import java.util.function.Consumer;
 @Getter
 @AllArgsConstructor
 public class CombinedConfirmation {
-    private CompletableFuture<ConfirmationState> onBegin;
-    private CompletableFuture<ConfirmationState> onAfterConfirm;
+    private SimpleFuture<ConfirmationState> onBegin;
+    private SimpleFuture<ConfirmationState> onAfterConfirm;
     /**
      * 0 = Sent,
      * 1 = Begun
@@ -23,7 +24,7 @@ public class CombinedConfirmation {
      */
     private IntIncrementer state = new IntIncrementer(0);
 
-    public CombinedConfirmation(CompletableFuture<ConfirmationState> onBegin, CompletableFuture<ConfirmationState> onAfterConfirm) {
+    public CombinedConfirmation(final SimpleFuture<ConfirmationState> onBegin, final SimpleFuture<ConfirmationState> onAfterConfirm) {
         this.onBegin = onBegin;
         this.onAfterConfirm = onAfterConfirm;
     }
@@ -35,10 +36,7 @@ public class CombinedConfirmation {
      * @param consumer the runnable to be ran.
      */
     public CombinedConfirmation onBegin(final Consumer<ConfirmationState> consumer) {
-        this.onBegin = this.onBegin.thenApply((a) -> {
-            consumer.accept(a);
-            return a;
-        });
+        this.onBegin.addListener(consumer);
 
         return this;
     }
@@ -50,28 +48,19 @@ public class CombinedConfirmation {
      * @param consumer the runnable to be ran.
      */
     public CombinedConfirmation onBegin(final Runnable consumer) {
-        this.onBegin = this.onBegin.thenApply((a) -> {
-            consumer.run();
-            return a;
-        });
+        this.onBegin = this.onBegin.addListener((a) -> consumer.run());
 
         return this;
     }
 
     public CombinedConfirmation onAfterConfirm(final Consumer<ConfirmationState> consumer) {
-        this.onAfterConfirm = this.onAfterConfirm.thenApply((a) -> {
-            consumer.accept(a);
-            return a;
-        });
+        this.onAfterConfirm = this.onAfterConfirm.addListener(consumer);
 
         return this;
     }
 
     public CombinedConfirmation onAfterConfirm(final Runnable consumer) {
-        this.onAfterConfirm = this.onAfterConfirm.thenApply((a) -> {
-            consumer.run();
-            return a;
-        });
+        this.onAfterConfirm = this.onAfterConfirm.addListener((a) -> consumer.run());
         return this;
     }
 }

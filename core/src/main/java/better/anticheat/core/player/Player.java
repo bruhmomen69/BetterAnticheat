@@ -3,6 +3,7 @@ package better.anticheat.core.player;
 import better.anticheat.core.BetterAnticheat;
 import better.anticheat.core.DataBridge;
 import better.anticheat.core.check.Check;
+import better.anticheat.core.player.tracker.impl.PlayerStatusTracker;
 import better.anticheat.core.player.tracker.impl.PositionTracker;
 import better.anticheat.core.player.tracker.impl.RotationTracker;
 import better.anticheat.core.player.tracker.impl.confirmation.ConfirmationTracker;
@@ -22,28 +23,21 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+@Getter
 public class Player implements Closeable {
-
-    @Getter
     private final BetterAnticheat plugin;
-    @Getter
     private final User user;
 
-    @Getter
     private final CMLTracker cmlTracker;
-    @Getter
     private final ConfirmationTracker confirmationTracker;
-    @Getter
     private final EntityTracker entityTracker;
-    @Getter
     private final PositionTracker positionTracker;
-    @Getter
     private final RotationTracker rotationTracker;
+    private final PlayerStatusTracker playerStatusTracker;
 
-    @Getter
     private List<Check> checks = null;
 
-    @Getter @Setter
+    @Setter
     private boolean alerts = false;
 
     private final List<Closeable> closeables = new ArrayList<>();
@@ -61,6 +55,8 @@ public class Player implements Closeable {
         this.confirmationTracker = new ConfirmationTracker(this, cookieAllocator);
         
         this.entityTracker = new EntityTracker(this, this.confirmationTracker, this.positionTracker, dataBridge);
+        this.playerStatusTracker = new PlayerStatusTracker(this, this.confirmationTracker);
+
         this.cmlTracker = new CMLTracker(this);
         load();
 
@@ -84,6 +80,7 @@ public class Player implements Closeable {
         this.rotationTracker.handlePacketPlayReceive(event);
         this.confirmationTracker.handlePacketPlayReceive(event);
         this.entityTracker.handlePacketPlayReceive(event);
+        this.playerStatusTracker.handlePacketPlayReceive(event);
         this.cmlTracker.handlePacketPlayReceive(event);
 
         for (Check check : this.checks) {
@@ -97,6 +94,7 @@ public class Player implements Closeable {
         this.rotationTracker.handlePacketPlaySend(event);
         this.confirmationTracker.handlePacketPlaySend(event);
         this.entityTracker.handlePacketPlaySend(event);
+        this.playerStatusTracker.handlePacketPlaySend(event);
         this.cmlTracker.handlePacketPlaySend(event);
 
         for (Check check : this.checks) {

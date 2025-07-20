@@ -12,6 +12,10 @@ public class DoubleManyState implements ManyState<Double> {
     private final double[] states;
     private int size = 0;
 
+    public DoubleManyState() {
+        this(40);
+    }
+
     public DoubleManyState(int capacity) {
         this.states = new double[capacity];
     }
