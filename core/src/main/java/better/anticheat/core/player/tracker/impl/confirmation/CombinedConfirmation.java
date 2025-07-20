@@ -34,11 +34,13 @@ public class CombinedConfirmation {
      *
      * @param consumer the runnable to be ran.
      */
-    public void onBegin(final Consumer<ConfirmationState> consumer) {
+    public CombinedConfirmation onBegin(final Consumer<ConfirmationState> consumer) {
         this.onBegin = this.onBegin.thenApply((a) -> {
             consumer.accept(a);
             return a;
         });
+
+        return this;
     }
 
     /**
@@ -47,24 +49,29 @@ public class CombinedConfirmation {
      *
      * @param consumer the runnable to be ran.
      */
-    public void onBegin(final Runnable consumer) {
+    public CombinedConfirmation onBegin(final Runnable consumer) {
         this.onBegin = this.onBegin.thenApply((a) -> {
             consumer.run();
             return a;
         });
+
+        return this;
     }
 
-    public void onAfterConfirm(final Consumer<ConfirmationState> consumer) {
+    public CombinedConfirmation onAfterConfirm(final Consumer<ConfirmationState> consumer) {
         this.onAfterConfirm = this.onAfterConfirm.thenApply((a) -> {
             consumer.accept(a);
             return a;
         });
+
+        return this;
     }
 
-    public void onAfterConfirm(final Runnable consumer) {
+    public CombinedConfirmation onAfterConfirm(final Runnable consumer) {
         this.onAfterConfirm = this.onAfterConfirm.thenApply((a) -> {
             consumer.run();
             return a;
         });
+        return this;
     }
 }
