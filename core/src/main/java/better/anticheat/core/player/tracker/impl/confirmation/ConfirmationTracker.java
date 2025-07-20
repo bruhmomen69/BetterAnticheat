@@ -118,10 +118,10 @@ public class ConfirmationTracker extends Tracker {
                             event.setCancelled(true);
                         }
                     } else {
-                        log.info("[BetterAntiCheat] Received cookie response without confirmation: {}", Arrays.toString(payload));
+                        log.debug("[BetterAntiCheat] Received cookie response without confirmation: {}", Arrays.toString(payload));
                     }
                 } else {
-                    log.info("[BetterAntiCheat] Received cookie response with invalid payload length. Expected: {}, Got: {}",
+                    log.debug("[BetterAntiCheat] Received cookie response with invalid payload length. Expected: {}, Got: {}",
                             cookieIdAllocator.getCookieIdLength(), payload != null ? payload.length : 0);
                 }
                 break;

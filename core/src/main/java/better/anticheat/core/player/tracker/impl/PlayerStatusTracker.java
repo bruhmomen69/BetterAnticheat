@@ -39,11 +39,11 @@ public class PlayerStatusTracker extends Tracker {
                         .confirm()
                         .onBegin(() -> {
                             isDead.addNew(wrapper.getHealth() == 0);
-                            log.info("added to {} due to health", wrapper.getHealth() == 0);
+                            log.debug("added to {} due to health", wrapper.getHealth() == 0);
                         })
                         .onAfterConfirm(() -> {
                             isDead.flushOld();
-                            log.info("flushed to {} due to health", wrapper.getHealth() == 0);
+                            log.debug("flushed to {} due to health", wrapper.getHealth() == 0);
                         });
             }
 
@@ -51,11 +51,11 @@ public class PlayerStatusTracker extends Tracker {
                     .confirm()
                     .onBegin(() -> {
                         isDead.addNew(true);
-                        log.info("added to true due to death");
+                        log.debug("added to true due to death");
                     })
                     .onAfterConfirm(() -> {
                         isDead.flushOld();
-                        log.info("flushed to true due to death");
+                        log.debug("flushed to true due to death");
                     });
         }
     }
@@ -68,11 +68,11 @@ public class PlayerStatusTracker extends Tracker {
                 if (Objects.requireNonNull(wrapper.getAction()) == WrapperPlayClientClientStatus.Action.PERFORM_RESPAWN) {
                     isDead.addNew(false);
                     // Once client says alive, flush ALL the deads, as client state is all that matters.
-                    // This is done to prevent disabler exploits.
+                    // This is done to prevent disabler exploits where you selectively delay the response to certain packets.
                     for (int i = 0; i < 4; i++) {
                         isDead.flushOld();
                     }
-                    log.info("added and flushed to false due to respawn");
+                    log.debug("added and flushed to false due to respawn");
                 }
             }
         }

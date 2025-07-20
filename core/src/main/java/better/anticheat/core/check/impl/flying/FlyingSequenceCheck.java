@@ -46,7 +46,7 @@ public class FlyingSequenceCheck extends Check {
                 // Fix dead player false flags
                 if (player.getPlayerStatusTracker().getIsDead().anyTrue()) {
                     ticks = 0;
-                    log.info("[BetterAntiCheat] Player is dead, resetting ticks: {}", player.getPlayerStatusTracker().getIsDead());
+                    log.debug("[BetterAntiCheat] Player is dead, resetting ticks: {}", player.getPlayerStatusTracker().getIsDead());
                     return;
                 }
 
