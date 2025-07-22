@@ -11,6 +11,7 @@ import better.anticheat.core.player.tracker.impl.confirmation.CookieIdAllocator;
 import better.anticheat.core.player.tracker.impl.confirmation.allocator.*;
 import better.anticheat.core.player.tracker.impl.entity.EntityTracker;
 import better.anticheat.core.player.tracker.impl.ml.CMLTracker;
+import better.anticheat.core.player.tracker.impl.teleport.TeleportTracker;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.event.simple.PacketPlaySendEvent;
 import com.github.retrooper.packetevents.protocol.player.User;
@@ -25,6 +26,7 @@ import java.util.List;
 
 @Getter
 public class Player implements Closeable {
+
     private final BetterAnticheat plugin;
     private final User user;
 
@@ -34,6 +36,7 @@ public class Player implements Closeable {
     private final PositionTracker positionTracker;
     private final RotationTracker rotationTracker;
     private final PlayerStatusTracker playerStatusTracker;
+    private final TeleportTracker teleportTracker;
 
     private List<Check> checks = null;
 
@@ -56,6 +59,7 @@ public class Player implements Closeable {
         
         this.entityTracker = new EntityTracker(this, this.confirmationTracker, this.positionTracker, dataBridge);
         this.playerStatusTracker = new PlayerStatusTracker(this, this.confirmationTracker);
+        this.teleportTracker = new TeleportTracker(this);
 
         this.cmlTracker = new CMLTracker(this);
         load();
@@ -81,6 +85,7 @@ public class Player implements Closeable {
         this.confirmationTracker.handlePacketPlayReceive(event);
         this.entityTracker.handlePacketPlayReceive(event);
         this.playerStatusTracker.handlePacketPlayReceive(event);
+        this.teleportTracker.handlePacketPlayReceive(event);
         this.cmlTracker.handlePacketPlayReceive(event);
 
         for (Check check : this.checks) {
@@ -95,6 +100,7 @@ public class Player implements Closeable {
         this.confirmationTracker.handlePacketPlaySend(event);
         this.entityTracker.handlePacketPlaySend(event);
         this.playerStatusTracker.handlePacketPlaySend(event);
+        this.teleportTracker.handlePacketPlaySend(event);
         this.cmlTracker.handlePacketPlaySend(event);
 
         for (Check check : this.checks) {

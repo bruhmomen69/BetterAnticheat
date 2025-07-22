@@ -7,9 +7,14 @@ import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerFlying;
 import lombok.Getter;
 
+/**
+ * This tracker handles basic data tracking regarding a player's position. This is a centralized way to access a
+ * player's latest position at any given time.
+ */
 @Getter
 public class PositionTracker extends Tracker {
 
+    private boolean position, lastPosition;
     private double x, y, z, lastX, lastY, lastZ;
     private double deltaX, deltaY, deltaZ, deltaXZ, lastDeltaX, lastDeltaY, lastDeltaZ, lastDeltaXZ;
     private long ticks;
@@ -24,12 +29,13 @@ public class PositionTracker extends Tracker {
 
     @Override
     public void handlePacketPlayReceive(PacketPlayReceiveEvent event) {
-        if (event.getPacketType() == PacketType.Play.Client.CLIENT_TICK_END)
-            ticks++;
-
+        if (event.getPacketType() == PacketType.Play.Client.CLIENT_TICK_END) ticks++;
         if (!WrapperPlayClientPlayerFlying.isFlying(event.getPacketType())) return;
         WrapperPlayClientPlayerFlying wrapper = new WrapperPlayClientPlayerFlying(event);
-        if (!wrapper.hasPositionChanged()) return;
+
+        lastPosition = position;
+        position = wrapper.hasPositionChanged();
+        if (!position) return;
 
         lastX = x;
         lastY = y;
