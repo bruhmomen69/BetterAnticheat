@@ -23,7 +23,6 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 public class ConfirmationTracker extends Tracker {
@@ -41,12 +40,13 @@ public class ConfirmationTracker extends Tracker {
      */
     private final EvictingDeque<ConfirmationState> recentConfirmations = new EvictingDeque<>(600);
     private final CookieIdAllocator cookieIdAllocator;
+    private final Object cookieLock = new Object();
     private final LongIncrementer keepAliveIncrementer = new LongIncrementer(Short.MIN_VALUE);
     /**
      * If this is not null, the last sent confirmation, and when sent within 10ms of now, can be re-used.
      * This is used instead of a list search, to ensure we don't accidentally use a keepalive as the post confirmation, in a pre/post structure.
      */
-    private @Nullable ConfirmationState lastSentConfirmation = null;
+    private @Nullable ConfirmationState nextPostPacket = null;
 
     public ConfirmationTracker(Player player) {
         this(player, new SequentialLongCookieAllocator());
@@ -254,23 +254,22 @@ public class ConfirmationTracker extends Tracker {
      * @return The confirmation state.
      */
     public ConfirmationState sendCookieOrLatest(final long now) {
-        if (this.lastSentConfirmation == null || now - this.lastSentConfirmation.getTimestamp() > 12) {
-            log.trace("[BetterAntiCheat] Sending cookie");
-            final var cookieId = this.cookieIdAllocator.allocateNext();
-            getPlayer().getUser().writePacket(new WrapperPlayServerStoreCookie(
-                    new ResourceLocation(COOKIE_NAMESPACE, COOKIE_KEY),
-                    cookieId
-            ));
-            getPlayer().getUser().sendPacket(new WrapperPlayServerCookieRequest(
-                    new ResourceLocation(COOKIE_NAMESPACE, COOKIE_KEY)
-            ));
-            this.lastSentConfirmation = new ConfirmationState(cookieId, ConfirmationType.COOKIE, now, true);
-            this.confirmations.add(this.lastSentConfirmation);
+        synchronized (cookieLock) {
+            if (this.nextPostPacket == null) {
+                log.trace("[BetterAntiCheat] Sending cookie");
+                final var cookieId = this.cookieIdAllocator.allocateNext();
+                this.nextPostPacket = new ConfirmationState(cookieId, ConfirmationType.COOKIE, now, true);
+                this.confirmations.add(this.nextPostPacket);
+            }
+            return this.nextPostPacket;
         }
-        return this.lastSentConfirmation;
     }
 
-    public synchronized void sendTickKeepaliveNoFlush() {
+    /**
+     * Runs approximately once per server tick.
+     * Sends a keepalive and flushes a cookie if needed.
+     */
+    public synchronized void tick() {
         // First, check if we can skip, because we already sent a keepalive and a cookie last tick
         final var now = System.currentTimeMillis();
         if (EasyLoops.anyMatch(this.confirmations, (c) -> c.getType() == ConfirmationType.KEEPALIVE & now - c.getTimestamp() < 55)
@@ -289,6 +288,22 @@ public class ConfirmationTracker extends Tracker {
             getPlayer().getUser().writePacket(new WrapperPlayServerKeepAlive(
                     id
             ));
+
+            synchronized (cookieLock) {
+                final var post = this.nextPostPacket;
+                if (post != null) {
+                    getPlayer().getUser().writePacket(new WrapperPlayServerStoreCookie(
+                            new ResourceLocation(COOKIE_NAMESPACE, COOKIE_KEY),
+                            post.getByteArrayId()
+                    ));
+                    getPlayer().getUser().sendPacket(new WrapperPlayServerCookieRequest(
+                            new ResourceLocation(COOKIE_NAMESPACE, COOKIE_KEY)
+                    ));
+                    log.trace("[BetterAntiCheat] Flushing cookie");
+                }
+
+                this.nextPostPacket = null;
+            }
         } catch (final NullPointerException ignoredFailedClose) {
             try {
                 // The player is a ghost.

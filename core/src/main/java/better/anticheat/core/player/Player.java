@@ -64,7 +64,7 @@ public class Player implements Closeable {
         this.cmlTracker = new CMLTracker(this);
         load();
 
-        closeables.add(dataBridge.registerTickListener(user, this.confirmationTracker::sendTickKeepaliveNoFlush));
+        closeables.add(dataBridge.registerTickListener(user, this.confirmationTracker::tick));
 
         // Attempt to check permissions now, may fail (due to threading or join state), that is okay, as we will re-check later.
         // This was meant to be here in the initial release, but I forgot lol.
