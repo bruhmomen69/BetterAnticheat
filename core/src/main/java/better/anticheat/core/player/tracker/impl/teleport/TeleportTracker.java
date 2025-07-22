@@ -82,7 +82,7 @@ public class TeleportTracker extends Tracker {
             case ENTITY_TELEPORT -> {
                 WrapperPlayServerEntityTeleport wrapper = new WrapperPlayServerEntityTeleport(event);
                 if (wrapper.getEntityId() != player.getUser().getEntityId()) return;
-                Teleport teleport = new Teleport(wrapper.getPosition(), new Pair<>(wrapper.getPitch(), wrapper.getYaw()), wrapper.isOnGround(), wrapper.getRelativeFlags());
+                Teleport teleport = new Teleport(wrapper.getPosition(), new Pair<>(wrapper.getPitch(), wrapper.getYaw()), wrapper.getRelativeFlags(), wrapper.isOnGround());
                 handleTeleport(teleport);
             }
             case PLAYER_ROTATION -> {
@@ -92,7 +92,7 @@ public class TeleportTracker extends Tracker {
             }
             case PLAYER_POSITION_AND_LOOK -> {
                 WrapperPlayServerPlayerPositionAndLook wrapper = new WrapperPlayServerPlayerPositionAndLook(event);
-                Teleport teleport = new Teleport(wrapper.getPosition(), new Pair<>(wrapper.getPitch(), wrapper.getYaw()), null, wrapper.getRelativeFlags());
+                Teleport teleport = new Teleport(wrapper.getPosition(), new Pair<>(wrapper.getPitch(), wrapper.getYaw()), wrapper.getRelativeFlags(), null);
                 handleTeleport(teleport);
             }
         }

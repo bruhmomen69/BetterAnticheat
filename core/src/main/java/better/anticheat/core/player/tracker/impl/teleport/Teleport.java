@@ -6,6 +6,7 @@ import com.github.retrooper.packetevents.protocol.world.Location;
 import com.github.retrooper.packetevents.util.Vector3d;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerFlying;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.jetbrains.annotations.Nullable;
 
@@ -14,24 +15,14 @@ import org.jetbrains.annotations.Nullable;
  * information.
  */
 @Getter
+@RequiredArgsConstructor
 public class Teleport {
 
     @Setter
     private boolean handled = false;
-    private final Vector3d position;
+    private final @Nullable Vector3d position;
     // Pitch, Yaw.
-    private final Pair<Float, Float> rotation;
-    private final RelativeFlag relativeFlags;
-    private final Boolean onGround;
-
-    /**
-     * All params are optional as they can be nulled.
-     * Rotation should be (Pitch, Yaw).
-     */
-    public Teleport(@Nullable Vector3d position, @Nullable Pair<Float, Float> rotation, @Nullable Boolean onGround, @Nullable RelativeFlag relativeFlags) {
-        this.position = position;
-        this.rotation = rotation;
-        this.onGround = onGround;
-        this.relativeFlags = relativeFlags;
-    }
+    private final @Nullable Pair<Float, Float> rotation;
+    private final @Nullable RelativeFlag relativeFlags;
+    private final @Nullable Boolean onGround;
 }
