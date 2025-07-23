@@ -193,7 +193,7 @@ public class CMLTracker extends Tracker {
             final var basicCheck = avg >= modelConfig.getThreshold() + 0.5;
 
             if (!basicCheck && !extendedCheck) {
-                log.debug("[BetterAnticheat] [ML] {} passed {} as {}", player.getUser().getName(), getName(), df.format(avg));
+                log.info("[BetterAnticheat] [ML] {} passed {} as {}", player.getUser().getName(), getName(), df.format(avg));
                 return;
             }
 

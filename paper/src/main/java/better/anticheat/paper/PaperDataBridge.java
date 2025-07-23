@@ -70,6 +70,7 @@ public class PaperDataBridge implements DataBridge<BukkitCommandActor> {
         final var future = new CompletableFuture<Object>();
         final var cancelled = new AtomicBoolean(false);
         lib.getScheduler().runAsync(task -> {
+            var cycles = 0;
             while (!cancelled.get()) {
                 var p = Bukkit.getPlayer(user.getUUID());
                 if (p != null) {
@@ -81,6 +82,10 @@ public class PaperDataBridge implements DataBridge<BukkitCommandActor> {
                 }
                 try {
                     Thread.sleep(50);
+                    // 50 Seconds MAX
+                    if (cycles++ > 1000) {
+                        return;
+                    }
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                     break;
@@ -107,6 +112,7 @@ public class PaperDataBridge implements DataBridge<BukkitCommandActor> {
         final var future = new CompletableFuture<Object>();
         final var cancelled = new AtomicBoolean(false);
         lib.getScheduler().runAsync(task -> {
+            var cycles = 0;
             while (!cancelled.get()) {
                 var p = Bukkit.getPlayer(user.getUUID());
                 if (p != null) {
@@ -118,6 +124,10 @@ public class PaperDataBridge implements DataBridge<BukkitCommandActor> {
                 }
                 try {
                     Thread.sleep(50);
+                    // 50 Seconds MAX
+                    if (cycles++ > 1000) {
+                        return;
+                    }
                 } catch (InterruptedException e) {
                     break;
                 }
