@@ -166,7 +166,7 @@ public class CMLTracker extends Tracker {
             super.load(this.modelConfig.getConfigSection());
 
             if (!isEnabled()) {
-                log.info("[BetterAnticheat] [ML] {} is currently disabled", getName());
+                log.debug("[BetterAnticheat] [ML] {} is currently disabled", getName());
             }
 
             this.history = new OrderedArrayDoubleEvictingList(modelConfig.getSamples());
@@ -193,7 +193,7 @@ public class CMLTracker extends Tracker {
             final var basicCheck = avg >= modelConfig.getThreshold() + 0.5;
 
             if (!basicCheck && !extendedCheck) {
-                log.info("[BetterAnticheat] [ML] {} passed {} as {}", player.getUser().getName(), getName(), df.format(avg));
+                log.debug("[BetterAnticheat] [ML] {} passed {} as {}", player.getUser().getName(), getName(), df.format(avg));
                 return;
             }
 
