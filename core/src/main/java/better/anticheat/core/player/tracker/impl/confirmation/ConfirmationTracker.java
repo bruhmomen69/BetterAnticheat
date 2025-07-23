@@ -276,7 +276,7 @@ public class ConfirmationTracker extends Tracker {
             if (this.nextPostPacket == null) {
                 log.trace("[BetterAntiCheat] Constructing and Allocating cookie");
                 final var cookieId = this.cookieIdAllocator.allocateNext();
-                this.nextPostPacket = new ConfirmationState(cookieId, ConfirmationType.COOKIE, now, true);
+                this.nextPostPacket = new ConfirmationState(cookieId, ConfirmationType.COOKIE, now + 1000, true);
             }
             return this.nextPostPacket;
         }
