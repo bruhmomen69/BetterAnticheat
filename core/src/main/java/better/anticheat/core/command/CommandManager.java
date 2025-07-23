@@ -1,10 +1,7 @@
 package better.anticheat.core.command;
 
 import better.anticheat.core.BetterAnticheat;
-import better.anticheat.core.command.impl.AlertsCommand;
-import better.anticheat.core.command.impl.BACCommand;
-import better.anticheat.core.command.impl.RecordingCommand;
-import better.anticheat.core.command.impl.ReloadCommand;
+import better.anticheat.core.command.impl.*;
 import better.anticheat.core.configuration.ConfigSection;
 import better.anticheat.core.configuration.ConfigurationFile;
 
@@ -24,6 +21,7 @@ public class CommandManager {
         commands = Arrays.asList(
                 new BACCommand(plugin),
                 new AlertsCommand(plugin),
+                new MitigateCommand(plugin),
                 new RecordingCommand(plugin),
                 new ReloadCommand(plugin)
         );
