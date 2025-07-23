@@ -4,8 +4,7 @@ import better.anticheat.core.player.Player;
 import better.anticheat.core.player.tracker.Tracker;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.event.simple.PacketPlaySendEvent;
-import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerBlockPlacement;
-import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerDigging;
+import com.github.retrooper.packetevents.wrapper.play.client.*;
 import org.jetbrains.annotations.Nullable;
 import wtf.spare.sparej.incrementer.IntIncrementer;
 
@@ -45,93 +44,96 @@ public class ActionTracker extends Tracker {
     private boolean sneaking = false, wasSneaking = false;
     private boolean sprinting = false, wasSprinting = false;
 
-    // Smart collision values
-    private boolean crouching = false, wasCrouching = false;
-
     // Ticks Since
     private final IntIncrementer ticksSinceSwing = new IntIncrementer();
-    private final IntIncrementer ticksSinceCombatSwing = new IntIncrementer();
     private final IntIncrementer ticksSinceAttack = new IntIncrementer();
+    private final IntIncrementer ticksSinceEntityInteract = new IntIncrementer();
     private final IntIncrementer ticksSinceDigging = new IntIncrementer();
     private final IntIncrementer ticksSinceSuccessfulDig = new IntIncrementer();
     private final IntIncrementer ticksSincePlace = new IntIncrementer();
     private final IntIncrementer ticksSinceRealPlace = new IntIncrementer();
     private final IntIncrementer ticksSinceRealPlaceUnder = new IntIncrementer();
-    private final IntIncrementer ticksSinceTeleport = new IntIncrementer();
 
     @Override
     public void handlePacketPlayReceive(PacketPlayReceiveEvent event) {
         switch (event.getPacketType()) {
+            case ANIMATION -> this.ticksSinceSwing.set(0);
+            case INTERACT_ENTITY -> {
+                final var wrapper = new WrapperPlayClientInteractEntity(event);
+
+                if (wrapper.getAction() == WrapperPlayClientInteractEntity.InteractAction.ATTACK) {
+                    this.ticksSinceAttack.set(0);
+                } else {
+                    this.ticksSinceEntityInteract.set(0);
+                }
+            }
             case PLAYER_DIGGING -> {
                 final var wrapper = new WrapperPlayClientPlayerDigging(event);
                 // State
                 switch (wrapper.getAction()) {
                     case FINISHED_DIGGING: {
-                        if (container.getAction().getDigState().get() > 1) {
-                            container.getTicks().getTicksSinceSuccessfulDig().set(0);
+                        if (digState.get() > 1) {
+                            ticksSinceSuccessfulDig.set(0);
                         }
                     }
                     case RELEASE_USE_ITEM:
                     case CANCELLED_DIGGING: {
-                        container.getAction().getDigState().set(0);
+                        digState.set(0);
                         break;
                     }
 
                     case START_DIGGING: {
-                        container.getAction().getDigState().increment(0);
+                        digState.increment(0);
                         break;
                     }
                 }
 
                 // Block face + pos
-                container.getAction().setDiggingBlockFace(wrapper.getBlockFace());
-                container.getAction().setDiggingPosition(wrapper.getBlockPosition());
-
-                container.getAction().setDigging(container.getAction().getDigState().get() > 1);
+                diggingBlockFace = wrapper.getBlockFace();
+                diggingPosition = wrapper.getBlockPosition();
+                digging = digState.get() > 1;
             }
             case PLAYER_BLOCK_PLACEMENT -> {
                 final var wrapper = new WrapperPlayClientPlayerBlockPlacement(event);
                 // Block face
-                container.getAction().setLastPlacingBlockFace(container.getAction().getPlacingBlockFace());
-                container.getAction().setPlacingBlockFace(wrapper.getFace());
+                // Update block face
+                lastPlacingBlockFace = placingBlockFace;
+                placingBlockFace = wrapper.getFace();
 
-                // Place position
-                container.getAction().setLastPlacePosition(container.getAction().getPlacePosition());
-                container.getAction().setPlacePosition(wrapper.getBlockPosition());
+                // Update place position
+                lastPlacePosition = placePosition;
+                placePosition = wrapper.getBlockPosition();
 
-                // Cursor Position
-                container.getAction().setCursorPosition(container.getAction().getCursorPosition());
-                container.getAction().setCursorPosition(wrapper.getCursorPosition());
+                // Update cursor position
+                lastCursorPosition = cursorPosition;
+                cursorPosition = wrapper.getCursorPosition();
 
-                // IHand
-                container.getAction().setLastPlaceHand(container.getAction().getLastPlaceHand());
-                container.getAction().setPlaceHand(wrapper.getHand());
+                // Update hand
+                lastPlaceHand = placeHand;
+                placeHand = wrapper.getHand();
 
-                if (wrapper.getInsideBlock().isPresent()) {
-                    container.getAction().setPlacingInsideBlock(wrapper.getInsideBlock().get());
-                } else {
-                    container.getAction().setPlacingInsideBlock(false);
-                }
+                // Update inside block state
+                isPlacingInsideBlock = wrapper.getInsideBlock().orElse(false);
 
-                // ItemStack
-                container.getAction().setLastPlaceItem(container.getAction().getPlaceItem());
-                container.getAction().setPlaceItem(wrapper.getItemStack());
+                // Update item
+                lastPlaceItem = placeItem;
+                placeItem = wrapper.getItemStack();
 
-                // Ticks
-                container.getTicks().getTicksSincePlace().set(0);
+                // Reset place tick counter
+                ticksSincePlace.set(0);
 
                 if (wrapper.getCursorPosition().getX() != 0.0 || wrapper.getCursorPosition().getY() != 0.0 || wrapper.getCursorPosition().getZ() != 0.0) {
                     if (wrapper.getBlockPosition().getY() < 2000) {
                         if (wrapper.getItemStack().isPresent()) {
                             final var itemStack = wrapper.getItemStack().get();
                             if (!itemStack.isEmpty()) {
-                                container.getTicks().getTicksSinceRealPlace().set(0);
+                                ticksSinceRealPlace.set(0);
 
-                                if (wrapper.getBlockPosition().getY() <= container.getPosition().getY()) {
-                                    container.getTicks().getTicksSinceRealPlaceUnder().set(0);
+                                if (wrapper.getBlockPosition().getY() <= player.getPositionTracker().getY()) {
+                                    ticksSinceRealPlaceUnder.set(0);
                                 }
 
-                                this.data.getEventBus().publish(new RealPlaceEvent(data, wrapper));
+                                // TODO: We can confirm this is a "real" place, therefore we can maybe use this in other places.
                             }
                         }
                     }
@@ -139,40 +141,49 @@ public class ActionTracker extends Tracker {
             }
 
             case CLIENT_TICK_END -> {
-                if (container.getAction().isDigging()) {
-                    container.getTicks().getTicksSinceDigging().increment();
+                // Update digging timer
+                if (digging) {
+                    ticksSinceDigging.increment();
                 } else {
-                    container.getTicks().getTicksSinceDigging().set(0);
+                    ticksSinceDigging.set(0);
                 }
-                container.getTicks().getTicksSinceSuccessfulDig().increment();
+                
+                // Increment tick counters
+                ticksSinceSuccessfulDig.increment();
+                ticksSincePlace.increment();
+                ticksSinceRealPlace.increment();
+                ticksSinceRealPlaceUnder.increment();
 
-                container.getTicks().getTicksSincePlace().increment();
-                container.getTicks().getTicksSinceRealPlace().increment();
-                container.getTicks().getTicksSinceRealPlaceUnder().increment();
+                // Update previous states
+                wasSneaking = sneaking;
+                wasSprinting = sprinting;
 
-                // Was
-                this.container.getAction().setWasSneaking(this.container.getAction().isSneaking());
-                this.container.getAction().setWasSprinting(this.container.getAction().isSprinting());
+                // Combat tickets
+                this.ticksSinceAttack.increment();
+                this.ticksSinceSwing.increment();
+                this.ticksSinceEntityInteract.increment();
             }
 
             case ENTITY_ACTION -> {
+                final var wrapper = new WrapperPlayClientEntityAction(event);
+
                 switch (wrapper.getAction()) {
                     // Sprinting
                     case START_SPRINTING: {
-                        this.container.getAction().setSprinting(true);
+                        this.sprinting = true;
                         break;
                     }
                     case STOP_SPRINTING: {
-                        this.container.getAction().setSprinting(false);
+                        this.sprinting = false;
                         break;
                     }
                     // Sneaking
                     case START_SNEAKING: {
-                        this.container.getAction().setSneaking(true);
+                        this.sneaking = true;
                         break;
                     }
                     case STOP_SNEAKING: {
-                        this.container.getAction().setSneaking(false);
+                        this.sneaking = false;
                         break;
                     }
                 }
