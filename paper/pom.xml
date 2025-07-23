@@ -23,6 +23,11 @@
             <id>codemc-releases</id>
             <url>https://repo.codemc.io/repository/maven-releases/</url>
         </repository>
+        <!-- Repo for sparej / the type library -->
+        <repository>
+            <id>german-repo-mirror</id>
+            <url>https://german-code-repo.haldor.xyz/mirror</url>
+        </repository>
         <!-- Repo for paper-api -->
         <repository>
             <id>papermc</id>
@@ -91,6 +96,12 @@
         <dependency>
             <groupId>io.github.revxrsal</groupId>
             <artifactId>lamp.brigadier</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>wtf.spare</groupId>
+            <artifactId>sparej</artifactId>
             <scope>provided</scope>
         </dependency>
     </dependencies>

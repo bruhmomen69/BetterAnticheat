@@ -28,6 +28,11 @@
             <id>spigotmc-repo</id>
             <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
         </repository>
+        <!-- Repo for sparej / the type library -->
+        <repository>
+            <id>german-repo-mirror</id>
+            <url>https://german-code-repo.haldor.xyz/mirror</url>
+        </repository>
         <!-- Repo for BetterReload, FoliaLib, and sharkbyte-configuration -->
         <repository>
             <id>jitpack.io</id>
@@ -83,6 +88,12 @@
             <scope>provided</scope>
         </dependency>
         <!-- Brigadier is not supported on this platform -->
+
+        <dependency>
+            <groupId>wtf.spare</groupId>
+            <artifactId>sparej</artifactId>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -146,6 +157,10 @@
                                 <relocation>
                                     <pattern>org.bstats</pattern>
                                     <shadedPattern>better.anticheat.bstats</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>wtf.spare.sparej</pattern>
+                                    <shadedPattern>better.anticheat.core.util.type</shadedPattern>
                                 </relocation>
                             </relocations>
                         </configuration>

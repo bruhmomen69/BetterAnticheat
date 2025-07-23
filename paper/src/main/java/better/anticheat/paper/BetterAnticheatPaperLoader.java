@@ -9,6 +9,7 @@ import org.eclipse.aether.repository.RemoteRepository;
 
 public class BetterAnticheatPaperLoader implements PluginLoader {
     public static final String[] dependencies = new String[]{
+            "wtf.spare:sparej:1.0.0",
             "it.unimi.dsi:fastutil:8.5.16",
             "org.yaml:snakeyaml:2.4",
             "io.github.revxrsal:lamp.bukkit:4.0.0-rc.12",

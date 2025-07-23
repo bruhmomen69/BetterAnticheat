@@ -1,10 +1,10 @@
 package better.anticheat.core.util.type.entity;
 
-import better.anticheat.core.util.type.Pair;
 import com.github.retrooper.packetevents.protocol.world.BlockFace;
 import com.github.retrooper.packetevents.util.Vector3d;
 import lombok.Getter;
 import lombok.Setter;
+import wtf.spare.sparej.Pair;
 
 /**
  * Represents an axis-aligned bounding box (AABB) used for collision detection and spatial queries in the Minecraft anticheat system.

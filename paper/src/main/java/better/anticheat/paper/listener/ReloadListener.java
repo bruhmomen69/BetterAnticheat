@@ -1,4 +1,4 @@
-package better.anticheat.paper;
+package better.anticheat.paper.listener;
 
 import better.anticheat.core.BetterAnticheat;
 import better.reload.api.ReloadEvent;

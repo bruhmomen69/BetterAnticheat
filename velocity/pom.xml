@@ -38,6 +38,11 @@
             <id>opencollab-snapshot</id>
             <url>https://repo.opencollab.dev/main/</url>
         </repository>
+        <!-- Repo for sparej / the type library -->
+        <repository>
+            <id>german-repo-mirror</id>
+            <url>https://german-code-repo.haldor.xyz/mirror</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -119,8 +124,6 @@
             <scope>provided</scope>
         </dependency>
 
-
-
         <dependency>
             <groupId>com.github.haifengl</groupId>
             <artifactId>smile-core</artifactId>
@@ -141,6 +144,13 @@
             <artifactId>zstd-jni</artifactId>
             <scope>compile</scope>
         </dependency>
+
+        <dependency>
+            <groupId>wtf.spare</groupId>
+            <artifactId>sparej</artifactId>
+            <scope>compile</scope>
+        </dependency>
+
     </dependencies>
 
     <build>

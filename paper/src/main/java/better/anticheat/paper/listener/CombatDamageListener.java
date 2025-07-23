@@ -1,7 +1,6 @@
-package better.anticheat.paper;
+package better.anticheat.paper.listener;
 
 import better.anticheat.core.BetterAnticheat;
-import better.anticheat.core.player.PlayerManager;
 import com.github.retrooper.packetevents.PacketEvents;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;

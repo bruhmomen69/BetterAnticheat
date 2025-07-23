@@ -3,7 +3,6 @@ package better.anticheat.core.player.tracker.impl;
 import better.anticheat.core.player.Player;
 import better.anticheat.core.player.tracker.Tracker;
 import better.anticheat.core.player.tracker.impl.confirmation.ConfirmationTracker;
-import better.anticheat.core.util.type.xstate.manystate.BooleanManyState;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.event.simple.PacketPlaySendEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
@@ -11,6 +10,7 @@ import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientCl
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerUpdateHealth;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import wtf.spare.sparej.xstate.manystate.BooleanManyState;
 
 import java.util.Objects;
 

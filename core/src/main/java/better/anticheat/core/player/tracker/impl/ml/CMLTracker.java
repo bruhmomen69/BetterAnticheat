@@ -7,8 +7,6 @@ import better.anticheat.core.player.tracker.Tracker;
 import better.anticheat.core.util.EntityMath;
 import better.anticheat.core.util.MathUtil;
 import better.anticheat.core.util.ml.ModelConfig;
-import better.anticheat.core.util.type.fastlist.FastObjectArrayList;
-import better.anticheat.core.util.type.fastlist.ord.OrderedArrayDoubleEvictingList;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.event.simple.PacketPlaySendEvent;
 import com.github.retrooper.packetevents.util.Vector3d;
@@ -16,6 +14,8 @@ import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientIn
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import wtf.spare.sparej.fastlist.FastObjectArrayList;
+import wtf.spare.sparej.fastlist.evicting.ord.OrderedArrayDoubleEvictingList;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;

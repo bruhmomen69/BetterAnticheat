@@ -1,7 +1,7 @@
 package better.anticheat.core.player.tracker.impl.confirmation.allocator;
 
 import better.anticheat.core.player.tracker.impl.confirmation.CookieIdAllocator;
-import better.anticheat.core.util.type.incrementer.LongIncrementer;
+import wtf.spare.sparej.incrementer.LongIncrementer;
 
 import java.nio.ByteBuffer;
 

@@ -34,6 +34,11 @@
             <id>jitpack.io</id>
             <url>https://jitpack.io</url>
         </repository>
+        <!-- Repo for sparej / the type library -->
+        <repository>
+            <id>german-repo-mirror</id>
+            <url>https://german-code-repo.haldor.xyz/mirror</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -119,6 +124,12 @@
         <dependency>
             <groupId>com.github.luben</groupId>
             <artifactId>zstd-jni</artifactId>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>wtf.spare</groupId>
+            <artifactId>sparej</artifactId>
             <scope>compile</scope>
         </dependency>
     </dependencies>

@@ -1,7 +1,7 @@
 package better.anticheat.core.player.tracker.impl.entity.type;
 
-import better.anticheat.core.util.type.incrementer.IntIncrementer;
 import lombok.Data;
+import wtf.spare.sparej.incrementer.IntIncrementer;
 
 @Data
 public class SplitEntityUpdate {

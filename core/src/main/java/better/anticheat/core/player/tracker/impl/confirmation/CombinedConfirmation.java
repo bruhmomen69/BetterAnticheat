@@ -1,13 +1,12 @@
 package better.anticheat.core.player.tracker.impl.confirmation;
 
-import better.anticheat.core.util.type.SimpleFuture;
-import better.anticheat.core.util.type.incrementer.IntIncrementer;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
+import wtf.spare.sparej.SimpleFuture;
+import wtf.spare.sparej.incrementer.IntIncrementer;
 
-import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 @EqualsAndHashCode
@@ -16,7 +15,7 @@ import java.util.function.Consumer;
 @AllArgsConstructor
 public class CombinedConfirmation {
     private SimpleFuture<ConfirmationState> onBegin;
-    private SimpleFuture<ConfirmationState> onAfterConfirm;
+    private wtf.spare.sparej.SimpleFuture<ConfirmationState> onAfterConfirm;
     /**
      * 0 = Sent,
      * 1 = Begun

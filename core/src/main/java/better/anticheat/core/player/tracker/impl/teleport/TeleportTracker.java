@@ -2,7 +2,6 @@ package better.anticheat.core.player.tracker.impl.teleport;
 
 import better.anticheat.core.player.Player;
 import better.anticheat.core.player.tracker.Tracker;
-import better.anticheat.core.util.type.Pair;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.event.simple.PacketPlaySendEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
@@ -10,6 +9,7 @@ import com.github.retrooper.packetevents.protocol.teleport.RelativeFlag;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerFlying;
 import com.github.retrooper.packetevents.wrapper.play.server.*;
 import lombok.Getter;
+import wtf.spare.sparej.Pair;
 
 import java.util.ArrayList;
 import java.util.List;

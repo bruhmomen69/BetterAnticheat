@@ -2,8 +2,8 @@ package better.anticheat.core.player.tracker.impl.entity.type;
 
 import better.anticheat.core.util.MathUtil;
 import better.anticheat.core.util.type.entity.AxisAlignedBB;
-import better.anticheat.core.util.type.fastlist.FastObjectArrayList;
 import lombok.*;
+import wtf.spare.sparej.fastlist.FastObjectArrayList;
 
 @Data
 @AllArgsConstructor

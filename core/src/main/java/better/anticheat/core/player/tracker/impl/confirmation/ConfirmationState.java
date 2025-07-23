@@ -1,9 +1,9 @@
 package better.anticheat.core.player.tracker.impl.confirmation;
 
-import better.anticheat.core.util.type.fastlist.FastObjectArrayList;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import wtf.spare.sparej.fastlist.FastObjectArrayList;
 
 import java.util.Arrays;
 import java.util.Objects;
