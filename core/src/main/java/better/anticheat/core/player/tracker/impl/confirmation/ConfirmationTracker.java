@@ -54,7 +54,7 @@ public class ConfirmationTracker extends Tracker {
     public ConfirmationTracker(Player player) {
         this(player, new SequentialLongCookieAllocator());
     }
-    
+
     public ConfirmationTracker(Player player, CookieIdAllocator cookieIdAllocator) {
         super(player);
         this.cookieIdAllocator = cookieIdAllocator;
@@ -132,9 +132,15 @@ public class ConfirmationTracker extends Tracker {
             case CLIENT_TICK_END: {
                 final var currentTime = System.currentTimeMillis();
                 // Use removedItemTaskQueue to prevent circular references to the synchronized list.
-                confirmations.removeIf(state -> {
+                this.confirmations.removeIf(state -> {
                     if (state.getTimestampConfirmed() == -1L && currentTime - state.getTimestamp() > 60000) {
-                        removedItemTaskQueue.addAll(state.getListeners());
+                        // Do this later to avoid locking issues.
+                        event.getPostTasks().add(() -> {
+                            synchronized (this.removedItemTaskQueue) {
+                                this.removedItemTaskQueue.addAll(state.getListeners());
+                            }
+                        });
+                        // Handle kicking if needed
                         if (state.getType() == ConfirmationType.COOKIE) {
                             getPlayer().getUser().sendPacket(new WrapperPlayServerDisconnect(Component.text("Timed out")));
                             log.info("[BetterAntiCheat] Timed out player: {}", getPlayer().getUser().getName());
@@ -146,8 +152,13 @@ public class ConfirmationTracker extends Tracker {
                     return false;
                 });
 
-                removedItemTaskQueue.forEach(Runnable::run);
-                removedItemTaskQueue.clear();
+                // Run all those post tasks we added.
+                event.getPostTasks().add(() -> {
+                    synchronized (this.removedItemTaskQueue) {
+                        this.removedItemTaskQueue.forEach(Runnable::run);
+                        this.removedItemTaskQueue.clear();
+                    }
+                });
                 break;
             }
             default:
