@@ -1,6 +1,9 @@
 package better.anticheat.core.util.ml;
 
 import better.anticheat.core.util.MathUtil;
+import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONArray;
+import com.github.luben.zstd.Zstd;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import smile.base.cart.SplitRule;
@@ -22,10 +25,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
-
-import com.alibaba.fastjson2.JSON;
-import com.alibaba.fastjson2.JSONArray;
-import com.github.luben.zstd.Zstd;
 
 @Slf4j
 @Getter
@@ -49,13 +48,19 @@ public class MLTrainer {
     private RandomForest giniForest;
     private RandomForest entropyForest;
 
-    private static final StructType PREDICTION_STRUCT = new StructType(
+    public static final StructType PREDICTION_STRUCT_XL = new StructType(
             new StructField("V2", DataTypes.IntType),
             new StructField("V3", DataTypes.IntType),
             new StructField("V4", DataTypes.IntType),
             new StructField("V5", DataTypes.IntType),
-            new StructField("V6", DataTypes.IntType)
+            new StructField("V6", DataTypes.IntType),
+            new StructField("V7", DataTypes.IntType),
+            new StructField("V8", DataTypes.IntType),
+            new StructField("V9", DataTypes.IntType),
+            new StructField("V10", DataTypes.IntType),
+            new StructField("V11", DataTypes.IntType)
     );
+
 
     /**
      * @param legitData         the non cheating training data
@@ -71,16 +76,16 @@ public class MLTrainer {
     }
 
     /**
-     * @param legitData         the non cheating training data
-     * @param cheatingData      the cheating training data
-     * @param slice             the slice of the data to use. Options: 0, 1, or 2.
-     * @param shrink            should we shrink the data to the smallest of the two?
-     * @param intlify           should we do some changes improve compatibility of weirdly shaped doubles. NOTE: This trims the decimal places to the first 7 only, among other tasks.
-     * @param statistics        should we generate statistics for the data, instead of using raw data.
-     * @param trainRandomForest should we train a random forest, resulting in many unwanted logs.
-     * @param giniMaxDepth         the maximum depth for the gini tree
-     * @param entropyMaxDepth      the maximum depth for the entropy tree
-     * @param giniForestMaxDepth   the maximum depth for the gini forest
+     * @param legitData             the non cheating training data
+     * @param cheatingData          the cheating training data
+     * @param slice                 the slice of the data to use. Options: 0, 1, or 2.
+     * @param shrink                should we shrink the data to the smallest of the two?
+     * @param intlify               should we do some changes improve compatibility of weirdly shaped doubles. NOTE: This trims the decimal places to the first 7 only, among other tasks.
+     * @param statistics            should we generate statistics for the data, instead of using raw data.
+     * @param trainRandomForest     should we train a random forest, resulting in many unwanted logs.
+     * @param giniMaxDepth          the maximum depth for the gini tree
+     * @param entropyMaxDepth       the maximum depth for the entropy tree
+     * @param giniForestMaxDepth    the maximum depth for the gini forest
      * @param entropyForestMaxDepth the maximum depth for the entropy forest
      */
     public MLTrainer(final double[][][] legitData, final double[][][] cheatingData, final int slice, final boolean shrink, final boolean intlify, final boolean statistics, boolean trainRandomForest, int giniMaxDepth, int entropyMaxDepth, int giniForestMaxDepth, int entropyForestMaxDepth) {
@@ -88,23 +93,23 @@ public class MLTrainer {
     }
 
     /**
-     * @param legitData           the non cheating training data
-     * @param cheatingData        the cheating training data
-     * @param slice               the slice of the data to use. Options: 0, 1, or 2.
-     * @param shrink              should we shrink the data to the smallest of the two?
-     * @param intlify             should we do some changes improve compatibility of weirdly shaped doubles. NOTE: This trims the decimal places to the first 7 only, among other tasks.
-     * @param statistics          should we generate statistics for the data, instead of using raw data.
-     * @param trainRandomForest   should we train a random forest, resulting in many unwanted logs.
-     * @param giniMaxDepth        max depth for gini decision tree
-     * @param entropyMaxDepth     max depth for entropy decision tree
-     * @param giniNodeSize        min node size for gini decision tree
-     * @param entropyNodeSize     min node size for entropy decision tree
-     * @param giniForestMaxDepth  max depth for gini random forest
+     * @param legitData             the non cheating training data
+     * @param cheatingData          the cheating training data
+     * @param slice                 the slice of the data to use. Options: 0, 1, or 2.
+     * @param shrink                should we shrink the data to the smallest of the two?
+     * @param intlify               should we do some changes improve compatibility of weirdly shaped doubles. NOTE: This trims the decimal places to the first 7 only, among other tasks.
+     * @param statistics            should we generate statistics for the data, instead of using raw data.
+     * @param trainRandomForest     should we train a random forest, resulting in many unwanted logs.
+     * @param giniMaxDepth          max depth for gini decision tree
+     * @param entropyMaxDepth       max depth for entropy decision tree
+     * @param giniNodeSize          min node size for gini decision tree
+     * @param entropyNodeSize       min node size for entropy decision tree
+     * @param giniForestMaxDepth    max depth for gini random forest
      * @param entropyForestMaxDepth max depth for entropy random forest
-     * @param giniForestNodeSize  min node size for gini random forest
+     * @param giniForestNodeSize    min node size for gini random forest
      * @param entropyForestNodeSize min node size for entropy random forest
      */
-    public MLTrainer(final double[][][] legitData, final double[][][] cheatingData, final int slice, final boolean shrink, final boolean intlify, final boolean statistics, boolean trainRandomForest, 
+    public MLTrainer(final double[][][] legitData, final double[][][] cheatingData, final int slice, final boolean shrink, final boolean intlify, final boolean statistics, boolean trainRandomForest,
                      int giniMaxDepth, int entropyMaxDepth, int giniNodeSize, int entropyNodeSize,
                      int giniForestMaxDepth, int entropyForestMaxDepth, int giniForestNodeSize, int entropyForestNodeSize) {
         this.legitData = legitData[slice];
@@ -113,16 +118,6 @@ public class MLTrainer {
         this.intlify = intlify;
         this.statistics = statistics;
         this.slice = slice;
-
-        if (this.statistics) {
-            for (int i = 0; i < this.legitData.length; i++) {
-                this.legitData[i] = statistiize(this.legitData[i]);
-            }
-
-            for (int i = 0; i < this.cheatingData.length; i++) {
-                this.cheatingData[i] = statistiize(this.cheatingData[i]);
-            }
-        }
 
         if (shrink) {
             this.legitTrain = Arrays.copyOf(this.legitData, Math.min(this.legitData.length, this.cheatingData.length));
@@ -144,8 +139,22 @@ public class MLTrainer {
             this.labels[i + this.legitTrain.length] = 10;
         }
 
-        this.buildDTree(trainRandomForest, giniMaxDepth, entropyMaxDepth, giniNodeSize, entropyNodeSize, 
-                        giniForestMaxDepth, entropyForestMaxDepth, giniForestNodeSize, entropyForestNodeSize);
+        this.buildDTree(trainRandomForest, giniMaxDepth, entropyMaxDepth, giniNodeSize, entropyNodeSize,
+                giniForestMaxDepth, entropyForestMaxDepth, giniForestNodeSize, entropyForestNodeSize);
+
+        if (this.statistics) {
+            for (int i = 0; i < this.legitData.length; i++) {
+                this.legitData[i] = statistiize(this.legitData[i]);
+            }
+
+            for (int i = 0; i < this.cheatingData.length; i++) {
+                this.cheatingData[i] = statistiize(this.cheatingData[i]);
+            }
+
+            for (int i = 0; i < this.train.length; i++) {
+                this.train[i] = statistiize(this.train[i]);
+            }
+        }
 
         // Intlify ONLY after building the tree
         if (this.intlify) {
@@ -160,13 +169,42 @@ public class MLTrainer {
     }
 
     public double[] statistiize(final double[] datum) {
+        final var shrunk = new double[5];
+        System.arraycopy(datum, 0, shrunk, 0, 5);
         return new double[]{
-                MathUtil.getStandardDeviation(datum),
-                MathUtil.getSkewness(datum),
-                MathUtil.getAverage(datum),
-                MathUtil.getFluctuation(datum),
-                MathUtil.getOscillation(datum),
+                MathUtil.getStandardDeviation(shrunk),
+                MathUtil.getSkewness(shrunk),
+                MathUtil.getAverage(shrunk),
+                MathUtil.getFluctuation(shrunk),
+                MathUtil.getOscillation(shrunk),
         };
+    }
+
+    public double[] statistiizeAndRetainFive(final double[] datum) {
+        final var shrunk = new double[5];
+        System.arraycopy(datum, 0, shrunk, 0, 5);
+        return new double[]{
+                MathUtil.getStandardDeviation(shrunk),
+                MathUtil.getSkewness(shrunk),
+                MathUtil.getAverage(shrunk),
+                MathUtil.getFluctuation(shrunk),
+                MathUtil.getOscillation(shrunk),
+                shrunk[0],
+                shrunk[1],
+                shrunk[2],
+                shrunk[3],
+                shrunk[4],
+        };
+    }
+
+    public int[] prepareInputForTree(final double[][] input) {
+        double[] prepared = statistics ? this.statistiizeAndRetainFive(input[slice]) : input[slice];
+        int[] tupleData = new int[prepared.length];
+        for (int i = 0; i < prepared.length; i++) {
+            tupleData[i] = (int) Math.round(prepared[i] * 2_500_000);
+        }
+
+        return tupleData;
     }
 
     private double[][] intlifyTwoDeep(final double[][] data) {
@@ -193,10 +231,67 @@ public class MLTrainer {
 
     private void buildDTree(final boolean trainRandomForest, int giniMaxDepth, int entropyMaxDepth, int giniNodeSize, int entropyNodeSize,
                             int giniForestMaxDepth, int entropyForestMaxDepth, int giniForestNodeSize, int entropyForestNodeSize) {
-        var xArrays = new int[this.train.length][];
-        for (int i = 0; i < this.train.length; i++) {
-            final var array = this.train[i];
-            xArrays[i] = new int[]{this.labels[i], (int) Math.round(array[0] * 2_500_000), (int) Math.round(array[1] * 2_500_000), (int) Math.round(array[2] * 2_500_000), (int) Math.round(array[3] * 2_500_000), (int) Math.round(array[4] * 2_500_000)};
+        final double[][] statTrain = new double[this.train.length][];
+        if (this.statistics) {
+            for (int i = 0; i < this.train.length; i++) {
+                statTrain[i] = statistiize(this.train[i]);
+            }
+        } else {
+            System.arraycopy(this.train, 0, statTrain, 0, this.train.length);
+        }
+
+        var xArrays = new int[statTrain.length][];
+        if (this.statistics) {
+            for (int i = 0; i < statTrain.length; i++) {
+                final var array = statTrain[i];
+                final var noStatArray = this.train[i];
+                xArrays[i] = new int[]{
+                        this.labels[i],
+                        (int) Math.round(array[0] * 2_500_000),
+                        (int) Math.round(array[1] * 2_500_000),
+                        (int) Math.round(array[2] * 2_500_000),
+                        (int) Math.round(array[3] * 2_500_000),
+                        (int) Math.round(array[4] * 2_500_000),
+                        (int) Math.round(noStatArray[0] * 2_500_000),
+                        (int) Math.round(noStatArray[1] * 2_500_000),
+                        (int) Math.round(noStatArray[2] * 2_500_000),
+                        (int) Math.round(noStatArray[3] * 2_500_000),
+                        (int) Math.round(noStatArray[4] * 2_500_000)
+                };
+            }
+        } else {
+            for (int i = 0; i < statTrain.length; i++) {
+                final var array = statTrain[i];
+                if (array.length > 5) {
+                    xArrays[i] = new int[]{
+                            this.labels[i],
+                            (int) Math.round(array[0] * 2_500_000),
+                            (int) Math.round(array[1] * 2_500_000),
+                            (int) Math.round(array[2] * 2_500_000),
+                            (int) Math.round(array[3] * 2_500_000),
+                            (int) Math.round(array[4] * 2_500_000),
+                            (int) Math.round(array[5] * 2_500_000),
+                            (int) Math.round(array[6] * 2_500_000),
+                            (int) Math.round(array[7] * 2_500_000),
+                            (int) Math.round(array[8] * 2_500_000),
+                            (int) Math.round(array[9] * 2_500_000)
+                    };
+                } else {
+                    xArrays[i] = new int[]{
+                            this.labels[i],
+                            (int) Math.round(array[0] * 2_500_000),
+                            (int) Math.round(array[1] * 2_500_000),
+                            (int) Math.round(array[2] * 2_500_000),
+                            (int) Math.round(array[3] * 2_500_000),
+                            (int) Math.round(array[4] * 2_500_000),
+                            0,
+                            0,
+                            0,
+                            0,
+                            0
+                    };
+                }
+            }
         }
         var xArrayListForm = Arrays.asList(xArrays);
         Collections.shuffle(xArrayListForm);
@@ -321,48 +416,32 @@ public class MLTrainer {
                 final var model = trainer.getGiniTree();
                 yield (double[][] input) -> {
                     // Do not pre-intlify for decision tree-family models.
-                    double[] prepared = trainer.statistiize(input[slice]);
-                    int[] tupleData = new int[prepared.length];
-                    for (int i = 0; i < prepared.length; i++) {
-                        tupleData[i] = (int) Math.round(prepared[i] * 2_500_000);
-                    }
-                    return (double) model.predict(Tuple.of(PREDICTION_STRUCT, tupleData));
+                    int[] tupleData = trainer.prepareInputForTree(input);
+                    return (double) model.predict(Tuple.of(PREDICTION_STRUCT_XL, tupleData));
                 };
             }
             case "decision_tree_entropy" -> {
                 final var model = trainer.getEntropyTree();
                 yield (double[][] input) -> {
                     // Do not pre-intlify for decision tree-family models.
-                    double[] prepared = trainer.statistiize(input[slice]);
-                    int[] tupleData = new int[prepared.length];
-                    for (int i = 0; i < prepared.length; i++) {
-                        tupleData[i] = (int) Math.round(prepared[i] * 2_500_000);
-                    }
-                    return (double) model.predict(Tuple.of(PREDICTION_STRUCT, tupleData));
+                    int[] tupleData = trainer.prepareInputForTree(input);
+                    return (double) model.predict(Tuple.of(PREDICTION_STRUCT_XL, tupleData));
                 };
             }
             case "random_forest_gini" -> {
                 final var model = trainer.getGiniForest();
                 yield (double[][] input) -> {
                     // Do not pre-intlify for decision tree-family models.
-                    double[] prepared = trainer.statistiize(input[slice]);
-                    int[] tupleData = new int[prepared.length];
-                    for (int i = 0; i < prepared.length; i++) {
-                        tupleData[i] = (int) Math.round(prepared[i] * 2_500_000);
-                    }
-                    return (double) model.predict(Tuple.of(PREDICTION_STRUCT, tupleData));
+                    int[] tupleData = trainer.prepareInputForTree(input);
+                    return (double) model.predict(Tuple.of(PREDICTION_STRUCT_XL, tupleData));
                 };
             }
             case "random_forest_entropy" -> {
                 final var model = trainer.getEntropyForest();
                 yield (double[][] input) -> {
                     // Do not pre-intlify for decision tree-family models.
-                    double[] prepared = trainer.statistiize(input[slice]);
-                    int[] tupleData = new int[prepared.length];
-                    for (int i = 0; i < prepared.length; i++) {
-                        tupleData[i] = (int) Math.round(prepared[i] * 2_500_000);
-                    }
-                    return (double) model.predict(Tuple.of(PREDICTION_STRUCT, tupleData));
+                    int[] tupleData = trainer.prepareInputForTree(input);
+                    return (double) model.predict(Tuple.of(PREDICTION_STRUCT_XL, tupleData));
                 };
             }
             case "logistic_regression" -> {

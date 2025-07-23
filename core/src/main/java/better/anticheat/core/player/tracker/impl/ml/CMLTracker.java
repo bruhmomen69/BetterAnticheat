@@ -38,9 +38,9 @@ public class CMLTracker extends Tracker {
     private final Map<String, ModelConfig> expectedModels;
     private final List<MLCheck> internalChecks = new FastObjectArrayList<>();
     private final ArrayList<double[][]> recording = new ArrayList<>();
-    private final OrderedArrayDoubleEvictingList previousYaws = new OrderedArrayDoubleEvictingList(5);
-    private final OrderedArrayDoubleEvictingList previousYawOffsets = new OrderedArrayDoubleEvictingList(5);
-    private final OrderedArrayDoubleEvictingList previousEnhancedYawOffsets = new OrderedArrayDoubleEvictingList(5);
+    private final OrderedArrayDoubleEvictingList previousYaws = new OrderedArrayDoubleEvictingList(10);
+    private final OrderedArrayDoubleEvictingList previousYawOffsets = new OrderedArrayDoubleEvictingList(10);
+    private final OrderedArrayDoubleEvictingList previousEnhancedYawOffsets = new OrderedArrayDoubleEvictingList(10);
     private int lastEntityId;
     private boolean recordingNow = false;
     private int ticksSinceLastAttack = 0;

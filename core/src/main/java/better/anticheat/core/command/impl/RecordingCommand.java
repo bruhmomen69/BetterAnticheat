@@ -18,9 +18,6 @@ import revxrsal.commands.command.CommandActor;
 import smile.classification.Classifier;
 import smile.classification.MLP;
 import smile.data.Tuple;
-import smile.data.measure.Measure;
-import smile.data.type.DataTypes;
-import smile.data.type.StructField;
 import smile.data.type.StructType;
 import smile.plot.swing.FigurePane;
 import smile.plot.swing.Grid;
@@ -49,7 +46,7 @@ public class RecordingCommand extends Command {
         if (player == null) return;
         player.getCmlTracker().setRecordingNow(true);
         player.getCmlTracker().getRecording().clear();
-        sendReply(actor, Component.text("Recording reset, and begun!"));
+        sendReply(actor, Component.text(", and begun!"));
     }
 
     @Subcommand("toggle")
@@ -245,11 +242,11 @@ public class RecordingCommand extends Command {
             actor.reply("=== CONFIGURATION COMPARISON RESULTS ===");
             actor.reply("Format: MaxDepth,NodeSize -> Accuracy%");
             actor.reply("");
-            
+
             // Test different depth and node size configurations
             int[] depths = {10, 15, 20, 25, 30, 35, 40};
             int[] nodeSizes = {1, 2, 3, 4, 5, 6, 8, 10};
-            
+
             actor.reply("--- GINI DECISION TREE ---");
             for (int depth : depths) {
                 StringBuilder line = new StringBuilder("Depth " + depth + ": ");
@@ -259,7 +256,7 @@ public class RecordingCommand extends Command {
                 }
                 actor.reply(line.toString());
             }
-            
+
             actor.reply("");
             actor.reply("--- ENTROPY DECISION TREE ---");
             for (int depth : depths) {
@@ -270,7 +267,7 @@ public class RecordingCommand extends Command {
                 }
                 actor.reply(line.toString());
             }
-            
+
             actor.reply("");
             actor.reply("--- GINI RANDOM FOREST ---");
             for (int depth : depths) {
@@ -281,7 +278,7 @@ public class RecordingCommand extends Command {
                 }
                 actor.reply(line.toString());
             }
-            
+
             actor.reply("");
             actor.reply("--- ENTROPY RANDOM FOREST ---");
             for (int depth : depths) {
@@ -352,8 +349,8 @@ public class RecordingCommand extends Command {
         });
     }
 
-    private void runTrainerTests(double[][][] legitData, double[][][] cheatingData, CommandActor actor, short column, boolean process, boolean enhanced) {
-        final MLTrainer trainer = new MLTrainer(legitData, cheatingData, column, true, process, enhanced, true);
+    private void runTrainerTests(double[][][] legitData, double[][][] cheatingData, CommandActor actor, short column, boolean process, boolean statistics) {
+        final MLTrainer trainer = new MLTrainer(legitData, cheatingData, column, true, process, statistics, true);
 
         final var cheatingPlot = Grid.of(new double[][][]{trainer.getCheatingTrain(), trainer.getLegitTrain()});
         var pane = new FigurePane(cheatingPlot.figure());
@@ -367,14 +364,14 @@ public class RecordingCommand extends Command {
         double[][] cheatingTestData = trainer.getCheatingData();
 
         actor.reply("---- Decision Tree (Gini):");
-        testModelI32(trainer.getGiniTree(), legitTestData, cheatingTestData, 6, actor);
+        testModelI32(trainer.getGiniTree(), legitTestData, cheatingTestData, 6, trainer, actor);
         actor.reply("---- Decision Tree (Entropy):");
-        testModelI32(trainer.getEntropyTree(), legitTestData, cheatingTestData, 6, actor);
+        testModelI32(trainer.getEntropyTree(), legitTestData, cheatingTestData, 6, trainer, actor);
 
         actor.reply("---- Random Forest (Gini) - OVERFITTING WARNING:");
-        testModelI32(trainer.getGiniForest(), legitTestData, cheatingTestData, 1, actor);
+        testModelI32(trainer.getGiniForest(), legitTestData, cheatingTestData, 1, trainer, actor);
         actor.reply("---- Random Forest (Entropy) - OVERFITTING WARNING:");
-        testModelI32(trainer.getEntropyForest(), legitTestData, cheatingTestData, 1, actor);
+        testModelI32(trainer.getEntropyForest(), legitTestData, cheatingTestData, 1, trainer, actor);
 
         actor.reply("---- Legacy Models:");
         testModel(trainer.trainLogisticRegression(), legitTestData, cheatingTestData, actor, trainer, "LogisticRegression");
@@ -388,7 +385,7 @@ public class RecordingCommand extends Command {
         }
     }
 
-    private void testModelI32(final Classifier<Tuple> model, final double[][] legitData, final double[][] finalCheatingData, final int benchSize, final CommandActor actor) {
+    private void testModelI32(final Classifier<Tuple> model, final double[][] legitData, final double[][] finalCheatingData, final int benchSize, final MLTrainer trainer, final CommandActor actor) {
         var threshold = 5;
         var df = new DecimalFormat("#.######");
 
@@ -398,11 +395,18 @@ public class RecordingCommand extends Command {
         var cheatingAsLegit = 0;
         var cheatingAsCheating = 0;
         var cheatingAvg = 0.0;
-        final var struct = new StructType(/*new StructField("V1", DataTypes.IntType, Measure.Percent), */new StructField("V2", DataTypes.IntType, Measure.Percent), new StructField("V3", DataTypes.IntType, Measure.Percent), new StructField("V4", DataTypes.IntType, Measure.Percent), new StructField("V5", DataTypes.IntType, Measure.Percent), new StructField("V6", DataTypes.IntType, Measure.Percent));
+        final var struct = MLTrainer.PREDICTION_STRUCT_XL;
+
 
         for (final var legitArray : legitData) {
+            final var wrappedValidationData = new double[3][];
+            wrappedValidationData[trainer.getSlice()] = legitArray;
 
-            final var prediction = model.predict(Tuple.of(struct, new int[]{(int) Math.round(legitArray[0] * 2_500_000), (int) Math.round(legitArray[1] * 2_500_000), (int) Math.round(legitArray[2] * 2_500_000), (int) Math.round(legitArray[3] * 2_500_000), (int) Math.round(legitArray[4] * 2_500_000)}));
+            final var prediction = model.predict(Tuple.of(
+                            struct,
+                            trainer.prepareInputForTree(wrappedValidationData)
+                    )
+            );
             if (prediction < threshold) {
                 legitAsLegit++;
             } else {
@@ -413,7 +417,15 @@ public class RecordingCommand extends Command {
         }
 
         for (final var cheatingArray : finalCheatingData) {
-            final var prediction = model.predict(Tuple.of(struct, new int[]{(int) Math.round(cheatingArray[0] * 2_500_000), (int) Math.round(cheatingArray[1] * 2_500_000), (int) Math.round(cheatingArray[2] * 2_500_000), (int) Math.round(cheatingArray[3] * 2_500_000), (int) Math.round(cheatingArray[4] * 2_500_000)}));
+            final var wrappedValidationData = new double[3][];
+            wrappedValidationData[trainer.getSlice()] = cheatingArray;
+
+            final var prediction = model.predict(Tuple.of(
+                            struct,
+                            trainer.prepareInputForTree(wrappedValidationData)
+                    )
+            );
+
             if (prediction < threshold) {
                 cheatingAsLegit++;
             } else {
@@ -430,10 +442,10 @@ public class RecordingCommand extends Command {
             var start = System.currentTimeMillis();
             for (int j = 0; j < benchmarkRuns; j++) {
                 for (final var legitArray : legitData) {
-                    model.predict(Tuple.of(struct, new int[]{(int) Math.round(legitArray[0] * 2_500_000), (int) Math.round(legitArray[1] * 2_500_000), (int) Math.round(legitArray[2] * 2_500_000), (int) Math.round(legitArray[3] * 2_500_000), (int) Math.round(legitArray[4] * 2_500_000)}));
+                    model.predict(Tuple.of(struct, new int[]{(int) Math.round(legitArray[0] * 2_500_000), (int) Math.round(legitArray[1] * 2_500_000), (int) Math.round(legitArray[2] * 2_500_000), (int) Math.round(legitArray[3] * 2_500_000), (int) Math.round(legitArray[4] * 2_500_000), 0, 0, 0, 0, 0}));
                 }
                 for (final var cheatingArray : finalCheatingData) {
-                    model.predict(Tuple.of(struct, new int[]{(int) Math.round(cheatingArray[0] * 2_500_000), (int) Math.round(cheatingArray[1] * 2_500_000), (int) Math.round(cheatingArray[2] * 2_500_000), (int) Math.round(cheatingArray[3] * 2_500_000), (int) Math.round(cheatingArray[4] * 2_500_000)}));
+                    model.predict(Tuple.of(struct, new int[]{(int) Math.round(cheatingArray[0] * 2_500_000), (int) Math.round(cheatingArray[1] * 2_500_000), (int) Math.round(cheatingArray[2] * 2_500_000), (int) Math.round(cheatingArray[3] * 2_500_000), (int) Math.round(cheatingArray[4] * 2_500_000), 0, 0, 0, 0, 0}));
                 }
             }
             var end = System.currentTimeMillis();
@@ -602,10 +614,10 @@ public class RecordingCommand extends Command {
         return new double[][][]{yaws, offsets, enhancedOffsets};
     }
 
-    private double testConfiguration(double[][][] legitData, double[][][] cheatingData, short column, 
-                                   int giniMaxDepth, int entropyMaxDepth, int giniNodeSize, int entropyNodeSize,
-                                   int giniForestMaxDepth, int entropyForestMaxDepth, int giniForestNodeSize, int entropyForestNodeSize,
-                                   String modelType) {
+    private double testConfiguration(double[][][] legitData, double[][][] cheatingData, short column,
+                                     int giniMaxDepth, int entropyMaxDepth, int giniNodeSize, int entropyNodeSize,
+                                     int giniForestMaxDepth, int entropyForestMaxDepth, int giniForestNodeSize, int entropyForestNodeSize,
+                                     String modelType) {
         try {
             final MLTrainer trainer = new MLTrainer(legitData, cheatingData, column, false, true, true, modelType.contains("forest"),
                     giniMaxDepth, entropyMaxDepth, giniNodeSize, entropyNodeSize,
@@ -617,99 +629,43 @@ public class RecordingCommand extends Command {
             int correctPredictions = 0;
             int totalPredictions = legitTestData.length + cheatingTestData.length;
 
-            final StructType treeStructType = new StructType(new StructField("V2", DataTypes.IntType), new StructField("V3", DataTypes.IntType),
-                    new StructField("V4", DataTypes.IntType), new StructField("V5", DataTypes.IntType), new StructField("V6", DataTypes.IntType));
-            switch (modelType) {
-                case "gini_tree" -> {
-                    var model = trainer.getGiniTree();
-                    final var struct = treeStructType;
+            final StructType treeStructType = MLTrainer.PREDICTION_STRUCT_XL;
+            final Classifier<smile.data.Tuple> model = switch (modelType) {
+                case "gini_tree" -> trainer.getGiniTree();
+                case "entropy_tree" -> trainer.getEntropyTree();
+                case "gini_forest" -> trainer.getGiniForest();
+                case "entropy_forest" -> trainer.getEntropyForest();
+                case null, default -> throw new IllegalStateException("Unknown model type: " + modelType);
+            };
 
-                    // Test legit data (should predict < 5)
-                    for (final var legitArray : legitTestData) {
-                        final var prediction = model.predict(Tuple.of(struct, new int[]{
-                                (int) Math.round(legitArray[0] * 2_500_000), (int) Math.round(legitArray[1] * 2_500_000),
-                                (int) Math.round(legitArray[2] * 2_500_000), (int) Math.round(legitArray[3] * 2_500_000),
-                                (int) Math.round(legitArray[4] * 2_500_000)}));
-                        if (prediction < 5) correctPredictions++;
-                    }
+            // Test legit data (should predict < 5)
+            for (final var legitArray : legitTestData) {
+                final var wrappedValidationData = new double[3][];
+                wrappedValidationData[trainer.getSlice()] = legitArray;
 
-                    // Test cheating data (should predict >= 5)
-                    for (final var cheatingArray : cheatingTestData) {
-                        final var prediction = model.predict(Tuple.of(struct, new int[]{
-                                (int) Math.round(cheatingArray[0] * 2_500_000), (int) Math.round(cheatingArray[1] * 2_500_000),
-                                (int) Math.round(cheatingArray[2] * 2_500_000), (int) Math.round(cheatingArray[3] * 2_500_000),
-                                (int) Math.round(cheatingArray[4] * 2_500_000)}));
-                        if (prediction >= 5) correctPredictions++;
-                    }
-                }
-                case "entropy_tree" -> {
-                    var model = trainer.getEntropyTree();
-                    final var struct = treeStructType;
+                final var prediction = model.predict(Tuple.of(
+                                treeStructType,
+                                trainer.prepareInputForTree(wrappedValidationData)
+                        )
+                );
 
-                    // Test legit data (should predict < 5)
-                    for (final var legitArray : legitTestData) {
-                        final var prediction = model.predict(Tuple.of(struct, new int[]{
-                                (int) Math.round(legitArray[0] * 2_500_000), (int) Math.round(legitArray[1] * 2_500_000),
-                                (int) Math.round(legitArray[2] * 2_500_000), (int) Math.round(legitArray[3] * 2_500_000),
-                                (int) Math.round(legitArray[4] * 2_500_000)}));
-                        if (prediction < 5) correctPredictions++;
-                    }
-
-                    // Test cheating data (should predict >= 5)
-                    for (final var cheatingArray : cheatingTestData) {
-                        final var prediction = model.predict(Tuple.of(struct, new int[]{
-                                (int) Math.round(cheatingArray[0] * 2_500_000), (int) Math.round(cheatingArray[1] * 2_500_000),
-                                (int) Math.round(cheatingArray[2] * 2_500_000), (int) Math.round(cheatingArray[3] * 2_500_000),
-                                (int) Math.round(cheatingArray[4] * 2_500_000)}));
-                        if (prediction >= 5) correctPredictions++;
-                    }
-                }
-                case "gini_forest" -> {
-                    var model = trainer.getGiniForest();
-                    final var struct = treeStructType;
-
-                    // Test legit data (should predict < 5)
-                    for (final var legitArray : legitTestData) {
-                        final var prediction = model.predict(Tuple.of(struct, new int[]{
-                                (int) Math.round(legitArray[0] * 2_500_000), (int) Math.round(legitArray[1] * 2_500_000),
-                                (int) Math.round(legitArray[2] * 2_500_000), (int) Math.round(legitArray[3] * 2_500_000),
-                                (int) Math.round(legitArray[4] * 2_500_000)}));
-                        if (prediction < 5) correctPredictions++;
-                    }
-
-                    // Test cheating data (should predict >= 5)
-                    for (final var cheatingArray : cheatingTestData) {
-                        final var prediction = model.predict(Tuple.of(struct, new int[]{
-                                (int) Math.round(cheatingArray[0] * 2_500_000), (int) Math.round(cheatingArray[1] * 2_500_000),
-                                (int) Math.round(cheatingArray[2] * 2_500_000), (int) Math.round(cheatingArray[3] * 2_500_000),
-                                (int) Math.round(cheatingArray[4] * 2_500_000)}));
-                        if (prediction >= 5) correctPredictions++;
-                    }
-                }
-                case "entropy_forest" -> {
-                    var model = trainer.getEntropyForest();
-                    final var struct = treeStructType;
-
-                    // Test legit data (should predict < 5)
-                    for (final var legitArray : legitTestData) {
-                        final var prediction = model.predict(Tuple.of(struct, new int[]{
-                                (int) Math.round(legitArray[0] * 2_500_000), (int) Math.round(legitArray[1] * 2_500_000),
-                                (int) Math.round(legitArray[2] * 2_500_000), (int) Math.round(legitArray[3] * 2_500_000),
-                                (int) Math.round(legitArray[4] * 2_500_000)}));
-                        if (prediction < 5) correctPredictions++;
-                    }
-
-                    // Test cheating data (should predict >= 5)
-                    for (final var cheatingArray : cheatingTestData) {
-                        final var prediction = model.predict(Tuple.of(struct, new int[]{
-                                (int) Math.round(cheatingArray[0] * 2_500_000), (int) Math.round(cheatingArray[1] * 2_500_000),
-                                (int) Math.round(cheatingArray[2] * 2_500_000), (int) Math.round(cheatingArray[3] * 2_500_000),
-                                (int) Math.round(cheatingArray[4] * 2_500_000)}));
-                        if (prediction >= 5) correctPredictions++;
-                    }
-                }
+                if (prediction < 5) correctPredictions++;
             }
-            
+
+            // Test cheating data (should predict >= 5)
+            for (final var cheatingArray : cheatingTestData) {
+                final var wrappedValidationData = new double[3][];
+                wrappedValidationData[trainer.getSlice()] = cheatingArray;
+
+                final var prediction = model.predict(Tuple.of(
+                                treeStructType,
+                                trainer.prepareInputForTree(wrappedValidationData)
+                        )
+                );
+
+                if (prediction >= 5) correctPredictions++;
+            }
+
             return (double) correctPredictions / totalPredictions * 100.0;
         } catch (Exception e) {
             return 0.0; // Return 0% accuracy if there's an error

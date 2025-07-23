@@ -70,7 +70,7 @@ ml:
       samples: 15
       # Required average of samples to flag the player (9.5 == Definitely cheating, 3 == Probably not cheating).
       # This is more a guide for the internal validation settings, than it is a strict value.
-      threshold: 6.0
+      threshold: 6.5
       # Enable this model check?
       enabled: true
       # The minimum vl required to run an alert, after the samples/threshold requirement have been met.
