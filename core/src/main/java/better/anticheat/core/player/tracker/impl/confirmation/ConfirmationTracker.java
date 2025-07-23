@@ -274,10 +274,9 @@ public class ConfirmationTracker extends Tracker {
     public ConfirmationState sendCookieOrLatest(final long now) {
         synchronized (cookieLock) {
             if (this.nextPostPacket == null) {
-                log.trace("[BetterAntiCheat] Sending cookie");
+                log.trace("[BetterAntiCheat] Constructing and Allocating cookie");
                 final var cookieId = this.cookieIdAllocator.allocateNext();
                 this.nextPostPacket = new ConfirmationState(cookieId, ConfirmationType.COOKIE, now, true);
-                this.confirmations.add(this.nextPostPacket);
             }
             return this.nextPostPacket;
         }
@@ -318,6 +317,7 @@ public class ConfirmationTracker extends Tracker {
                             new ResourceLocation(COOKIE_NAMESPACE, COOKIE_KEY)
                     ));
                     log.trace("[BetterAntiCheat] Flushing cookie");
+                    this.confirmations.add(this.nextPostPacket);
                 }
 
                 this.nextPostPacket = null;
