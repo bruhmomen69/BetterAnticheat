@@ -74,7 +74,6 @@ public class PostCheck extends Check {
             case SPECTATE:
             case TAB_COMPLETE:
             case UPDATE_SIGN:
-            case PONG:
                 if (!login) break;
                 if (sentFlying) post.add(event.getPacketType());
                 break;
