@@ -317,7 +317,7 @@ public class ConfirmationTracker extends Tracker {
                             new ResourceLocation(COOKIE_NAMESPACE, COOKIE_KEY)
                     ));
                     log.trace("[BetterAntiCheat] Flushing cookie");
-                    this.confirmations.add(this.nextPostPacket);
+                    this.confirmations.add(post);
                 }
 
                 this.nextPostPacket = null;
