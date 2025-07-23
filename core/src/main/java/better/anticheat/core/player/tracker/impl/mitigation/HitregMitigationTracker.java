@@ -129,8 +129,8 @@ public class HitregMitigationTracker extends Tracker {
                     // Raycast the hitbox
 
                     // 0.005 is movement offset.
-                    // 0.1 is the hitbox cheat I want to give people.
-                    var marginOfError = 0.005 + 0.1;
+                    // 0.2 is the hitbox cheat I want to give people.
+                    var marginOfError = 0.005 + 0.2;
 
                     final var rayCastResult = RayCastUtil.checkNormalPose(entity, yaws, pitches, positions, marginOfError, 0.1);
 
