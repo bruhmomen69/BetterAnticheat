@@ -4,7 +4,7 @@ import better.anticheat.core.BetterAnticheat;
 import better.anticheat.core.check.Check;
 import better.anticheat.core.player.Player;
 import better.anticheat.core.player.tracker.Tracker;
-import better.anticheat.core.util.EntityMath;
+import better.anticheat.core.util.entity.EntityMath;
 import better.anticheat.core.util.MathUtil;
 import better.anticheat.core.util.ml.ModelConfig;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
@@ -16,6 +16,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import wtf.spare.sparej.fastlist.FastObjectArrayList;
 import wtf.spare.sparej.fastlist.evicting.ord.OrderedArrayDoubleEvictingList;
+import wtf.spare.sparej.incrementer.IntIncrementer;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -42,7 +43,9 @@ public class CMLTracker extends Tracker {
     private final OrderedArrayDoubleEvictingList previousYawOffsets = new OrderedArrayDoubleEvictingList(10);
     private final OrderedArrayDoubleEvictingList previousEnhancedYawOffsets = new OrderedArrayDoubleEvictingList(10);
     private int lastEntityId;
+    private double averageScore;
     private boolean recordingNow = false;
+    private IntIncrementer mitigationTicks = new IntIncrementer(0);
     private int ticksSinceLastAttack = 0;
 
     public void onPlayerInit() {
@@ -109,7 +112,34 @@ public class CMLTracker extends Tracker {
                 this.previousEnhancedYawOffsets.push(offsets[0] - rots.getDeltaYaw());
             }
 
-            case CLIENT_TICK_END -> this.ticksSinceLastAttack++;
+            case CLIENT_TICK_END -> {
+                this.ticksSinceLastAttack++;
+                double totalSum = 0.0;
+                int totalCount = 0;
+
+                // Calculate overall average from all MLCheck history arrays, and use this to determine if we should be mitigating now.
+                for (final var mlCheck : getInternalChecks()) {
+                    if (!mlCheck.getHistory().isFull()) continue;
+
+                    final double[] historyArray = mlCheck.getHistory().getArray();
+                    for (final double value : historyArray) {
+                        totalSum += value;
+                        totalCount++;
+                    }
+                }
+
+                if (totalCount == 0) return;
+
+                final double overallAverage = totalSum / totalCount;
+                final double threshold = BetterAnticheat.getInstance().getMlCombatDamageThreshold();
+                if (overallAverage >= threshold) {
+                    this.mitigationTicks.increment();
+                }
+
+                this.mitigationTicks.decrementOrMin(0);
+
+                this.averageScore = overallAverage;
+            }
         }
     }
 

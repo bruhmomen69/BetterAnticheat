@@ -1,48 +1,34 @@
 package better.anticheat.core.player.tracker.impl.mitigation;
 
+import better.anticheat.core.BetterAnticheat;
 import better.anticheat.core.player.Player;
 import better.anticheat.core.player.tracker.Tracker;
-import com.github.retrooper.packetevents.PacketEvents;
+import better.anticheat.core.util.entity.RayCastUtil;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
-import com.github.retrooper.packetevents.manager.server.ServerVersion;
-import com.github.retrooper.packetevents.protocol.attribute.Attributes;
 import com.github.retrooper.packetevents.protocol.entity.type.EntityTypes;
-import com.github.retrooper.packetevents.protocol.packettype.PacketType;
-import com.github.retrooper.packetevents.protocol.player.ClientVersion;
 import com.github.retrooper.packetevents.protocol.player.InteractionHand;
 import com.github.retrooper.packetevents.protocol.world.Location;
 import com.github.retrooper.packetevents.util.Vector3f;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientAnimation;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientInteractEntity;
-import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerUpdateAttributes;
-import dev.hypera.chameleon.event.EventSubscriber;
-import lombok.RequiredArgsConstructor;
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.Player;
-import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
-import wtf.spare.kbsync.api.data.entity.IEntityData;
-import wtf.spare.kbsync.api.data.entity.IEntityTrackerData;
-import wtf.spare.kbsync.api.events.impl.SyncPacketPlayReceiveEvent;
-import wtf.spare.kbsync.api.util.entityraycast.RayCastUtil;
-import wtf.spare.kbsync.impl.bukkit.config.HitregConfig;
 import wtf.spare.sparej.incrementer.IntIncrementer;
 
-import java.util.ArrayDeque;
-import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
-// Keep track of received packets that haven't been processed yet, and packets to cancel. Only cancel if received is zero.
-// On arm swing, check raycast and attack.
-// On use entity, if Math.max(unprocessedPackets - 1, 0) > 0, and cancel queue size >> 0 cancel.
+/**
+ * Handles actual mitigations.
+ * WARNING: THIS TRACKER DOES NOT HANDLE SEND PACKETS FOR PERFORMANCE REASONS
+ */
 public class HitregMitigationTracker extends Tracker {
     private final IntIncrementer unprocessedFakeCounter = new IntIncrementer(0);
     private final IntIncrementer hitCancelCounter = new IntIncrementer(0);
+    private final BetterAnticheat betterAnticheat;
 
-    public HitregMitigationTracker(Player player) {
+    public HitregMitigationTracker(Player player, BetterAnticheat betterAnticheat) {
         super(player);
+        this.betterAnticheat = betterAnticheat;
     }
 
     @Override
@@ -64,134 +50,114 @@ public class HitregMitigationTracker extends Tracker {
 
                 // Decrement unprocessed fake packet counter
                 this.unprocessedFakeCounter.decrementOrMin(0);
+
+                // Now, handle hit debounce mitigations.
+                if (this.player.getCmlTracker().getMitigationTicks().get() <= 0 || !this.betterAnticheat.isVelocityTickCheckEnabled()) return;
+                final var overallAverage = this.player.getCmlTracker().getAverageScore();
+                final boolean isAttackTooFast = this.player.getCmlTracker().getTicksSinceLastAttack() < this.betterAnticheat.getMinTicksSinceLastAttack();
+                final boolean isAverageTooHigh = overallAverage > this.betterAnticheat.getMinAverageForTickCheck();
+
+                final boolean tickCheckFailed = isAttackTooFast && isAverageTooHigh;
+
+                // Hit debounce/cps limit mitigation
+                if (tickCheckFailed) {
+                    event.setCancelled(true);
+                }
             }
             case ANIMATION -> {
-
                 // Anti lag
-                if (event.getData().getContainer().getTicks().getTicksSinceAttack().get() > this.hitregConfig.getDynamicHitreg().getAntiLagDisableTime() * 20) {
+                if (player.getActionTracker().getTicksSinceAttack().get() > 10_000) {
                     return;
                 }
 
                 // Anti dig problem
-                if (event.getData().getContainer().getTicks().getTicksSinceDigging().get() < 10) {
+                if (player.getActionTracker().getTicksSinceDigging().get() < 10) {
                     return;
                 }
 
                 // Anti place problem
-                if (event.getData().getContainer().getTicks().getTicksSincePlace().get() < 5) {
+                if (player.getActionTracker().getTicksSincePlace().get() < 5) {
                     return;
                 }
 
                 // Swing logic
-                final WrapperPlayClientAnimation packet = (WrapperPlayClientAnimation) event.getWrappers().get(WrapperPlayClientAnimation.class);
+                final WrapperPlayClientAnimation packet = new WrapperPlayClientAnimation(event);
                 if (packet.getHand() == InteractionHand.OFF_HAND) return;
 
                 // Get this, we will be using it a ton.
-                final var data = event.getData().getContainer();
-                final IEntityTrackerData entityTrackerData = data.getEntity();
-                final Location playerPos = data.getPosition().getCurrentLocation();
+                final Location playerPos = new Location(
+                        player.getPositionTracker().getX(),
+                        player.getPositionTracker().getY(),
+                        player.getPositionTracker().getZ(),
+                        player.getRotationTracker().getYaw(),
+                        player.getRotationTracker().getPitch()
+                );
 
-                for (IEntityData entity : entityTrackerData.getEntities().values()) {
+                // Get the possible yaws
+                final var yaws = new double[]{
+                        playerPos.getYaw(),
+                        player.getRotationTracker().getLastYaw()
+                };
+
+                // Get the possible pitches
+                final var pitches = new double[]{
+                        player.getRotationTracker().getPitch(),
+                        player.getRotationTracker().getLastPitch()
+                };
+
+                // Get the possible locations
+                final var positions = List.of(
+                        playerPos
+                );
+
+                // Prevent major performance issues in crowded areas.
+                var scanned = 0;
+                for (final var entity : player.getEntityTracker().getEntities().values()) {
                     // Check for entities where all axises are less than 6 blocks from the player.
-                    if (Math.abs(entity.getServerPosX().getCurrent() - playerPos.getX()) < 6 && Math.abs(entity.getServerPosY().getCurrent() - playerPos.getY()) < 6 && Math.abs(entity.getServerPosZ().getCurrent() - playerPos.getZ()) < 6) {
-                        // Raycast the hit
+                    final var closeEnough = Math.abs(entity.getServerPosX().getCurrent() - playerPos.getX()) < 6 && Math.abs(entity.getServerPosY().getCurrent() - playerPos.getY()) < 6 && Math.abs(entity.getServerPosZ().getCurrent() - playerPos.getZ()) < 6;
+                    if (!closeEnough) continue;
 
-                        // Exempt falling blocks and tnt
-                        if (entity.getType() == EntityTypes.FALLING_BLOCK || entity.getType() == EntityTypes.TNT || entity.getType() == EntityTypes.PRIMED_TNT || entity.getType() == EntityTypes.DRAGON_FIREBALL) {
-                            continue;
-                        }
+                    if (entity.getType() != EntityTypes.PLAYER) continue;
+                    // Only increment after determining if it's a local player.
+                    if (scanned++ > 20) break;
 
-                        // Get the possible yaws
-                        final var yaws = new double[]{
-                                data.getRotation().getYaw(),
-                                data.getRotation().getLastYaw()
-                        };
+                    // Only expand against cheaters.
+                    final var otherPlayer = BetterAnticheat.getInstance().getPlayerManager().getPlayerByEntityId(entity.getId());
+                    if (otherPlayer == null) continue;
+                    if (otherPlayer.getCmlTracker().getMitigationTicks().get() <= 0) continue;
 
-                        // Get the possible pitches
-                        final var pitches = new double[]{
-                                data.getRotation().getPitch(),
-                                data.getRotation().getLastPitch()
-                        };
+                    // Raycast the hitbox
 
-                        // Get the possible locations
-                        final var positions = Arrays.asList(
-                                data.getPosition().getCurrentLocation(),
-                                ((ArrayDeque<Location>) data.getPosition().getLastPositions()).getLast()
-                        );
+                    // 0.005 is movement offset.
+                    // 0.1 is the hitbox cheat I want to give people.
+                    var marginOfError = 0.005 + 0.1;
 
+                    final var rayCastResult = RayCastUtil.checkNormalPose(entity, yaws, pitches, positions, marginOfError, 0.1);
 
-                        // 0.005 is movement offset.
-                        // 0.1 is the hitbox cheat I want to give people.
-                        var marginOfError = 0.005 + 0.1 + hitregConfig.getReachModifier();
+                    // Inside entity, attack anyways because fuck cheaters
+                    // if (rayCastResult.isCollided()) continue;
 
-                        if (event.getData().getVersion().isNewerThan(ClientVersion.V_1_9) || !data.getPosition().isPosition()) {
-                            marginOfError += data.getAttributes().getEntityReach().getCurrent() / 100.0;
-                        }
+                    // Check hitbox matched and the distance is accceptable
+                    if (!(rayCastResult.getDistance() > 0 && rayCastResult.getDistance() < 3.5))
+                        continue;
 
-                        final var rayCastResult = RayCastUtil.getResult(entity, yaws, pitches, positions, marginOfError, 0.1);
+                    // Valid hit detected
+                    // Increment the counters that are used on hit
+                    // this.unprocessedFakeCounter.increment(); // TODO: Use this if the receive packet is not silent for some reason
+                    hitCancelCounter.increment();
 
-                        // Inside entity
-                        if (rayCastResult.isCollided()) continue;
-
-                        // Combo timers
-                        if (!(hitregConfig.getDynamicHitreg().isTrade()
-                                || data.getTicks().getTicksSinceAttack().get() < hitregConfig.getDynamicHitreg().getComboTimer()
-                                || data.getTicks().getTicksSinceAttack().get() > (hitregConfig.getDynamicHitreg().getComboTimer() * hitregConfig.getDynamicHitreg().getComboBreaker()))) {
-                            continue;
-                        }
-
-                        // Check hit stuff
-                        if (!(rayCastResult.getDistance() > 0 && rayCastResult.getDistance() < (data.getAttributes().getEntityReach().getCurrent() + 0.1 + hitregConfig.getReachModifier())))
-                            continue;
-
-                        // Valid hit detected
-                        // Increment the counters that are used on hit
-                        data.getKbSync().getHitUnprocessedFakeCounter().increment();
-                        data.getKbSync().getHitCancelCounter().increment();
-
-                        // Send packet
-                        final Player bPlayer = Bukkit.getPlayer(event.getData().getPlayer().getUUID());
-                        if (bPlayer == null) return;
-                        if (entity.getType() == EntityTypes.END_CRYSTAL && hitregConfig.isFastCrystals() && PacketEvents.getAPI().getServerManager().getVersion().isNewerThanOrEquals(ServerVersion.V_1_20)) {
-                            if (rayCastResult.getDistance() < 0.4) continue;
-                            new BukkitRunnable() {
-                                @Override
-                                public void run() {
-                                    for (Entity nearbyEntity : bPlayer.getNearbyEntities(10, 10, 10)) {
-                                        if (nearbyEntity.getEntityId() == entity.getId()) {
-                                            bPlayer.attack(nearbyEntity);
-                                        }
-                                    }
-                                }
-                            }.runTask(javaPlugin);
-                        } else {
-                            PacketEvents.getAPI().getPlayerManager().receivePacket(bPlayer, new WrapperPlayClientInteractEntity(
-                                    entity.getId(),
-                                    WrapperPlayClientInteractEntity.InteractAction.ATTACK,
-                                    packet.getHand(),
-                                    Optional.of(new Vector3f((float) rayCastResult.getVector().getX(), (float) rayCastResult.getVector().getY(), (float) rayCastResult.getVector().getZ())),
-                                    Optional.of(data.getAction().isSneaking())));
-                        }
-                        return;
-                    }
+                    // Send packet
+                    player.getUser().receivePacketSilently(new WrapperPlayClientInteractEntity(
+                            entity.getId(),
+                            WrapperPlayClientInteractEntity.InteractAction.ATTACK,
+                            packet.getHand(),
+                            Optional.of(new Vector3f((float) rayCastResult.getVector().getX(), (float) rayCastResult.getVector().getY(), (float) rayCastResult.getVector().getZ())),
+                            Optional.of(player.getActionTracker().isSneaking()))
+                    );
+                    return;
                 }
             }
             case CLIENT_TICK_END -> hitCancelCounter.set(0);
-        }
-        // Attack Logic
-        if (event.getWrappers().containsKey(WrapperPlayClientInteractEntity.class)) {
-
-        } else if (event.getWrappers().containsKey(WrapperPlayClientAnimation.class)) {
-        } else if (event.getWrappers().containsKey(WrapperPlayServerUpdateAttributes.class)) {
-            // Reach modifiers, not related to anything else in this class.
-            final WrapperPlayServerUpdateAttributes packet = (WrapperPlayServerUpdateAttributes) event.getWrappers().get(WrapperPlayServerUpdateAttributes.class);
-            for (WrapperPlayServerUpdateAttributes.Property property : packet.getProperties()) {
-                if (property.getAttribute() == Attributes.PLAYER_ENTITY_INTERACTION_RANGE) {
-                    if (property.getValue() == 3.0) {
-                        property.setValue(3.0 + hitregConfig.getReachModifier());
-                    }
-                }
-            }
         }
     }
 }

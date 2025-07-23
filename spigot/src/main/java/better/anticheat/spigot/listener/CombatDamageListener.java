@@ -1,4 +1,4 @@
-package better.anticheat.paper.listener;
+package better.anticheat.spigot.listener;
 
 import better.anticheat.core.BetterAnticheat;
 import com.github.retrooper.packetevents.PacketEvents;
@@ -10,7 +10,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import java.util.Random;
 
 /**
- * Handles ML-based combat damage modification for Paper.
+ * Handles ML-based combat damage modification for Spigot.
  * Monitors player damage events and applies modifications based on CMLTracker averages.
  */
 public class CombatDamageListener implements Listener {
@@ -30,27 +30,27 @@ public class CombatDamageListener implements Listener {
 
         final var user = PacketEvents.getAPI().getPlayerManager().getUser(bukkitPlayer);
         if (user == null) return;
-        
+
         final var player = BetterAnticheat.getInstance().getPlayerManager().getPlayer(user);
         if (player == null) return;
-        
+
         final var cmlTracker = player.getCmlTracker();
         if (cmlTracker == null) return;
-        
+
         if (!BetterAnticheat.getInstance().isMlCombatDamageEnabled()) return;
-        
+
         if (cmlTracker.getMitigationTicks().get() <= 0) return;
-        
+
         final double cancellationChance = cmlTracker.getAverageScore() * BetterAnticheat.getInstance().getMlCombatDamageCancellationMultiplier();
-        
+
         if (random.nextDouble() * 100.0 < cancellationChance) {
             event.setCancelled(true);
             return;
         }
-        
+
         final double damageMultiplier = BetterAnticheat.getInstance().getMlCombatDamageReductionMultiplier();
         final double damagePercentage = Math.max(0.0, (100.0 - (cmlTracker.getAverageScore() * damageMultiplier)) / 100.0);
-        
+
         final double originalDamage = event.getDamage();
         final double newDamage = originalDamage * damagePercentage;
         event.setDamage(newDamage);

@@ -5,6 +5,7 @@ import better.anticheat.core.player.tracker.Tracker;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.event.simple.PacketPlaySendEvent;
 import com.github.retrooper.packetevents.wrapper.play.client.*;
+import lombok.Getter;
 import org.jetbrains.annotations.Nullable;
 import wtf.spare.sparej.incrementer.IntIncrementer;
 
@@ -16,6 +17,7 @@ import com.github.retrooper.packetevents.util.Vector3i;
 
 import java.util.Optional;
 
+@Getter
 public class ActionTracker extends Tracker {
     public ActionTracker(Player player) {
         super(player);

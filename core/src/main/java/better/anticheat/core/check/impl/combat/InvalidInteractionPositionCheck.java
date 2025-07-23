@@ -3,7 +3,7 @@ package better.anticheat.core.check.impl.combat;
 import better.anticheat.core.BetterAnticheat;
 import better.anticheat.core.check.Check;
 import better.anticheat.core.check.CheckInfo;
-import better.anticheat.core.util.BoundingBoxSize;
+import better.anticheat.core.util.entity.BoundingBoxSize;
 import better.anticheat.core.util.EasyLoops;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.protocol.entity.pose.EntityPose;

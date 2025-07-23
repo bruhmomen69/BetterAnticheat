@@ -1,4 +1,4 @@
-package better.anticheat.core.util;
+package better.anticheat.core.util.entity;
 
 import better.anticheat.core.player.tracker.impl.entity.type.EntityAttribute;
 import better.anticheat.core.player.tracker.impl.entity.type.EntityData;

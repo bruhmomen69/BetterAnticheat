@@ -53,6 +53,7 @@ public class BetterAnticheat {
     private double mlCombatDamageCancellationMultiplier;
     private double mlCombatDamageReductionMultiplier;
     private boolean velocityTickCheckEnabled;
+    private boolean mlCombatDamageHitregEnabled;
     private int minTicksSinceLastAttack;
     private double minAverageForTickCheck;
     private CookieAllocatorConfig cookieAllocatorConfig;
@@ -168,13 +169,15 @@ public class BetterAnticheat {
             this.velocityTickCheckEnabled = true;
             this.minTicksSinceLastAttack = 3;
             this.minAverageForTickCheck = 8.0;
+            this.mlCombatDamageHitregEnabled = false;
         } else {
             this.mlCombatDamageEnabled = mlCombatNode.getObject(Boolean.class, "enabled", false);
             this.mlCombatDamageThreshold = mlCombatNode.getObject(Double.class, "threshold", 5.0);
             this.mlCombatDamageCancellationMultiplier = mlCombatNode.getObject(Double.class, "cancellation-multiplier", 3.0);
             this.mlCombatDamageReductionMultiplier = mlCombatNode.getObject(Double.class, "damage-reduction-multiplier", 5.0);
+            this.mlCombatDamageHitregEnabled = mlCombatNode.getObject(Boolean.class, "mess-with-hitreg", false);
 
-            final var velocityTickCheckNode = mlCombatNode.getConfigSection("velocity-tick-check");
+            final var velocityTickCheckNode = mlCombatNode.getConfigSection("tick-mitigation");
             if (velocityTickCheckNode != null) {
                 this.velocityTickCheckEnabled = velocityTickCheckNode.getObject(Boolean.class, "enabled", true);
                 this.minTicksSinceLastAttack = velocityTickCheckNode.getObject(Integer.class, "min-ticks-since-last-attack", 3);

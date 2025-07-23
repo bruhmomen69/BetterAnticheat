@@ -1,4 +1,4 @@
-package better.anticheat.spigot;
+package better.anticheat.spigot.listener;
 
 import better.anticheat.core.BetterAnticheat;
 import better.reload.api.ReloadEvent;

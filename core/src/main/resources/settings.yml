@@ -120,13 +120,17 @@ ml:
     # Multiplier for damage reduction calculation (100 - (average * multiplier))% of original damage, average is 1-10, where 10 is definitely cheating, and 1 is not cheating.
     # Not supported on Sponge and Velocity.
     damage-reduction-multiplier: 4.0
-    # Velocity-specific settings for tick-based attack cancellation
-    velocity-tick-check:
+    # Mess with hitreg to make life horrible for cheaters? Works by giving the person who is attacking the cheater server-side hitbox and reach cheats.
+    # Can break other anticheat's reach and hitbox checks.
+    # Is probably the most OP mitigation.
+    mess-with-hitreg: true
+    # Tick-based attack cancellation. Is effectively a cps limit for cheaters.
+    tick-mitigation:
       enabled: true
       # Minimum number of ticks allowed since the last attack.
       min-ticks-since-last-attack: 3
       # The minimum ML average required to apply the tick check.
-      min-average-for-tick-check: 6.0
+      min-average-for-tick-check: 7.0
 
 cookie-allocator:
   # The type of cookie ID allocator to use.

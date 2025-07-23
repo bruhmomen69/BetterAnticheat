@@ -1,4 +1,4 @@
-package better.anticheat.core.util;
+package better.anticheat.core.util.entity;
 
 import com.github.retrooper.packetevents.protocol.world.Location;
 import com.github.retrooper.packetevents.util.Vector3d;

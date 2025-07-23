@@ -4,6 +4,8 @@ import better.anticheat.core.BetterAnticheat;
 import better.anticheat.core.DataBridge;
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.protocol.player.User;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectRBTreeMap;
 import net.kyori.adventure.text.Component;
 
 import java.io.IOException;
@@ -18,6 +20,7 @@ public class PlayerManager {
     private final BetterAnticheat plugin;
 
     private final Map<User, Player> userMap = new ConcurrentHashMap<>();
+    private final Int2ObjectMap<Player> idMap = new Int2ObjectRBTreeMap<>();
     private final List<Quantifier> quantifiers = new ArrayList<>();
 
     public PlayerManager(BetterAnticheat plugin) {
@@ -43,12 +46,14 @@ public class PlayerManager {
      * Player management.
      */
 
-    public void addUser(User user, DataBridge dataBridge) {
+    public synchronized void addUser(User user, DataBridge dataBridge) {
         for (Quantifier quantifier : quantifiers) if (!quantifier.check(user)) return;
         userMap.put(user, new Player(plugin, user, dataBridge));
+        idMap.put(user.getEntityId(), userMap.get(user));
     }
 
-    public void removeUser(User user) throws IOException {
+    public synchronized void removeUser(User user) throws IOException {
+        idMap.remove(user.getEntityId());
         final var removedPlayer = userMap.remove(user);
         if (removedPlayer == null) return;
         removedPlayer.close();
@@ -64,6 +69,10 @@ public class PlayerManager {
         }
 
         return null;
+    }
+
+    public Player getPlayerByEntityId(int id) {
+        return idMap.get(id);
     }
 
     public Player getPlayerByUsername(String username) {

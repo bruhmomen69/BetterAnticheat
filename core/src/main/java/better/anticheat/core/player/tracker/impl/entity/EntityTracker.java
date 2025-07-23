@@ -8,7 +8,7 @@ import better.anticheat.core.player.tracker.impl.confirmation.ConfirmationTracke
 import better.anticheat.core.player.tracker.impl.entity.type.EntityData;
 import better.anticheat.core.player.tracker.impl.entity.type.EntityTrackerState;
 import better.anticheat.core.player.tracker.impl.entity.type.SplitEntityUpdate;
-import better.anticheat.core.util.BoundingBoxSize;
+import better.anticheat.core.util.entity.BoundingBoxSize;
 import better.anticheat.core.util.MathUtil;
 import better.anticheat.core.util.type.entity.AxisAlignedBB;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;

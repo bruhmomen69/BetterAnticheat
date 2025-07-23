@@ -1,7 +1,9 @@
 package better.anticheat.spigot;
 
 import better.anticheat.core.BetterAnticheat;
-import better.anticheat.core.player.PlayerManager;
+import better.anticheat.spigot.listener.CombatDamageListener;
+import better.anticheat.spigot.listener.PlayerJoinListener;
+import better.anticheat.spigot.listener.ReloadListener;
 import io.github.retrooper.packetevents.util.GeyserUtil;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.event.HandlerList;

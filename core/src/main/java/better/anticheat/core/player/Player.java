@@ -3,6 +3,7 @@ package better.anticheat.core.player;
 import better.anticheat.core.BetterAnticheat;
 import better.anticheat.core.DataBridge;
 import better.anticheat.core.check.Check;
+import better.anticheat.core.player.tracker.impl.ActionTracker;
 import better.anticheat.core.player.tracker.impl.PlayerStatusTracker;
 import better.anticheat.core.player.tracker.impl.PositionTracker;
 import better.anticheat.core.player.tracker.impl.RotationTracker;
@@ -10,6 +11,7 @@ import better.anticheat.core.player.tracker.impl.confirmation.ConfirmationTracke
 import better.anticheat.core.player.tracker.impl.confirmation.CookieIdAllocator;
 import better.anticheat.core.player.tracker.impl.confirmation.allocator.*;
 import better.anticheat.core.player.tracker.impl.entity.EntityTracker;
+import better.anticheat.core.player.tracker.impl.mitigation.HitregMitigationTracker;
 import better.anticheat.core.player.tracker.impl.ml.CMLTracker;
 import better.anticheat.core.player.tracker.impl.teleport.TeleportTracker;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
@@ -36,7 +38,9 @@ public class Player implements Closeable {
     private final PositionTracker positionTracker;
     private final RotationTracker rotationTracker;
     private final PlayerStatusTracker playerStatusTracker;
+    private final ActionTracker actionTracker;
     private final TeleportTracker teleportTracker;
+    private final HitregMitigationTracker mitigationTracker;
 
     private List<Check> checks = null;
 
@@ -60,6 +64,8 @@ public class Player implements Closeable {
         this.entityTracker = new EntityTracker(this, this.confirmationTracker, this.positionTracker, dataBridge);
         this.playerStatusTracker = new PlayerStatusTracker(this, this.confirmationTracker);
         this.teleportTracker = new TeleportTracker(this);
+        this.actionTracker = new ActionTracker(this);
+        this.mitigationTracker = new HitregMitigationTracker(this, this.plugin);
 
         this.cmlTracker = new CMLTracker(this);
         load();
@@ -87,6 +93,11 @@ public class Player implements Closeable {
         this.playerStatusTracker.handlePacketPlayReceive(event);
         this.teleportTracker.handlePacketPlayReceive(event);
         this.cmlTracker.handlePacketPlayReceive(event);
+        this.actionTracker.handlePacketPlayReceive(event);
+
+        if (this.plugin.isMlCombatDamageHitregEnabled()) {
+            this.mitigationTracker.handlePacketPlayReceive(event);
+        }
 
         for (Check check : this.checks) {
             if (!check.isEnabled()) continue;
@@ -102,6 +113,7 @@ public class Player implements Closeable {
         this.playerStatusTracker.handlePacketPlaySend(event);
         this.teleportTracker.handlePacketPlaySend(event);
         this.cmlTracker.handlePacketPlaySend(event);
+        this.actionTracker.handlePacketPlaySend(event);
 
         for (Check check : this.checks) {
             if (!check.isEnabled()) continue;

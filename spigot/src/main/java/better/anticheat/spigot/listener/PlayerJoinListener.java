@@ -1,7 +1,6 @@
-package better.anticheat.spigot;
+package better.anticheat.spigot.listener;
 
 import better.anticheat.core.BetterAnticheat;
-import better.anticheat.core.player.PlayerManager;
 import com.github.retrooper.packetevents.PacketEvents;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
