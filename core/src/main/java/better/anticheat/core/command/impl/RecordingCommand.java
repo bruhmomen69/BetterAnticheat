@@ -3,6 +3,7 @@ package better.anticheat.core.command.impl;
 import better.anticheat.core.BetterAnticheat;
 import better.anticheat.core.command.Command;
 import better.anticheat.core.command.CommandInfo;
+import better.anticheat.core.configuration.ConfigSection;
 import better.anticheat.core.util.MathUtil;
 import better.anticheat.core.util.ml.MLTrainer;
 import com.alibaba.fastjson2.JSON;
@@ -10,6 +11,7 @@ import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.github.luben.zstd.Zstd;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextColor;
 import org.jetbrains.annotations.Nullable;
 import revxrsal.commands.annotation.Optional;
 import revxrsal.commands.annotation.Range;
@@ -34,19 +36,42 @@ import java.util.concurrent.ForkJoinPool;
 
 @CommandInfo(name = "recording", parent = BACCommand.class)
 public class RecordingCommand extends Command {
+    private String[] changeOthersPerms;
 
     public RecordingCommand(BetterAnticheat plugin) {
         super(plugin);
     }
 
     @Subcommand("reset")
-    public void recordingReset(final CommandActor actor) {
+    public void recordingReset(final CommandActor actor, @Optional final String targetPlayerName) {
         if (!hasPermission(actor)) return;
         final var player = getPlayerFromActor(actor);
         if (player == null) return;
+
+        if (targetPlayerName == null) {
+            player.getCmlTracker().setRecordingNow(true);
+            player.getCmlTracker().getRecording().clear();
+            sendReply(actor, Component.text("Reset recording, and begun!"));
+        } else {
+            if (!plugin.getDataBridge().hasPermission(player.getUser(), changeOthersPerms)) {
+                sendReply(actor, Component.text("You do not have permission to toggle alerts for other players.").color(TextColor.color(0xFF0000)));
+                return;
+            }
+
+            final var targetPlayer = BetterAnticheat.getInstance().getPlayerManager().getPlayerByUsername(targetPlayerName);
+            if (targetPlayer == null) {
+                sendReply(actor, Component.text("Player '" + targetPlayerName + "' not found.").color(TextColor.color(0xFF0000)));
+                return;
+            }
+
+            player.getCmlTracker().setRecordingNow(true);
+            player.getCmlTracker().getRecording().clear();
+            sendReply(actor, Component.text("Reset recording, and begun for: " + targetPlayerName));
+        }
+
         player.getCmlTracker().setRecordingNow(true);
-        player.getCmlTracker().getRecording().clear();
-        sendReply(actor, Component.text(", and begun!"));
+
+
     }
 
     @Subcommand("toggle")
@@ -59,10 +84,32 @@ public class RecordingCommand extends Command {
     }
 
     @Subcommand("save")
-    public void recordingSave(final CommandActor actor, final String name) throws IOException {
+    public void recordingSave(final CommandActor actor, final String name, @Optional final String targetPlayerName) throws IOException {
         if (!hasPermission(actor)) return;
-        final var player = getPlayerFromActor(actor);
+        var player = getPlayerFromActor(actor);
         if (player == null) return;
+
+        if (targetPlayerName == null) {
+            player.getCmlTracker().setRecordingNow(true);
+            player.getCmlTracker().getRecording().clear();
+            sendReply(actor, Component.text("Selected player: " + player.getUser().getName()));
+        } else {
+            if (!plugin.getDataBridge().hasPermission(player.getUser(), changeOthersPerms)) {
+                sendReply(actor, Component.text("You do not have permission to toggle alerts for other players.").color(TextColor.color(0xFF0000)));
+                return;
+            }
+
+            final var targetPlayer = BetterAnticheat.getInstance().getPlayerManager().getPlayerByUsername(targetPlayerName);
+            if (targetPlayer == null) {
+                sendReply(actor, Component.text("Player '" + targetPlayerName + "' not found.").color(TextColor.color(0xFF0000)));
+                return;
+            }
+
+            sendReply(actor, Component.text("Selected player: " + targetPlayerName));
+
+            player = targetPlayer;
+        }
+
         final var yawsArrays = new JSONArray();
         final var offsetsArrays = new JSONArray();
         final var enhancedOffsetsArrays = new JSONArray();
@@ -670,5 +717,23 @@ public class RecordingCommand extends Command {
         } catch (Exception e) {
             return 0.0; // Return 0% accuracy if there's an error
         }
+    }
+
+
+    @Override
+    public boolean load(ConfigSection section) {
+        boolean modified = super.load(section);
+
+        if (!section.hasNode("change-others-permissions")) {
+            List<String> defaultOthers = new ArrayList<>();
+            defaultOthers.add("better.anticheat.alerts.others");
+            defaultOthers.add("example.permission.node");
+            section.setList(String.class, "change-others-permissions", defaultOthers);
+        }
+        List<String> changeOthersPermsList = section.getList(String.class, "change-others-permissions");
+        changeOthersPerms = new String[changeOthersPermsList.size()];
+        for (int i = 0; i < changeOthersPermsList.size(); i++) changeOthersPerms[i] = changeOthersPermsList.get(i);
+
+        return modified;
     }
 }

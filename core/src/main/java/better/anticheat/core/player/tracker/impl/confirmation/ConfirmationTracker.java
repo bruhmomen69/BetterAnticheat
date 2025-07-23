@@ -17,11 +17,13 @@ import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.Nullable;
 import wtf.spare.sparej.EvictingDeque;
 import wtf.spare.sparej.SimpleFuture;
+import wtf.spare.sparej.fastlist.FastObjectArrayList;
 import wtf.spare.sparej.incrementer.IntIncrementer;
 import wtf.spare.sparej.incrementer.LongIncrementer;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 @Slf4j
@@ -39,6 +41,7 @@ public class ConfirmationTracker extends Tracker {
      * 30 seconds of recent confirmations, assuming one confirmation per tick, but it is usually less than this, meaning it can provide an even longer window
      */
     private final EvictingDeque<ConfirmationState> recentConfirmations = new EvictingDeque<>(600);
+    private final List<Runnable> removedItemTaskQueue = new FastObjectArrayList<>();
     private final CookieIdAllocator cookieIdAllocator;
     private final Object cookieLock = new Object();
     private final LongIncrementer keepAliveIncrementer = new LongIncrementer(Short.MIN_VALUE);
@@ -128,9 +131,10 @@ public class ConfirmationTracker extends Tracker {
             }
             case CLIENT_TICK_END: {
                 final var currentTime = System.currentTimeMillis();
+                // Use removedItemTaskQueue to prevent circular references to the synchronized list.
                 confirmations.removeIf(state -> {
                     if (state.getTimestampConfirmed() == -1L && currentTime - state.getTimestamp() > 60000) {
-                        state.getListeners().forEach(Runnable::run);
+                        removedItemTaskQueue.addAll(state.getListeners());
                         if (state.getType() == ConfirmationType.COOKIE) {
                             getPlayer().getUser().sendPacket(new WrapperPlayServerDisconnect(Component.text("Timed out")));
                             log.info("[BetterAntiCheat] Timed out player: {}", getPlayer().getUser().getName());
@@ -141,6 +145,9 @@ public class ConfirmationTracker extends Tracker {
                     }
                     return false;
                 });
+
+                removedItemTaskQueue.forEach(Runnable::run);
+                removedItemTaskQueue.clear();
                 break;
             }
             default:
