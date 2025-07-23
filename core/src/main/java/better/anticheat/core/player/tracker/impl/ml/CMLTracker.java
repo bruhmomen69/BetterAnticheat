@@ -64,6 +64,8 @@ public class CMLTracker extends Tracker {
 
                 if (switchedIds) {
                     this.lastEntityId = wrapper.getEntityId();
+                } else {
+                    log.trace("Did not switch entity ids: {} == {}", wrapper.getEntityId(), this.lastEntityId);
                 }
 
                 if (wrapper.getAction() != WrapperPlayClientInteractEntity.InteractAction.ATTACK || switchedIds) return;
@@ -95,6 +97,7 @@ public class CMLTracker extends Tracker {
                 final var target = targetTracker.getEntities().get(lastEntityId);
 
                 if (target == null || target.getHeight() < 1.5f) {
+                    log.debug("No target: {}", lastEntityId);
                     return;
                 }
 

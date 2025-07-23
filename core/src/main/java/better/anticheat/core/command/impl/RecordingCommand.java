@@ -90,8 +90,6 @@ public class RecordingCommand extends Command {
         if (player == null) return;
 
         if (targetPlayerName == null) {
-            player.getCmlTracker().setRecordingNow(true);
-            player.getCmlTracker().getRecording().clear();
             sendReply(actor, Component.text("Selected player: " + player.getUser().getName()));
         } else {
             if (!plugin.getDataBridge().hasPermission(player.getUser(), changeOthersPerms)) {
@@ -133,6 +131,8 @@ public class RecordingCommand extends Command {
             }
             enhancedOffsetsArrays.add(enhancedOffsetsArray);
         }
+
+        sendReply(actor, Component.text("Saving... Size: " + enhancedOffsetsArrays.size()));
 
         final var recordingDirectory = plugin.getDirectory().resolve("recording");
         if (!recordingDirectory.toFile().exists()) {
