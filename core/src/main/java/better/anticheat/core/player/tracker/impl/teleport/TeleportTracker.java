@@ -32,7 +32,7 @@ public class TeleportTracker extends Tracker {
     @Override
     public void handlePacketPlayReceive(PacketPlayReceiveEvent event) {
         if (event.getPacketType() == PacketType.Play.Client.CLIENT_TICK_END) {
-            positionTeleported = rotationTeleported = missedTeleport = false;
+            positionTeleported = rotationTeleported = missedTeleport = teleported = false;
             positionLastTick = positionThisTick;
             positionThisTick = false;
 

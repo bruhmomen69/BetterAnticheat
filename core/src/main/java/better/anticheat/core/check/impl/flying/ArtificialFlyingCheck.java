@@ -43,7 +43,7 @@ public class ArtificialFlyingCheck extends Check {
             case PLAYER_POSITION:
             case PLAYER_ROTATION:
             case PLAYER_POSITION_AND_ROTATION:
-                if (teleported) break;
+                if (player.getTeleportTracker().isTeleported()) break;
                 if (sentFlying) fail();
                 sentFlying = true;
                 break;

@@ -34,6 +34,7 @@ public class RepeatedRotationCheck extends Check {
                 break;
             // Won't be effected by teleporting since that forces a POS_LOOK packet.
             case PLAYER_ROTATION:
+                if (player.getTeleportTracker().isTeleported()) break;
                 if (exemptTicks > 0) break;
                 if (!loaded) return;
                 if (player.getRotationTracker().getDeltaPitch() == 0 && player.getRotationTracker().getDeltaYaw() == 0) fail();

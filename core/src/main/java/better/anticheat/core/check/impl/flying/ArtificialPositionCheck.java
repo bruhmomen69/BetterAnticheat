@@ -51,18 +51,15 @@ public class ArtificialPositionCheck extends Check {
             case PLAYER_LOADED:
                 ticks = samePositions = 0;
                 break;
-            case TELEPORT_CONFIRM:
-                if (ticks < 0) break;
-                ticks = samePositions = 0;
-                break;
+
             case CLIENT_TICK_END:
                 if (ticks < 0) break;
-                if (++ticks == 20) {
-                    ticks = samePositions = 0;
-                }
+                if (++ticks == 20) ticks = samePositions = 0;
                 break;
             case PLAYER_POSITION:
             case PLAYER_POSITION_AND_ROTATION:
+                if (player.getTeleportTracker().isTeleported()) break;
+
                 final double deltaX = player.getPositionTracker().getDeltaX();
                 final double deltaY = player.getPositionTracker().getDeltaY();
                 final double deltaZ = player.getPositionTracker().getDeltaZ();

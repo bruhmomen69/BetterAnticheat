@@ -12,7 +12,7 @@ import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPl
 @CheckInfo(name = "CombatAcceleration", category = "heuristic")
 public class CombatAccelerationCheck extends Check {
 
-    private boolean posRotChange = false, lastTickChange = false, teleporting = false;
+    private boolean posRotChange = false, lastTickChange = false;
     private int ticksSinceAttack = 0;
 
     public CombatAccelerationCheck(BetterAnticheat plugin) {
@@ -39,7 +39,7 @@ public class CombatAccelerationCheck extends Check {
 
                 if (!wrapper.hasPositionChanged() || !wrapper.hasRotationChanged()) break;
                 posRotChange = true;
-                if (teleporting) break;
+                if (player.getTeleportTracker().isTeleported()) break;
                 if (!lastTickChange) break;
                 if (player.getPositionTracker().getDeltaXZ() <= 0.15) break;
 
@@ -55,12 +55,9 @@ public class CombatAccelerationCheck extends Check {
             case INTERACT_ENTITY:
                 ticksSinceAttack = 0;
                 break;
-            case TELEPORT_CONFIRM:
-                teleporting = true;
-                break;
             case CLIENT_TICK_END:
                 lastTickChange = posRotChange;
-                posRotChange = teleporting = false;
+                posRotChange = false;
                 ticksSinceAttack = Math.min(5, ++ticksSinceAttack);
                 break;
         }
