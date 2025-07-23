@@ -23,6 +23,7 @@ public class TeleportTracker extends Tracker {
 
     @Getter
     private boolean teleported = true, positionTeleported = true, rotationTeleported = true, missedTeleport = false;
+    private boolean positionLastTick = false, positionThisTick = false;
 
     public TeleportTracker(Player player) {
         super(player);
@@ -32,6 +33,8 @@ public class TeleportTracker extends Tracker {
     public void handlePacketPlayReceive(PacketPlayReceiveEvent event) {
         if (event.getPacketType() == PacketType.Play.Client.CLIENT_TICK_END) {
             positionTeleported = rotationTeleported = missedTeleport = false;
+            positionLastTick = positionThisTick;
+            positionThisTick = false;
 
             /*
              * Due to the current design of our confirmation system, teleports do not actually resolve within our
@@ -48,6 +51,8 @@ public class TeleportTracker extends Tracker {
 
         if (!WrapperPlayClientPlayerFlying.isFlying(event.getPacketType())) return;
         WrapperPlayClientPlayerFlying wrapper = new WrapperPlayClientPlayerFlying(event);
+
+        if (wrapper.hasPositionChanged()) positionThisTick = true;
 
         for (Teleport teleport : eligibleTeleports) {
             if (match(teleport, wrapper)) {
@@ -121,35 +126,59 @@ public class TeleportTracker extends Tracker {
          * Player Rotations and Player Position and Look packets don't define a ground status.
          * Entity Teleport define a ground status.
          */
-        if (teleport.getOnGround() != null) if (!teleport.getOnGround().equals(wrapper.isOnGround())) return false;
-
+        ground:
+        {
+            if (teleport.getOnGround() == null) break ground;
+            if (!teleport.getOnGround().equals(wrapper.isOnGround())) return false;
+        }
 
         /*
          * Entity Teleport and Player Position and Look define a position.
          * Player Rotations don't define a position.
          */
-        if (teleport.getPosition() != null) {
+        position:
+        {
+            if (teleport.getPosition() == null) break position;
             if (!wrapper.hasPositionChanged()) return false;
             double x = teleport.getPosition().getX(), y = teleport.getPosition().getY(), z = teleport.getPosition().getZ();
+            boolean relX = false, relY = false, relZ = false;
 
             if (teleport.getRelativeFlags() != null) {
-                if (teleport.getRelativeFlags().has(RelativeFlag.X)) x += player.getPositionTracker().getLastX();
-                if (teleport.getRelativeFlags().has(RelativeFlag.Y)) y += player.getPositionTracker().getLastY();
-                if (teleport.getRelativeFlags().has(RelativeFlag.Z)) z += player.getPositionTracker().getLastZ();
+                if (teleport.getRelativeFlags().has(RelativeFlag.X)) {
+                    x += player.getPositionTracker().getLastX();
+                    relX = true;
+                }
+                if (teleport.getRelativeFlags().has(RelativeFlag.Y)) {
+                    y += player.getPositionTracker().getLastY();
+                    relY = true;
+                }
+                if (teleport.getRelativeFlags().has(RelativeFlag.Z)) {
+                    z += player.getPositionTracker().getLastZ();
+                    relZ = true;
+                }
             }
 
-            if (x != wrapper.getLocation().getX() || y != wrapper.getLocation().getY() || z != wrapper.getLocation().getZ()) return false;
-
+            if (!compareCoordinate(x, wrapper.getLocation().getX(), relX)) return false;
+            if (!compareCoordinate(y, wrapper.getLocation().getY(), relY)) return false;
+            if (!compareCoordinate(z, wrapper.getLocation().getZ(), relZ)) return false;
         }
 
         /*
          * Currently no teleport packets don't include a rotation, but I don't trust Mojang so we futureproof!
          */
-        if (teleport.getRotation() != null) {
+        rotation:
+        {
+            if (teleport.getRotation() == null) break rotation;
             if (!wrapper.hasRotationChanged()) return false;
+
             float pitch = teleport.getRotation().getX(), yaw = teleport.getRotation().getY();
 
             if (teleport.getRelativeFlags() != null) {
+                if (teleport.getRelativeFlags().has(RelativeFlag.YAW) || teleport.getRelativeFlags().has(RelativeFlag.PITCH)) break rotation;
+
+                /*
+                // Rotation relatives seems to be messing up a lot right now. So, we don't care about it until we figure
+                // out.
                 if (teleport.getRelativeFlags().has(RelativeFlag.PITCH)) {
                     // Pitch is bounded -90 to 90
                     if (pitch < 0) {
@@ -159,6 +188,7 @@ public class TeleportTracker extends Tracker {
                     }
                 }
                 if (teleport.getRelativeFlags().has(RelativeFlag.YAW)) yaw += player.getRotationTracker().getLastYaw();
+                 */
             }
 
             // Verify equality.
@@ -166,5 +196,24 @@ public class TeleportTracker extends Tracker {
         }
 
         return true;
+    }
+
+    /**
+     * See ArtificialPositionCheck.java for an explanation behind the value used here.
+     * Check if the player's coordinate is accurate for their teleport.
+     */
+    private boolean compareCoordinate(double first, double second, boolean relative) {
+        /*
+         * If the teleport is not a relative, it must be an exact match to the teleport.
+         * If a teleport is relative, it means that it is based on the previous position.
+         * If the player did not send a position packet in their last tick, it means they could have desynced and their
+         * movement could be off by up to 2.0E-4 (see ArtificialPositionCheck.java for an explanation on the value).
+         */
+        if (relative) {
+            double leniency;
+            if (positionLastTick) leniency = 0;
+            else leniency = 2.0E-4;
+            return Math.abs(first - second) <= leniency;
+        } else return first == second;
     }
 }
