@@ -125,6 +125,15 @@ public class EntityTracker extends Tracker {
             }
 
             this.onLivingUpdate();
+
+            /*
+             * This is a value that can be important for some aim checks.
+             * After a start confirmation, it will remain as -1 until the after confirmation. Then, it will begin
+             * to tick. I'd prefer for this to happen at the end of the tick rather than on the living update.
+             */
+            for (EntityData data : entities.values()) {
+                if (data.getTicksSinceMove().get() >= 0) data.getTicksSinceMove().increment();
+            }
         }
     }
 
@@ -213,6 +222,8 @@ public class EntityTracker extends Tracker {
 
             this.awaitingUpdates.add(new SplitEntityUpdate(entity, originalRoot, entity.getServerPosX().getCurrent(),
                     entity.getServerPosY().getCurrent(), entity.getServerPosZ().getCurrent()));
+
+            entity.getTicksSinceMove().set(-1);
         });
 
         confirmation.onAfterConfirm(() -> {
@@ -250,6 +261,8 @@ public class EntityTracker extends Tracker {
             if ((newState.size() - removedCnt) > 0) {
                 shakeTree(entity);
             }
+
+            entity.getTicksSinceMove().set(0);
         });
     }
 
@@ -321,6 +334,8 @@ public class EntityTracker extends Tracker {
             recursivelyTeleportPre(entity.getRootState(), 0);
             newState.addAll(stateBuffer);
             stateBuffer.clear();
+
+            entity.getTicksSinceMove().set(-1);
         });
 
         confirmation.onAfterConfirm((a) -> {
@@ -343,6 +358,8 @@ public class EntityTracker extends Tracker {
 
             // Do a basic tree shake to remove duplicates
             shakeTree(entity);
+
+            entity.getTicksSinceMove().set(0);
         });
     }
 

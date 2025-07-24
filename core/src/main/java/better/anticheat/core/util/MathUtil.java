@@ -2,6 +2,8 @@ package better.anticheat.core.util;
 
 import lombok.experimental.UtilityClass;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Arrays;
 
 /**
@@ -9,6 +11,9 @@ import java.util.Arrays;
  */
 @UtilityClass
 public class MathUtil {
+
+    public final double EXPANDER = Math.pow(2, 24);
+
     /**
      * Calculates the Euclidean norm (hypotenuse) of the given double values.
      * This method computes the square root of the sum of squares of the input numbers.
@@ -188,4 +193,32 @@ public class MathUtil {
         return lowest;
     }
 
+    public boolean isExponentiallySmall(final Number number) {
+        return number.doubleValue() < 1 && Double.toString(number.doubleValue()).contains("E");
+    }
+
+    public boolean isExponentiallyLarge(final Number number) {
+        return number.doubleValue() > 10000 && Double.toString(number.doubleValue()).contains("E");
+    }
+
+    public long getGCD(long x, long y) {
+        long gcd = 1;
+
+        for (int i = 1; i <= x && i <= y; ++i) {
+            if (x % i == 0 && y % i == 0) gcd = i;
+        }
+        return gcd;
+    }
+
+    public static double round(double value, int places) {
+        try {
+            if (places < 0) throw new IllegalArgumentException();
+
+            BigDecimal bd = new BigDecimal(value);
+            bd = bd.setScale(places, RoundingMode.HALF_UP);
+            return bd.doubleValue();
+        } catch (NumberFormatException e) {
+            return value;
+        }
+    }
 }

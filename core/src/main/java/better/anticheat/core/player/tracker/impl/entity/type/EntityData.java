@@ -25,6 +25,7 @@ public class EntityData {
     private float width;
     private EntityTrackerState rootState;
     private IntIncrementer treeSize = new IntIncrementer(1);
+    private IntIncrementer ticksSinceMove = new IntIncrementer(0);
 
     public int compareTo(@NotNull EntityData o) {
         return Integer.compare(o.getId(), this.id);
