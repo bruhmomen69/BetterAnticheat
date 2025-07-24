@@ -14,6 +14,9 @@ import it.unimi.dsi.fastutil.doubles.DoubleDoubleImmutablePair;
 import it.unimi.dsi.fastutil.doubles.DoubleDoublePair;
 import wtf.spare.sparej.EvictingLinkedList;
 
+/**
+ * This check uses linear regression to catch aim cheats.
+ */
 @CheckInfo(name = "LinearAimDeviation", category = "heuristic")
 public class LinearAimDeviationCheck extends Check {
 
@@ -37,8 +40,15 @@ public class LinearAimDeviationCheck extends Check {
                     interactedEntity = wrapper.getEntityId();
                 }
             }
-            case CLIENT_TICK_END -> ticksSinceAttack = Math.min(++ticksSinceAttack, 40);
+            case CLIENT_TICK_END -> ticksSinceAttack = Math.min(++ticksSinceAttack, 1000);
         }
+
+        /*
+         * This check uses a method called linear regresison to catch aim cheats. Essentially, it assumes aim movement
+         * is moving linearly and then generates a prediction as to what may come next if it is. Linear movement is
+         * extremely hard to replicate genuinely, so we can use this to catch aim cheats that fail to humanize.
+         * This catches tends to catch aim assists better than kill auras, interestingly.
+         */
 
         if (!WrapperPlayClientPlayerFlying.isFlying(event.getPacketType())) return;
         if (!player.getRotationTracker().isRotation()) return;
@@ -90,7 +100,11 @@ public class LinearAimDeviationCheck extends Check {
             offsets[i] = out;
         }
 
-        // Get the stats from the preds
+        /*
+         * Here we build all the various statistics for usage in our individual checks. This is all pretty standard, and
+         * unfortunately what we do with these statistics doesn't have much of an explanation as many are built via
+         * trial and error.
+         */
         final double avg = MathUtil.getAverage(offsets);
         final double stddev = MathUtil.getStandardDeviation(offsets);
 

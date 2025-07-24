@@ -91,6 +91,7 @@ defined behavior and theoretically could be false flagged by perfect player beha
 should be used as an indicator to watch players and, at most, kick them rather than issuing more permanent punishments.
 
 - CombatAcceleration | Constant acceleration during combat.
+- LinearAimDeviation | Linear regression-based aim check.
 
 ### Misc
 
