@@ -39,7 +39,7 @@ public class VerboseCommand extends Command {
 
         if (target == null || target.getUser().getUUID() == player.getUser().getUUID()) {
             player.setVerbose(!player.isVerbose());
-            sendReply(actor, Component.text("Alerts have been " + (player.isVerbose() ? "enabled" : "disabled") + ".").color(TextColor.color(0x00FF00)));
+            sendReply(actor, Component.text("Verbose alerts have been " + (player.isVerbose() ? "enabled" : "disabled") + ".").color(TextColor.color(0x00FF00)));
         } else {
             if (!plugin.getDataBridge().hasPermission(player.getUser(), changeOthersPerms)) {
                 sendReply(actor, Component.text("You do not have permission to toggle alerts for other players.").color(TextColor.color(0xFF0000)));
@@ -47,7 +47,7 @@ public class VerboseCommand extends Command {
             }
 
             target.setVerbose(!target.isVerbose());
-            sendReply(actor, Component.text("Alerts for " + target.getUser().getName() + " have been " + (target.isVerbose() ? "enabled" : "disabled") + ".").color(TextColor.color(0x00FF00)));
+            sendReply(actor, Component.text("Verbose alerts for " + target.getUser().getName() + " have been " + (target.isVerbose() ? "enabled" : "disabled") + ".").color(TextColor.color(0x00FF00)));
         }
     }
 
