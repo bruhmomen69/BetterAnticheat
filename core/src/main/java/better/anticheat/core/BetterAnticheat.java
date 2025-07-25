@@ -3,6 +3,7 @@ package better.anticheat.core;
 import better.anticheat.core.check.CheckManager;
 import better.anticheat.core.command.CommandManager;
 import better.anticheat.core.configuration.ConfigSection;
+import better.anticheat.core.punishment.PunishmentManager;
 import better.anticheat.core.configuration.ConfigurationFile;
 import better.anticheat.core.player.PlayerManager;
 import better.anticheat.core.player.tracker.impl.confirmation.CookieAllocatorConfig;
@@ -41,6 +42,7 @@ public class BetterAnticheat {
     private final CommandManager commandManager;
     private final LyricManager lyricManager;
     private final PlayerManager playerManager;
+    private final PunishmentManager punishmentManager;
 
     // Settings
     private int alertCooldown;
@@ -71,6 +73,7 @@ public class BetterAnticheat {
         this.commandManager = new CommandManager(this, lamp);
         this.lyricManager = new LyricManager();
         this.playerManager = new PlayerManager(this);
+        this.punishmentManager = new PunishmentManager(this);
 
         /*
          * We only support 1.21+.
@@ -114,6 +117,7 @@ public class BetterAnticheat {
         loadML(settings);
         loadCookieAllocator(settings);
 
+        punishmentManager.load();
         checkManager.load();
         this.lamp = commandManager.load();
         playerManager.load();

@@ -37,6 +37,12 @@ click-command: 'tp %username%'
 # Ex: At 8 vls, 8, yes. 4, no. 3, no. 2, no. 1, no.
 punishment-modulo: true
 
+punishment-groups:
+  default:
+    punishments:
+      - "1:say %username% would be kicked for %type%!"
+      - "5:say %username% would be banned for %type%!"
+
 # Sends alerts only to the user who triggered it. Used for testing purposes.
 test-mode: false
 

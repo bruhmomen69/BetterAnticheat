@@ -44,6 +44,7 @@ public abstract class Check implements Cloneable {
     @Getter @Setter
     private boolean enabled = false;
     private int alertVL = 10, verboseVL = 1;
+    private String punishmentGroup = null;
     private Map<Integer, List<String>> punishments = new HashMap<>();
 
     @Getter
@@ -244,23 +245,33 @@ public abstract class Check implements Cloneable {
         }
         verboseVL = section.getObject(Integer.class, "verbose-vl", 1);
 
-        if (!section.hasNode("punishments")) {
-            List<String> defaultPunishments = new ArrayList<>();
-            defaultPunishments.add("1:say %username% would be kicked for " + name + "!");
-            defaultPunishments.add("5:say %username% would be banned for " + name + "!");
-            section.setList(String.class, "punishments", defaultPunishments);
+        if (!section.hasNode("punishment-group")) {
+            section.setObject(String.class, "punishment-group", "default");
             modified = true;
         }
-        punishments.clear();
-        List<String> punishmentList = section.getList(String.class, "punishments");
-        for (String punishment : punishmentList) {
-            String[] elements = punishment.split(":", 2);
-            try {
-                int vl = Integer.parseInt(elements[0]);
-                if (!punishments.containsKey(vl)) punishments.put(vl, new ArrayList<>());
-                punishments.get(vl).add(elements[1]);
-            } catch (Exception e) {
-                e.printStackTrace();
+        punishmentGroup = section.getObject(String.class, "punishment-group", "default");
+
+        if (punishmentGroup != null && plugin.getPunishmentManager().getPunishments(punishmentGroup) != null) {
+            punishments = plugin.getPunishmentManager().getPunishments(punishmentGroup);
+        } else {
+            if (!section.hasNode("punishments")) {
+                List<String> defaultPunishments = new ArrayList<>();
+                defaultPunishments.add("1:say %username% would be kicked for " + name + "!");
+                defaultPunishments.add("5:say %username% would be banned for " + name + "!");
+                section.setList(String.class, "punishments", defaultPunishments);
+                modified = true;
+            }
+            punishments.clear();
+            List<String> punishmentList = section.getList(String.class, "punishments");
+            for (String punishment : punishmentList) {
+                String[] elements = punishment.split(":", 2);
+                try {
+                    int vl = Integer.parseInt(elements[0]);
+                    if (!punishments.containsKey(vl)) punishments.put(vl, new ArrayList<>());
+                    punishments.get(vl).add(elements[1]);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         }
 
