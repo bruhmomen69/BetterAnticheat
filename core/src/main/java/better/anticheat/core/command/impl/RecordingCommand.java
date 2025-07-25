@@ -18,7 +18,7 @@ import revxrsal.commands.annotation.Range;
 import revxrsal.commands.annotation.Subcommand;
 import revxrsal.commands.command.CommandActor;
 import smile.classification.Classifier;
-import smile.classification.MLP;
+
 import smile.data.Tuple;
 import smile.data.type.StructType;
 import smile.plot.swing.FigurePane;
@@ -397,7 +397,7 @@ public class RecordingCommand extends Command {
     }
 
     private void runTrainerTests(double[][][] legitData, double[][][] cheatingData, CommandActor actor, short column, boolean process, boolean statistics) {
-        final MLTrainer trainer = new MLTrainer(legitData, cheatingData, column, true, process, statistics, true);
+        final MLTrainer trainer = new MLTrainer(legitData, cheatingData, column, true, statistics, true);
 
         final var cheatingPlot = Grid.of(new double[][][]{trainer.getCheatingTrain(), trainer.getLegitTrain()});
         var pane = new FigurePane(cheatingPlot.figure());
@@ -420,16 +420,7 @@ public class RecordingCommand extends Command {
         actor.reply("---- Random Forest (Entropy) - OVERFITTING WARNING:");
         testModelI32(trainer.getEntropyForest(), legitTestData, cheatingTestData, 1, trainer, actor);
 
-        actor.reply("---- Legacy Models:");
-        testModel(trainer.trainLogisticRegression(), legitTestData, cheatingTestData, actor, trainer, "LogisticRegression");
-        testModel(trainer.trainFLD(), legitTestData, cheatingTestData, actor, trainer, "FLD");
-        testModel(trainer.trainKNN(), legitTestData, cheatingTestData, actor, trainer, "KNN");
-        try {
-            testModel(trainer.trainLDA(), legitTestData, cheatingTestData, actor, trainer, "LDA");
-        } catch (Exception e) {
-            actor.reply("Error while testing LDA: " + e.getMessage());
-            plugin.getDataBridge().logWarning("Error while testing LDA: " + e);
-        }
+
     }
 
     private void testModelI32(final Classifier<Tuple> model, final double[][] legitData, final double[][] finalCheatingData, final int benchSize, final MLTrainer trainer, final CommandActor actor) {
@@ -521,81 +512,6 @@ public class RecordingCommand extends Command {
         );
     }
 
-    private void testModel(final Classifier<double[]> model, final double[][] legitData, final double[][] finalCheatingData, final CommandActor actor, final MLTrainer trainer, final String label) {
-        var threshold = model instanceof MLP ? 0.5 : 5;
-        var df = new DecimalFormat("#.######");
-
-        var legitAsLegit = 0;
-        var legitAsCheating = 0;
-        var legitAvg = 0.0;
-        var cheatingAsLegit = 0;
-        var cheatingAsCheating = 0;
-        var cheatingAvg = 0.0;
-
-        for (final var legitArray : legitData) {
-            final var prepared = trainer.prepareInput(new double[][]{legitArray, legitArray, legitArray});
-            final var prediction = model.predict(prepared);
-            if (prediction < threshold) {
-                legitAsLegit++;
-            } else {
-                legitAsCheating++;
-            }
-
-            legitAvg += prediction;
-        }
-
-        for (final var cheatingArray : finalCheatingData) {
-            final var prepared = trainer.prepareInput(new double[][]{cheatingArray, cheatingArray, cheatingArray});
-            final var prediction = model.predict(prepared);
-            if (prediction < threshold) {
-                cheatingAsLegit++;
-            } else {
-                cheatingAsCheating++;
-            }
-
-            cheatingAvg += prediction;
-        }
-
-        // Benchmark
-        final var times = new double[6];
-        final var benchmarkRuns = 100;
-        for (int i = 0; i < times.length; i++) {
-            var start = System.currentTimeMillis();
-            for (int j = 0; j < benchmarkRuns; j++) {
-                for (final var legitArray : legitData) {
-                    model.predict(trainer.prepareInput(new double[][]{legitArray, legitArray, legitArray}));
-                }
-                for (final var cheatingArray : finalCheatingData) {
-                    model.predict(trainer.prepareInput(new double[][]{cheatingArray, cheatingArray, cheatingArray}));
-                }
-            }
-            var end = System.currentTimeMillis();
-            times[i] = end - start;
-        }
-
-        legitAvg /= legitData.length;
-        cheatingAvg /= finalCheatingData.length;
-
-        actor.reply(
-                String.format(
-                        "[%s] Results for (%s): %d legit as legit, %d legit as cheating, %d cheating as legit, %d cheating as cheating. %s legit avg, %s cheating avg. \n" +
-                                "Took %s ms (avg %s ms) across samples to calculate %d predictions (%s per).",
-                        label,
-                        model.getClass().getSimpleName(),
-                        legitAsLegit,
-                        legitAsCheating,
-                        cheatingAsLegit,
-                        cheatingAsCheating,
-                        df.format(legitAvg),
-                        df.format(cheatingAvg),
-                        Arrays.toString(times),
-                        df.format(MathUtil.getAverage(times)),
-                        (legitData.length + finalCheatingData.length) * benchmarkRuns,
-                        df.format(MathUtil.getAverage(times) / ((legitData.length + finalCheatingData.length) * benchmarkRuns))
-                )
-        );
-    }
-
     private @Nullable double[][][] loadData(final String name) throws IOException {
         final var recordingDirectory = plugin.getDirectory().resolve("recording");
         if (!recordingDirectory.toFile().exists()) {
@@ -666,7 +582,7 @@ public class RecordingCommand extends Command {
                                      int giniForestMaxDepth, int entropyForestMaxDepth, int giniForestNodeSize, int entropyForestNodeSize,
                                      String modelType) {
         try {
-            final MLTrainer trainer = new MLTrainer(legitData, cheatingData, column, false, true, true, modelType.contains("forest"),
+            final MLTrainer trainer = new MLTrainer(legitData, cheatingData, column, false,true, modelType.contains("forest"),
                     giniMaxDepth, entropyMaxDepth, giniNodeSize, entropyNodeSize,
                     giniForestMaxDepth, entropyForestMaxDepth, giniForestNodeSize, entropyForestNodeSize);
 

@@ -18,7 +18,7 @@ public class ModelConfig implements Serializable {
     /**
      * The type of the model.
      * <p>
-     * Options: "decision_tree_gini", "decision_tree_entropy", "random_forest_gini", "random_forest_entropy", "logistic_regression", "fld", "knn", "lda".
+     * Options: "decision_tree_gini", "decision_tree_entropy", "random_forest_gini", "random_forest_entropy".
      */
     private final String type;
 
