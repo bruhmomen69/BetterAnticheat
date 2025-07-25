@@ -9,16 +9,8 @@ depend:
   - packetevents
 authors:
   - am noah
+
+# Spigot specific libraries ONLY that are ONLY caused by spigot not having libraries everyone else has.
 libraries:
-  - it.unimi.dsi:fastutil:8.5.16
   - org.slf4j:slf4j-api:2.0.17
   - org.apache.logging.log4j:log4j-slf4j18-impl:2.18.0
-  - org.yaml:snakeyaml:2.4
-  - org.jetbrains:annotations:26.0.2
-  - io.github.revxrsal:lamp.bukkit:4.0.0-rc.12
-  - io.github.revxrsal:lamp.brigadier:4.0.0-rc.12
-  - io.github.revxrsal:lamp.common:4.0.0-rc.12
-  - com.github.haifengl:smile-core:4.4.0
-  - com.github.haifengl:smile-plot:4.4.0
-  - com.alibaba.fastjson2:fastjson2:2.0.57
-  - com.github.luben:zstd-jni:1.5.6-7

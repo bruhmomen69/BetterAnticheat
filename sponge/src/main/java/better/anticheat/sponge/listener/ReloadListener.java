@@ -1,4 +1,4 @@
-package better.anticheat.sponge;
+package better.anticheat.sponge.listener;
 
 import better.anticheat.core.BetterAnticheat;
 import org.spongepowered.api.event.Listener;

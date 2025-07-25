@@ -33,11 +33,6 @@
             <id>german-repo-mirror</id>
             <url>https://german-code-repo.haldor.xyz/mirror</url>
         </repository>
-        <!-- Repo for BetterReload, FoliaLib, and sharkbyte-configuration -->
-        <repository>
-            <id>jitpack.io</id>
-            <url>https://jitpack.io</url>
-        </repository>
         <!-- Repo for PAPI -->
         <repository>
             <id>placeholderapi</id>
@@ -92,6 +87,13 @@
         <dependency>
             <groupId>wtf.spare</groupId>
             <artifactId>sparej</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>net.byteflux</groupId>
+            <artifactId>libby-bukkit</artifactId>
+            <version>1.3.1</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>
@@ -159,8 +161,8 @@
                                     <shadedPattern>better.anticheat.bstats</shadedPattern>
                                 </relocation>
                                 <relocation>
-                                    <pattern>wtf.spare.sparej</pattern>
-                                    <shadedPattern>better.anticheat.core.util.type</shadedPattern>
+                                    <pattern>net.byteflux.libby</pattern>
+                                    <shadedPattern>better.anticheat.libby</shadedPattern>
                                 </relocation>
                             </relocations>
                         </configuration>

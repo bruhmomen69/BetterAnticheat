@@ -1,7 +1,6 @@
-package better.anticheat.sponge;
+package better.anticheat.sponge.listener;
 
 import better.anticheat.core.BetterAnticheat;
-import better.anticheat.core.player.PlayerManager;
 import com.github.retrooper.packetevents.PacketEvents;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;

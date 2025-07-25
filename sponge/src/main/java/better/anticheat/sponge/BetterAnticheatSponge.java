@@ -1,6 +1,9 @@
 package better.anticheat.sponge;
 
 import better.anticheat.core.BetterAnticheat;
+import better.anticheat.sponge.listener.CombatDamageListener;
+import better.anticheat.sponge.listener.PlayerJoinListener;
+import better.anticheat.sponge.listener.ReloadListener;
 import com.google.inject.Inject;
 import org.apache.logging.log4j.Logger;
 import org.bstats.sponge.Metrics;
