@@ -18,6 +18,16 @@
     </prerequisites>
 
     <repositories>
+        <!-- Repo for sparej / the type library -->
+        <repository>
+            <id>german-repo-mirror</id>
+            <url>https://german-code-repo.haldor.xyz/mirror</url>
+        </repository>
+        <!-- Repository for Libby -->
+        <repository>
+            <id>AlessioDP</id>
+            <url>https://repo.alessiodp.com/releases/</url>
+        </repository>
         <!-- Repo for velocity-api -->
         <repository>
             <id>papermc</id>
@@ -37,11 +47,6 @@
         <repository>
             <id>opencollab-snapshot</id>
             <url>https://repo.opencollab.dev/main/</url>
-        </repository>
-        <!-- Repo for sparej / the type library -->
-        <repository>
-            <id>german-repo-mirror</id>
-            <url>https://german-code-repo.haldor.xyz/mirror</url>
         </repository>
     </repositories>
 
@@ -75,29 +80,29 @@
         <dependency>
             <groupId>io.github.revxrsal</groupId>
             <artifactId>lamp.common</artifactId>
-            <scope>compile</scope>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>io.github.revxrsal</groupId>
             <artifactId>lamp.brigadier</artifactId>
-            <scope>compile</scope>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>io.github.revxrsal</groupId>
             <artifactId>lamp.velocity</artifactId>
-            <scope>compile</scope>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.yaml</groupId>
             <artifactId>snakeyaml</artifactId>
             <version>2.4</version>
-            <scope>compile</scope>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>it.unimi.dsi</groupId>
             <artifactId>fastutil</artifactId>
             <version>8.5.16</version>
-            <scope>compile</scope>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -125,32 +130,17 @@
         </dependency>
 
         <dependency>
-            <groupId>com.github.haifengl</groupId>
-            <artifactId>smile-core</artifactId>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.github.haifengl</groupId>
-            <artifactId>smile-plot</artifactId>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.alibaba.fastjson2</groupId>
-            <artifactId>fastjson2</artifactId>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.github.luben</groupId>
-            <artifactId>zstd-jni</artifactId>
-            <scope>compile</scope>
-        </dependency>
-
-        <dependency>
             <groupId>wtf.spare</groupId>
             <artifactId>sparej</artifactId>
-            <scope>compile</scope>
+            <scope>provided</scope>
         </dependency>
 
+        <dependency>
+            <groupId>net.byteflux</groupId>
+            <artifactId>libby-velocity</artifactId>
+            <version>1.3.1</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -216,16 +206,8 @@
                                     <shadedPattern>better.anticheat.bstats</shadedPattern>
                                 </relocation>
                                 <relocation>
-                                    <pattern>revxrsal.commands</pattern>
-                                    <shadedPattern>better.anticheat.commandapi</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>it.unimi.dsi.fastutil</pattern>
-                                    <shadedPattern>better.anticheat.fastutil</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>org.yaml.snakeyaml</pattern>
-                                    <shadedPattern>better.anticheat.snakeyaml</shadedPattern>
+                                    <pattern>net.byteflux.libby</pattern>
+                                    <shadedPattern>better.anticheat.libby</shadedPattern>
                                 </relocation>
                             </relocations>
                         </configuration>

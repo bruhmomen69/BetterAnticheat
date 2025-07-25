@@ -1,6 +1,7 @@
 package better.anticheat.velocity;
 
 import better.anticheat.core.BetterAnticheat;
+import better.anticheat.core.util.dependencies.DependencyList;
 import better.anticheat.velocity.listener.CombatDamageListener;
 import better.anticheat.velocity.listener.PlayerJoinListener;
 import better.anticheat.velocity.quantifier.FloodgateQuantifier;
@@ -14,11 +15,11 @@ import com.velocitypowered.api.plugin.Dependency;
 import com.velocitypowered.api.plugin.Plugin;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.ProxyServer;
+import net.byteflux.libby.Library;
+import net.byteflux.libby.VelocityLibraryManager;
 import org.bstats.velocity.Metrics;
 import org.slf4j.Logger;
-import revxrsal.commands.Lamp;
 import revxrsal.commands.velocity.VelocityLamp;
-import revxrsal.commands.velocity.actor.VelocityCommandActor;
 
 import java.nio.file.Path;
 
@@ -62,6 +63,31 @@ public class BetterAnticheatVelocity {
 
     @Subscribe
     public void onProxyInitialization(final ProxyInitializeEvent event) {
+        // Runtime dependency loading to reduce jar size.
+        final var libManager = new VelocityLibraryManager<>(logger, dataDirectory, server.getPluginManager(), this, "dependencies");
+
+        for (final var repository : DependencyList.REPOSITORIES) {
+            libManager.addRepository(repository[1]);
+        }
+
+        for (final var dependency : DependencyList.DEPENDENCIES) {
+            final var split = dependency.split(":");
+            final var groupId = split[0];
+            final var artifactId = split[1];
+            final var version = split[2];
+            final var lib = Library.builder()
+                    .groupId(groupId)
+                    .artifactId(artifactId)
+                    .version(version)
+                    .build();
+            libManager.loadLibrary(lib);
+        }
+
+        // Load plugin now dependencies are loaded.
+        this.onServerInit();
+    }
+
+    private void onServerInit() {
         final var dataBridge = new VelocityDataBridge(this, server, logger);
         final var lamp = VelocityLamp.builder(this, server).build();
         lamp.accept(brigadier(server));
