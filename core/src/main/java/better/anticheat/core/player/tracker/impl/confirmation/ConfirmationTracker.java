@@ -189,6 +189,11 @@ public class ConfirmationTracker extends Tracker {
      * @return A combined confirmation object.
      */
     public CombinedConfirmation confirm() {
+        if (getPlayer().getUser().getConnectionState() != com.github.retrooper.packetevents.protocol.ConnectionState.PLAY) {
+            final var future = new SimpleFuture<ConfirmationState>();
+            future.complete(null);
+            return new CombinedConfirmation(future, future, new IntIncrementer(0));
+        }
         final var now = System.currentTimeMillis();
         // Send last tick, and recent arrival.
         final var hasRecentArrival = !recentConfirmations.isEmpty() && now - recentConfirmations.getLast().getTimestampConfirmed() <= 50 && now - recentConfirmations.getLast().getTimestamp() <= 50;
@@ -272,6 +277,11 @@ public class ConfirmationTracker extends Tracker {
      * @return The confirmation state.
      */
     public ConfirmationState sendCookieOrLatest(final long now) {
+        if (getPlayer().getUser().getConnectionState() != com.github.retrooper.packetevents.protocol.ConnectionState.PLAY) {
+            final var future = new SimpleFuture<ConfirmationState>();
+            future.complete(null);
+            return new ConfirmationState(new byte[0], ConfirmationType.COOKIE, 0, false);
+        }
         synchronized (cookieLock) {
             if (this.nextPostPacket == null) {
                 log.trace("[BetterAntiCheat] Constructing and Allocating cookie");
@@ -287,6 +297,10 @@ public class ConfirmationTracker extends Tracker {
      * Sends a keepalive and flushes a cookie if needed.
      */
     public synchronized void tick() {
+        if (getPlayer().getUser().getConnectionState() != com.github.retrooper.packetevents.protocol.ConnectionState.PLAY) {
+            return;
+        }
+
         // First, check if we can skip, because we already sent a keepalive and a cookie last tick
         final var now = System.currentTimeMillis();
         if (EasyLoops.anyMatch(this.confirmations, (c) -> c.getType() == ConfirmationType.KEEPALIVE & now - c.getTimestamp() < 55)

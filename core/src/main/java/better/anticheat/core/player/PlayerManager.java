@@ -89,6 +89,8 @@ public class PlayerManager {
          * a staff member.
          */
         for (final var user : PacketEvents.getAPI().getProtocolManager().getUsers()) {
+            // Do not send alerts to users who are not in the play state
+            if (user.getConnectionState() != com.github.retrooper.packetevents.protocol.ConnectionState.PLAY) continue;
             final var player = getPlayer(user);
             if ((player == null && !plugin.getDataBridge().hasPermission(user, BetterAnticheat.getInstance().getAlertPermission()))
                     || (player != null && !player.isAlerts())) continue;
@@ -100,6 +102,8 @@ public class PlayerManager {
         // We do not use PacketEvents user collection here as we REQUIRE the player object to process this.
         for (final var player : userMap.values()) {
             if (!player.isVerbose()) continue;
+            // Do not send alerts to users who are not in the play state
+            if (player.getUser().getConnectionState() != com.github.retrooper.packetevents.protocol.ConnectionState.PLAY) continue;
 
             player.getUser().sendMessage(text);
         }
