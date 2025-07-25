@@ -9,6 +9,7 @@
     <packaging>pom</packaging>
     <version>1.0.0</version>
 
+
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -94,6 +95,7 @@
         <module>models</module>
         <module>velocity</module>
         <module>cookies</module>
+        <module>distribution</module>
     </modules>
 
     <properties>
@@ -102,5 +104,6 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <lamp.version>4.0.0-rc.12</lamp.version>
+        <velocity.version>3.4.0-SNAPSHOT</velocity.version>
     </properties>
 </project>
