@@ -192,6 +192,7 @@ public abstract class Check implements Cloneable {
             for (int punishVL : punishments.keySet()) {
                 if (vl % punishVL != 0) continue;
                 runPunishment(punishVL);
+                break;
             }
         } else runPunishment(vl);
     }
