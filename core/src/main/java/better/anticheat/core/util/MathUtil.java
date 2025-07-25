@@ -201,13 +201,20 @@ public class MathUtil {
         return number.doubleValue() > 10000 && Double.toString(number.doubleValue()).contains("E");
     }
 
-    public long getGCD(long x, long y) {
-        long gcd = 1;
+    public long getGCD(final long current, final long previous) {
+        return (previous <= 16384L) ? current : getGCD(previous, current % previous);
+    }
 
-        for (int i = 1; i <= x && i <= y; ++i) {
-            if (x % i == 0 && y % i == 0) gcd = i;
+    public double getGCD(final double a, final double b) {
+        if (a < b) {
+            return getGCD(b, a);
         }
-        return gcd;
+
+        if (Math.abs(b) < 0.001) {
+            return a;
+        } else {
+            return getGCD(b, a - Math.floor(a / b) * b);
+        }
     }
 
     public static double round(double value, int places) {
