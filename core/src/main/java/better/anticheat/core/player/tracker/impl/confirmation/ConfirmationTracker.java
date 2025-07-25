@@ -6,6 +6,7 @@ import better.anticheat.core.player.tracker.impl.confirmation.allocator.Sequenti
 import better.anticheat.core.util.EasyLoops;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.event.simple.PacketPlaySendEvent;
+import com.github.retrooper.packetevents.protocol.ConnectionState;
 import com.github.retrooper.packetevents.resources.ResourceLocation;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientCookieResponse;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientKeepAlive;
@@ -189,7 +190,7 @@ public class ConfirmationTracker extends Tracker {
      * @return A combined confirmation object.
      */
     public CombinedConfirmation confirm() {
-        if (getPlayer().getUser().getConnectionState() != com.github.retrooper.packetevents.protocol.ConnectionState.PLAY) {
+        if (getPlayer().getUser().getConnectionState() != ConnectionState.PLAY) {
             final var future = new SimpleFuture<ConfirmationState>();
             future.complete(null);
             return new CombinedConfirmation(future, future, new IntIncrementer(0));
@@ -277,7 +278,7 @@ public class ConfirmationTracker extends Tracker {
      * @return The confirmation state.
      */
     public ConfirmationState sendCookieOrLatest(final long now) {
-        if (getPlayer().getUser().getConnectionState() != com.github.retrooper.packetevents.protocol.ConnectionState.PLAY) {
+        if (getPlayer().getUser().getConnectionState() != ConnectionState.PLAY) {
             final var future = new SimpleFuture<ConfirmationState>();
             future.complete(null);
             return new ConfirmationState(new byte[0], ConfirmationType.COOKIE, 0, false);
@@ -297,7 +298,7 @@ public class ConfirmationTracker extends Tracker {
      * Sends a keepalive and flushes a cookie if needed.
      */
     public synchronized void tick() {
-        if (getPlayer().getUser().getConnectionState() != com.github.retrooper.packetevents.protocol.ConnectionState.PLAY) {
+        if (getPlayer().getUser().getConnectionState() != ConnectionState.PLAY) {
             return;
         }
 
