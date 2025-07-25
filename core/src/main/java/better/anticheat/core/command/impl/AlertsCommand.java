@@ -4,6 +4,7 @@ import better.anticheat.core.BetterAnticheat;
 import better.anticheat.core.command.Command;
 import better.anticheat.core.command.CommandInfo;
 import better.anticheat.core.configuration.ConfigSection;
+import better.anticheat.core.player.Player;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import revxrsal.commands.annotation.CommandPlaceholder;
@@ -27,7 +28,7 @@ public class AlertsCommand extends Command {
     }
 
     @CommandPlaceholder
-    public void onCommand(final CommandActor actor, @Optional final String targetPlayerName) {
+    public void onCommand(final CommandActor actor, @Optional final Player target) {
         if (!hasPermission(actor)) return;
 
         final var player = getPlayerFromActor(actor);
@@ -36,7 +37,7 @@ public class AlertsCommand extends Command {
             return;
         }
 
-        if (targetPlayerName == null) {
+        if (target == null || target.getUser().getUUID() == player.getUser().getUUID()) {
             player.setAlerts(!player.isAlerts());
             sendReply(actor, Component.text("Alerts have been " + (player.isAlerts() ? "enabled" : "disabled") + ".").color(TextColor.color(0x00FF00)));
         } else {
@@ -45,14 +46,8 @@ public class AlertsCommand extends Command {
                 return;
             }
 
-            final var targetPlayer = BetterAnticheat.getInstance().getPlayerManager().getPlayerByUsername(targetPlayerName);
-            if (targetPlayer == null) {
-                sendReply(actor, Component.text("Player '" + targetPlayerName + "' not found.").color(TextColor.color(0xFF0000)));
-                return;
-            }
-
-            targetPlayer.setAlerts(!targetPlayer.isAlerts());
-            sendReply(actor, Component.text("Alerts for " + targetPlayerName + " have been " + (targetPlayer.isAlerts() ? "enabled" : "disabled") + ".").color(TextColor.color(0x00FF00)));
+            target.setAlerts(!target.isAlerts());
+            sendReply(actor, Component.text("Alerts for " + target.getUser().getName() + " have been " + (target.isAlerts() ? "enabled" : "disabled") + ".").color(TextColor.color(0x00FF00)));
         }
     }
 

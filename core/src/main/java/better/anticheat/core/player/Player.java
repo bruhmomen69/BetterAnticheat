@@ -18,7 +18,6 @@ import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.event.simple.PacketPlaySendEvent;
 import com.github.retrooper.packetevents.protocol.player.User;
 import lombok.Getter;
-
 import lombok.Setter;
 
 import java.io.Closeable;
@@ -57,10 +56,10 @@ public class Player implements Closeable {
 
         // Create a separate cookie allocator instance for this player
         var cookieAllocator = createCookieAllocator(
-            BetterAnticheat.getInstance().getCookieAllocatorConfig()
+                BetterAnticheat.getInstance().getCookieAllocatorConfig()
         );
         this.confirmationTracker = new ConfirmationTracker(this, cookieAllocator);
-        
+
         this.entityTracker = new EntityTracker(this, this.confirmationTracker, this.positionTracker, dataBridge);
         this.playerStatusTracker = new PlayerStatusTracker(this, this.confirmationTracker);
         this.teleportTracker = new TeleportTracker(this);
@@ -79,7 +78,8 @@ public class Player implements Closeable {
                 // Do not turn alerts off, in case during init it was already toggled, and if this fails in an undefined way due to threading on a weird platform, we could have issues.
                 this.alerts = true;
             }
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
     }
 
     /*
@@ -140,7 +140,7 @@ public class Player implements Closeable {
             closeable.close();
         }
     }
-    
+
     /**
      * Creates a new cookie ID allocator instance based on the provided configuration.
      * Each call creates a separate instance, ensuring per-player isolation.
@@ -183,7 +183,7 @@ public class Player implements Closeable {
             return new SequentialLongCookieAllocator();
         }
     }
-    
+
     /**
      * Creates a sequential cookie allocator from the given configuration.
      *
@@ -208,7 +208,7 @@ public class Player implements Closeable {
 
         return new SequentialLongCookieAllocator();
     }
-    
+
     /**
      * Creates a random byte cookie allocator from the given configuration.
      *
@@ -223,7 +223,7 @@ public class Player implements Closeable {
 
         return new RandomByteCookieAllocator(cookieLength, maxRetries);
     }
-    
+
     /**
      * Creates a timestamp-based cookie allocator from the given configuration.
      *
@@ -237,7 +237,7 @@ public class Player implements Closeable {
 
         return new TimestampBasedCookieAllocator(randomBytesLength);
     }
-    
+
     /**
      * Creates a file-based cookie allocator from the given configuration.
      *
@@ -254,7 +254,7 @@ public class Player implements Closeable {
 
         return new FileBasedCookieAllocator(cookieSequenceData);
     }
-    
+
     /**
      * Creates a lyric-based cookie allocator from the given configuration.
      *
@@ -279,7 +279,7 @@ public class Player implements Closeable {
 
         return new LyricCookieAllocator(lyricSequenceData);
     }
-    
+
     /**
      * Gets an integer parameter from a map, returning a default value if the key is not present or the value is not a valid integer.
      *

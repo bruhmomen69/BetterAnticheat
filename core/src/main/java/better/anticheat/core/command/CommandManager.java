@@ -1,9 +1,16 @@
 package better.anticheat.core.command;
 
 import better.anticheat.core.BetterAnticheat;
+import better.anticheat.core.command.core.parameter.PlayerParameterType;
+import better.anticheat.core.command.core.parameter.UserParameterType;
+import better.anticheat.core.command.core.suggestion.PlayerNameSuggestionProvider;
 import better.anticheat.core.command.impl.*;
 import better.anticheat.core.configuration.ConfigSection;
 import better.anticheat.core.configuration.ConfigurationFile;
+import better.anticheat.core.player.Player;
+import com.github.retrooper.packetevents.protocol.player.User;
+import revxrsal.commands.Lamp;
+import revxrsal.commands.command.CommandActor;
 
 import java.util.*;
 
@@ -11,9 +18,11 @@ public class CommandManager {
 
     private final BetterAnticheat plugin;
     private final List<Command> commands;
+    private Lamp.Builder<CommandActor> builder;
 
-    public CommandManager(BetterAnticheat plugin) {
+    public CommandManager(BetterAnticheat plugin, Lamp.Builder<?> builder) {
         this.plugin = plugin;
+        this.builder = (Lamp.Builder<CommandActor>) builder;
 
         /*
          * NOTE: Load order is important! Parent commands must be registered before their children!
@@ -35,8 +44,23 @@ public class CommandManager {
     /**
      * Load all commands via their preferred configuration files.
      */
-    public void load() {
-        plugin.getLamp().unregisterAllCommands();
+    public Lamp<?> load() {
+        if (plugin.getLamp() != null) {
+            plugin.getLamp().unregisterAllCommands();
+        }
+
+        // Configure and build Lamp. We make sure to only suggest injected players and users.
+        builder = builder.parameterTypes((config) -> {
+                    config.addParameterType(Player.class, new PlayerParameterType());
+                    config.addParameterType(User.class, new UserParameterType());
+                }
+        );
+        builder = builder.suggestionProviders((config) -> {
+            config.addProvider(Player.class, new PlayerNameSuggestionProvider());
+            config.addProvider(User.class, new PlayerNameSuggestionProvider());
+        });
+        final var lamp = builder.build();
+
         Map<String, ConfigurationFile> configMap = new HashMap<>();
         Set<String> modified = new HashSet<>();
         int enabled = 0;
@@ -69,12 +93,14 @@ public class CommandManager {
             if (command.isEnabled()) {
                 enabled++;
                 // Register the command if
-                plugin.getLamp().register(command.getOrphans().handler(command));
+                lamp.register(command.getOrphans().handler(command));
             }
         }
 
         for (String file : modified) configMap.get(file).save();
 
         plugin.getDataBridge().logInfo("Loaded " + commands.size() + " commands, with " + enabled + " being enabled.");
+
+        return lamp;
     }
 }

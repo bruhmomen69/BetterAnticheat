@@ -23,7 +23,7 @@ public class BetterAnticheatSpigot extends JavaPlugin {
         core = new BetterAnticheat(
                 new SpigotDataBridge(this),
                 getDataFolder().toPath(),
-                BukkitLamp.builder(this).build()
+                BukkitLamp.builder(this)
         );
         core.enable();
 

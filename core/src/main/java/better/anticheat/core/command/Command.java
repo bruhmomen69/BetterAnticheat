@@ -85,7 +85,7 @@ public abstract class Command implements OrphanCommand {
      * Convert a given CommandActor to BetterAnticheat Player.
      */
     protected @Nullable Player getPlayerFromActor(final CommandActor actor) {
-        return BetterAnticheat.getInstance().getPlayerManager().getPlayerByName(actor.name());
+        return BetterAnticheat.getInstance().getPlayerManager().getPlayerByUsername(actor.name());
     }
 
     /**

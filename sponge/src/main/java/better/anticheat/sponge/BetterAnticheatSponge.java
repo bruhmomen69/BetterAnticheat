@@ -46,7 +46,7 @@ public class BetterAnticheatSponge {
         core = new BetterAnticheat(
                 new SpongeDataBridge(this, game, logger),
                 configDirectory,
-                SpongeLamp.builder(this).build()
+                SpongeLamp.builder(this)
         );
     }
 

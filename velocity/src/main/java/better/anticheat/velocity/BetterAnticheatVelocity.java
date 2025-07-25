@@ -89,17 +89,17 @@ public class BetterAnticheatVelocity {
 
     private void onServerInit() {
         final var dataBridge = new VelocityDataBridge(this, server, logger);
-        final var lamp = VelocityLamp.builder(this, server).build();
-        lamp.accept(brigadier(server));
+
         this.core = new BetterAnticheat(
                 dataBridge,
                 this.dataDirectory,
-                lamp
+                VelocityLamp.builder(this, server)
         );
 
         PacketEvents.getAPI().getSettings().kickOnPacketException(true);
 
         this.core.enable();
+        this.core.getLamp().accept(brigadier(this.server));
 
         PacketEvents.getAPI().getEventManager().registerListener(new CombatDamageListener(this.core));
         this.server.getEventManager().register(this, new PlayerJoinListener(dataBridge, this.server, this));

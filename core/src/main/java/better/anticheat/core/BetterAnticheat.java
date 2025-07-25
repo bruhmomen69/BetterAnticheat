@@ -33,7 +33,7 @@ public class BetterAnticheat {
     // Constructor-related objs
     private final DataBridge dataBridge;
     private final Path directory;
-    private final Lamp<?> lamp;
+    private Lamp lamp;
     private boolean enabled;
 
     // Managers
@@ -59,16 +59,15 @@ public class BetterAnticheat {
     private CookieAllocatorConfig cookieAllocatorConfig;
     private CookieSequenceData cookieSequenceData;
 
-    public BetterAnticheat(DataBridge dataBridge, Path directory, Lamp<?> lamp) {
+    public BetterAnticheat(DataBridge dataBridge, Path directory, Lamp.Builder<?> lamp) {
         this.dataBridge = dataBridge;
         this.directory = directory;
-        this.lamp = lamp;
         this.enabled = true;
 
         instance = this;
 
         this.checkManager = new CheckManager(this);
-        this.commandManager = new CommandManager(this);
+        this.commandManager = new CommandManager(this, lamp);
         this.lyricManager = new LyricManager();
         this.playerManager = new PlayerManager(this);
 
@@ -114,7 +113,7 @@ public class BetterAnticheat {
         loadCookieAllocator(settings);
 
         checkManager.load();
-        commandManager.load();
+        this.lamp = commandManager.load();
         playerManager.load();
 
         dataBridge.logInfo("Load finished!");

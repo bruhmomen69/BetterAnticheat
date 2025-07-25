@@ -23,7 +23,7 @@ public class BetterAnticheatPaper  extends JavaPlugin {
         core = new BetterAnticheat(
                 new PaperDataBridge(this),
                 getDataFolder().toPath(),
-                BukkitLamp.builder(this).build()
+                BukkitLamp.builder(this)
         );
         core.enable();
 

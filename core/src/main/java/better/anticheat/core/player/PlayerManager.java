@@ -6,6 +6,7 @@ import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.protocol.player.User;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectRBTreeMap;
+import lombok.Getter;
 import net.kyori.adventure.text.Component;
 
 import java.io.IOException;
@@ -19,6 +20,7 @@ public class PlayerManager {
 
     private final BetterAnticheat plugin;
 
+    @Getter
     private final Map<User, Player> userMap = new ConcurrentHashMap<>();
     private final Int2ObjectMap<Player> idMap = new Int2ObjectRBTreeMap<>();
     private final List<Quantifier> quantifiers = new ArrayList<>();
@@ -63,20 +65,12 @@ public class PlayerManager {
         return userMap.get(user);
     }
 
-    public Player getPlayerByName(String name) {
-        for (Player value : userMap.values()) {
-            if (value.getUser().getName().equalsIgnoreCase(name)) return value;
-        }
-
-        return null;
-    }
-
     public Player getPlayerByEntityId(int id) {
         return idMap.get(id);
     }
 
     public Player getPlayerByUsername(String username) {
-        for (Player value : userMap.values()) {
+        for (final var value : userMap.values()) {
             if (value.getUser().getName().equalsIgnoreCase(username)) return value;
         }
 
