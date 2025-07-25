@@ -13,12 +13,10 @@ import java.util.Map;
 public class PunishmentManager {
 
     private final BetterAnticheat plugin;
-    private final Map<String, Map<Integer, List<String>>> punishmentGroups = new HashMap<>();
-    private final Map<String, Map<Integer, List<String>>> perCheckPunishmentGroups = new HashMap<>();
+    private final Map<String, PunishmentGroup> punishmentGroups = new HashMap<>();
 
     public void load() {
         punishmentGroups.clear();
-        perCheckPunishmentGroups.clear();
         ConfigSection section = plugin.getFile("settings.yml").getRoot().getConfigSection("punishment-groups");
         if (section == null) {
             return;
@@ -26,21 +24,20 @@ public class PunishmentManager {
 
         for (ConfigSection groupSection : section.getChildren()) {
             String groupName = groupSection.getKey();
-            Map<Integer, List<String>> punishments = new HashMap<>();
-            List<String> punishmentList = groupSection.getList(String.class, "per-group-punishments");
-            for (String punishment : punishmentList) {
+            Map<Integer, List<String>> perGroupPunishments = new HashMap<>();
+            List<String> perGroupPunishmentList = groupSection.getList(String.class, "per-group-punishments");
+            for (String punishment : perGroupPunishmentList) {
                 String[] elements = punishment.split(":", 2);
                 try {
                     int vl = Integer.parseInt(elements[0]);
-                    if (!punishments.containsKey(vl)) {
-                        punishments.put(vl, new ArrayList<>());
+                    if (!perGroupPunishments.containsKey(vl)) {
+                        perGroupPunishments.put(vl, new ArrayList<>());
                     }
-                    punishments.get(vl).add(elements[1]);
+                    perGroupPunishments.get(vl).add(elements[1]);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
-            punishmentGroups.put(groupName, punishments);
 
             Map<Integer, List<String>> perCheckPunishments = new HashMap<>();
             List<String> perCheckPunishmentList = groupSection.getList(String.class, "per-check-punishments");
@@ -56,15 +53,11 @@ public class PunishmentManager {
                     e.printStackTrace();
                 }
             }
-            perCheckPunishmentGroups.put(groupName, perCheckPunishments);
+            punishmentGroups.put(groupName, new PunishmentGroup(perGroupPunishments, perCheckPunishments));
         }
     }
 
-    public Map<Integer, List<String>> getPunishments(String groupName) {
+    public PunishmentGroup getPunishmentGroup(String groupName) {
         return punishmentGroups.get(groupName);
-    }
-
-    public Map<Integer, List<String>> getPerCheckPunishments(String groupName) {
-        return perCheckPunishmentGroups.get(groupName);
     }
 }
