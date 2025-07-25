@@ -30,6 +30,7 @@ public class CommandManager {
         commands = Arrays.asList(
                 new BACCommand(plugin),
                 new AlertsCommand(plugin),
+                new VerboseCommand(plugin),
                 new MitigateCommand(plugin),
                 new RecordingCommand(plugin),
                 new ReloadCommand(plugin)

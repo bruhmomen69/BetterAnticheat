@@ -44,6 +44,7 @@ public class BetterAnticheat {
 
     // Settings
     private int alertCooldown;
+    private double verboseCooldownDivisor;
     private List<String> alertHover;
     private String alertMessage, alertPermission, clickCommand;
     private boolean punishmentModulo, testMode, useCommand;
@@ -101,6 +102,7 @@ public class BetterAnticheat {
 
         ConfigSection settings = getFile("settings.yml", BetterAnticheat.class.getResourceAsStream("/settings.yml")).load();
         alertCooldown = settings.getObject(Integer.class, "alert-cooldown", 1000);
+        verboseCooldownDivisor = settings.getObject(Double.class, "verbose-cooldown-divisor", 4.0);
         alertPermission = settings.getObject(String.class, "alert-permission", "better.anticheat");
         alertHover = settings.getList(String.class, "alert-hover");
         alertMessage = settings.getObject(String.class, "alert-message", "");

@@ -44,7 +44,7 @@ public class Player implements Closeable {
     private List<Check> checks = null;
 
     @Setter
-    private boolean alerts = false;
+    private boolean alerts = false, verbose = false;
 
     private final List<Closeable> closeables = new ArrayList<>();
 

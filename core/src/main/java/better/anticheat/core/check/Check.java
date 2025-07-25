@@ -43,7 +43,7 @@ public abstract class Check implements Cloneable {
 
     @Getter @Setter
     private boolean enabled = false;
-    private int alertVL = 0;
+    private int alertVL = 10, verboseVL = 1;
     private Map<Integer, List<String>> punishments = new HashMap<>();
 
     @Getter
@@ -128,14 +128,16 @@ public abstract class Check implements Cloneable {
         // Prevent unnecessary vl increases.
         vl = Math.min(10000, vl + 1);
         long currentMS = System.currentTimeMillis();
+        var deltaAlertMS = currentMS - lastAlertMS;
 
         /*
          * 1. Ensure alerts are enabled (alertVL != -1)
          * 2. Ensure vl is high enough to alert (vl >= alertVL)
          * 3. Ensure the anti-spam cooldown has elapsed (elapsed >= alertCooldown)
          */
-        if (alertVL != -1 && vl >= alertVL && (currentMS - lastAlertMS) >= BetterAnticheat.getInstance().getAlertCooldown()) {
-            String message = BetterAnticheat.getInstance().getAlertMessage();
+        if (alertVL != -1 && vl >= Math.min(alertVL, verboseVL) &&
+                deltaAlertMS >= BetterAnticheat.getInstance().getAlertCooldown() / BetterAnticheat.getInstance().getVerboseCooldownDivisor()) {
+            var message = BetterAnticheat.getInstance().getAlertMessage();
             if (!message.isEmpty()) {
                 // Build the basic message body.
                 message = message.replaceAll("%vl%", String.valueOf(vl));
@@ -150,8 +152,8 @@ public abstract class Check implements Cloneable {
                     finalMessage = finalMessage.clickEvent(ClickEvent.clickEvent(ClickEvent.Action.RUN_COMMAND, "/" + click.replaceAll("%username%", player.getUser().getName())));
 
                 // Assemble and add the hover message.
-                StringBuilder hoverBuild = new StringBuilder();
-                for (String string : BetterAnticheat.getInstance().getAlertHover()) {
+                final var hoverBuild = new StringBuilder();
+                for (final var string : BetterAnticheat.getInstance().getAlertHover()) {
                     hoverBuild.append(string
                                     .replaceAll("%clientversion%", player.getUser().getClientVersion().getReleaseName())
                                     .replaceAll("%debug%", debug == null ? "NO DEBUG" : debug.toString()))
@@ -163,10 +165,18 @@ public abstract class Check implements Cloneable {
                     finalMessage = finalMessage.hoverEvent(HoverEvent.hoverEvent(HoverEvent.Action.SHOW_TEXT, Component.text(ChatUtil.translateColors(hoverBuild.substring(0, hoverBuild.length() - 1)))));
 
                 if (BetterAnticheat.getInstance().isTestMode()) player.getUser().sendMessage(finalMessage);
-                else BetterAnticheat.getInstance().getPlayerManager().sendAlert(finalMessage);
+                else {
+                    // Now we know we are sending to staff, we need to determine if we use a verbose, or an alert.
+                    // First, we try a verbose, if alert is too low, or cooldown has not elapsed. Otherwise, alert.
+                    if (this.vl >= this.verboseVL && (this.vl < this.alertVL || deltaAlertMS < BetterAnticheat.getInstance().getAlertCooldown())) {
+                        BetterAnticheat.getInstance().getPlayerManager().sendVerbose(finalMessage);
+                    } else if (this.vl >= this.alertVL) {
+                        BetterAnticheat.getInstance().getPlayerManager().sendAlert(finalMessage);
+                    }
+                }
             }
 
-            lastAlertMS = currentMS;
+            this.lastAlertMS = currentMS;
         }
 
         /*
@@ -221,7 +231,13 @@ public abstract class Check implements Cloneable {
             section.setObject(Integer.class, "alert-vl", 1);
             modified = true;
         }
-        alertVL = section.getObject(Integer.class, "alert-vl", 1);
+        alertVL = section.getObject(Integer.class, "alert-vl", 5);
+
+        if (!section.hasNode("verbose-vl")) {
+            section.setObject(Integer.class, "verbose-vl", 1);
+            modified = true;
+        }
+        verboseVL = section.getObject(Integer.class, "verbose-vl", 1);
 
         if (!section.hasNode("punishments")) {
             List<String> defaultPunishments = new ArrayList<>();

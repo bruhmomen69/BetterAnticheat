@@ -1,5 +1,8 @@
 # How long in ms should it be before a given check can send another alert.
 alert-cooldown: 1000
+# How much should we divide the alert cooldown by for verbose alerts?
+# If you keep alert cooldown at 1000ms, then verbose cooldown is the max amount of alerts per player per check per second.
+verbose-cooldown-divisor: 4
 
 alert-permission: 'better.anticheat'
 
@@ -74,7 +77,9 @@ ml:
       # Enable this model check?
       enabled: true
       # The minimum vl required to run an alert, after the samples/threshold requirement have been met.
-      alert-vl: 1
+      alert-vl: 200
+      # The minimum vl required to run a verbose alert, after the samples/threshold requirement have been met.
+      verbose-vl: 1
       # The punishment command to run when a player is flagged by this model.
       punishments: []
     statistics-included-v0:
@@ -103,7 +108,9 @@ ml:
       # Enable this model check?
       enabled: true
       # The minimum vl required to run an alert, after the samples/threshold requirement have been met.
-      alert-vl: 1
+      alert-vl: 200
+      # The minimum vl required to run a verbose alert, after the samples/threshold requirement have been met.
+      verbose-vl: 1
       # The punishment command to run when a player is flagged by this model.
       punishments: []
 

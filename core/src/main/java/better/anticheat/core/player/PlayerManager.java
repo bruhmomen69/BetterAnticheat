@@ -88,10 +88,20 @@ public class PlayerManager {
          * because a player may be logged in via something like Geyser doesn't have anything to do with whether they're
          * a staff member.
          */
-        for (User user : PacketEvents.getAPI().getProtocolManager().getUsers()) {
+        for (final var user : PacketEvents.getAPI().getProtocolManager().getUsers()) {
             final var player = getPlayer(user);
-            if (player == null || !player.isAlerts()) continue;
+            if ((player == null && !plugin.getDataBridge().hasPermission(user, BetterAnticheat.getInstance().getAlertPermission()))
+                    || (player != null && !player.isAlerts())) continue;
             user.sendMessage(text);
+        }
+    }
+
+    public void sendVerbose(Component text) {
+        // We do not use PacketEvents user collection here as we REQUIRE the player object to process this.
+        for (final var player : userMap.values()) {
+            if (!player.isVerbose()) continue;
+
+            player.getUser().sendMessage(text);
         }
     }
 }
