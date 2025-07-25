@@ -44,8 +44,9 @@ public abstract class Check implements Cloneable {
     @Getter @Setter
     private boolean enabled = false;
     private int alertVL = 10, verboseVL = 1;
-    private String punishmentGroup = null;
+    private List<String> punishmentGroups = new ArrayList<>();
     private Map<Integer, List<String>> punishments = new HashMap<>();
+    private Map<Integer, List<String>> perCheckPunishments = new HashMap<>();
 
     @Getter
     private int vl = 0;
@@ -192,20 +193,29 @@ public abstract class Check implements Cloneable {
         if (BetterAnticheat.getInstance().isPunishmentModulo()) {
             for (int punishVL : punishments.keySet()) {
                 if (vl % punishVL != 0) continue;
-                runPunishment(punishVL);
+                runPunishment(punishVL, punishments);
                 break;
             }
-        } else runPunishment(vl);
+            for (int punishVL : perCheckPunishments.keySet()) {
+                if (vl % punishVL != 0) continue;
+                runPunishment(punishVL, perCheckPunishments);
+                break;
+            }
+        } else {
+            runPunishment(vl, punishments);
+            runPunishment(vl, perCheckPunishments);
+        }
     }
 
     /**
      * Runs the punishment associated with the given vl for the player that this check corresponds to.
      */
-    private void runPunishment(int vl) {
-        List<String> punishment = punishments.get(vl);
+    private void runPunishment(int vl, Map<Integer, List<String>> punishmentMap) {
+        List<String> punishment = punishmentMap.get(vl);
         if (punishment != null) {
             for (String command : punishment) {
                 command = command.replaceAll("%username%", player.getUser().getName());
+                command = command.replaceAll("%type%", name);
                 BetterAnticheat.getInstance().getDataBridge().sendCommand(command);
             }
         }
@@ -245,33 +255,37 @@ public abstract class Check implements Cloneable {
         }
         verboseVL = section.getObject(Integer.class, "verbose-vl", 1);
 
-        if (!section.hasNode("punishment-group")) {
-            section.setObject(String.class, "punishment-group", "default");
+        if (!section.hasNode("punishment-groups")) {
+            section.setList(String.class, "punishment-groups", new ArrayList<>(List.of("default")));
             modified = true;
         }
-        punishmentGroup = section.getObject(String.class, "punishment-group", "default");
+        punishmentGroups = section.getList(String.class, "punishment-groups");
 
-        if (punishmentGroup != null && plugin.getPunishmentManager().getPunishments(punishmentGroup) != null) {
-            punishments = plugin.getPunishmentManager().getPunishments(punishmentGroup);
-        } else {
-            if (!section.hasNode("punishments")) {
-                List<String> defaultPunishments = new ArrayList<>();
-                defaultPunishments.add("1:say %username% would be kicked for " + name + "!");
-                defaultPunishments.add("5:say %username% would be banned for " + name + "!");
-                section.setList(String.class, "punishments", defaultPunishments);
-                modified = true;
+        punishments.clear();
+        for (String group : punishmentGroups) {
+            Map<Integer, List<String>> groupPunishments = plugin.getPunishmentManager().getPunishments(group);
+            if (groupPunishments != null) {
+                groupPunishments.forEach((vl, commands) -> punishments.computeIfAbsent(vl, k -> new ArrayList<>()).addAll(commands));
             }
-            punishments.clear();
-            List<String> punishmentList = section.getList(String.class, "punishments");
-            for (String punishment : punishmentList) {
-                String[] elements = punishment.split(":", 2);
-                try {
-                    int vl = Integer.parseInt(elements[0]);
-                    if (!punishments.containsKey(vl)) punishments.put(vl, new ArrayList<>());
-                    punishments.get(vl).add(elements[1]);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+        }
+
+        if (!section.hasNode("punishments")) {
+            List<String> defaultPunishments = new ArrayList<>();
+            defaultPunishments.add("1:say %username% would be kicked for " + name + "!");
+            defaultPunishments.add("5:say %username% would be banned for " + name + "!");
+            section.setList(String.class, "punishments", defaultPunishments);
+            modified = true;
+        }
+        perCheckPunishments.clear();
+        List<String> punishmentList = section.getList(String.class, "punishments");
+        for (String punishment : punishmentList) {
+            String[] elements = punishment.split(":", 2);
+            try {
+                int vl = Integer.parseInt(elements[0]);
+                if (!perCheckPunishments.containsKey(vl)) perCheckPunishments.put(vl, new ArrayList<>());
+                perCheckPunishments.get(vl).add(elements[1]);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
 

@@ -39,7 +39,9 @@ punishment-modulo: true
 
 punishment-groups:
   default:
-    punishments:
+    per-group-punishments:
+      - "10:say %username% has accumulated 10 total VL!"
+    per-check-punishments:
       - "1:say %username% would be kicked for %type%!"
       - "5:say %username% would be banned for %type%!"
 
