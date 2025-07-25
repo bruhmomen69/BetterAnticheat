@@ -73,7 +73,9 @@
             <artifactId>spigot</artifactId>
             <version>1.0.0</version>
         </dependency>
-        <!-- <dependency>
+        <!-- Sponge module is shading dependencies instead of downloading at runtime, thus including this would add ~80MB to the file size.
+             Will be added back once we properly install dependencies at runtime for sponge.
+         <dependency>
             <groupId>better.anticheat</groupId>
             <artifactId>sponge</artifactId>
             <version>1.0.0</version>
