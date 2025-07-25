@@ -73,10 +73,10 @@
             <artifactId>spigot</artifactId>
             <version>1.0.0</version>
         </dependency>
-        <dependency>
+        <!-- <dependency>
             <groupId>better.anticheat</groupId>
             <artifactId>sponge</artifactId>
             <version>1.0.0</version>
-        </dependency>
+        </dependency> -->
     </dependencies>
 </project>
