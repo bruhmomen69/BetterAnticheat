@@ -49,6 +49,7 @@ public abstract class Check implements Cloneable {
     @Getter
     private int vl = 0;
     private long lastAlertMS = 0;
+    private long lastVerboseMS = 0;
 
     /**
      * Construct the check via info provided in CheckInfo annotation.
@@ -127,16 +128,18 @@ public abstract class Check implements Cloneable {
     protected void fail(Object debug) {
         // Prevent unnecessary vl increases.
         vl = Math.min(10000, vl + 1);
-        long currentMS = System.currentTimeMillis();
-        var deltaAlertMS = currentMS - lastAlertMS;
+        final long currentMS = System.currentTimeMillis();
+        final var smallestDeltaMS = currentMS - Math.min(lastAlertMS, lastVerboseMS);
+        final var deltaAlertMS = currentMS - lastAlertMS;
+        final var deltaVerboseMS = currentMS - lastVerboseMS;
+        final var verboseLimit = BetterAnticheat.getInstance().getAlertCooldown() / BetterAnticheat.getInstance().getVerboseCooldownDivisor();
 
         /*
          * 1. Ensure alerts are enabled (alertVL != -1)
          * 2. Ensure vl is high enough to alert (vl >= alertVL)
          * 3. Ensure the anti-spam cooldown has elapsed (elapsed >= alertCooldown)
          */
-        if (alertVL != -1 && vl >= Math.min(alertVL, verboseVL) &&
-                deltaAlertMS >= BetterAnticheat.getInstance().getAlertCooldown() / BetterAnticheat.getInstance().getVerboseCooldownDivisor()) {
+        if (alertVL != -1 && vl >= Math.min(alertVL, verboseVL) && smallestDeltaMS >= verboseLimit) {
             var message = BetterAnticheat.getInstance().getAlertMessage();
             if (!message.isEmpty()) {
                 // Build the basic message body.
@@ -168,15 +171,16 @@ public abstract class Check implements Cloneable {
                 else {
                     // Now we know we are sending to staff, we need to determine if we use a verbose, or an alert.
                     // First, we try a verbose, if alert is too low, or cooldown has not elapsed. Otherwise, alert.
-                    if (this.vl >= this.verboseVL && (this.vl < this.alertVL || deltaAlertMS < BetterAnticheat.getInstance().getAlertCooldown())) {
+                    if (this.vl >= this.verboseVL && (this.vl < this.alertVL || deltaAlertMS < BetterAnticheat.getInstance().getAlertCooldown()) &&
+                            deltaVerboseMS >= verboseLimit) {
                         BetterAnticheat.getInstance().getPlayerManager().sendVerbose(finalMessage);
-                    } else if (this.vl >= this.alertVL) {
+                        this.lastVerboseMS = currentMS;
+                    } else if (this.vl >= this.alertVL && deltaAlertMS >= BetterAnticheat.getInstance().getAlertCooldown()) {
                         BetterAnticheat.getInstance().getPlayerManager().sendAlert(finalMessage);
+                        this.lastAlertMS = currentMS;
                     }
                 }
             }
-
-            this.lastAlertMS = currentMS;
         }
 
         /*
