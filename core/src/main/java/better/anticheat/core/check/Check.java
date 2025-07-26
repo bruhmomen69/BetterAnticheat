@@ -41,7 +41,6 @@ public abstract class Check implements Cloneable {
     @Getter @Setter
     private boolean enabled = false;
     private int alertVL = 10, verboseVL = 1;
-    private List<String> punishmentGroupNames = new ArrayList<>();
     @Getter
     private List<PunishmentGroup> punishmentGroups = new ArrayList<>();
 
@@ -186,8 +185,8 @@ public abstract class Check implements Cloneable {
          * Modulo assumes the punishment should be run whenever the vl is divisible by the setting amount.
          * Strict assumes the punishment should be run whenever the vl is the setting amount.
          */
-        for (String groupName : punishmentGroupNames) {
-            plugin.getPunishmentManager().incrementGroupVl(groupName);
+        for (PunishmentGroup group : punishmentGroups) {
+            plugin.getPunishmentManager().incrementGroupVl(group.toString());
         }
         plugin.getPunishmentManager().runPunishments(this);
     }
@@ -227,10 +226,16 @@ public abstract class Check implements Cloneable {
         verboseVL = section.getObject(Integer.class, "verbose-vl", 1);
 
         if (!section.hasNode("punishment-groups")) {
-            section.setList(String.class, "punishment-groups", new ArrayList<>(List.of("default")));
+            List<String> groups = new ArrayList<>();
+            if (plugin.getPunishmentManager().getPunishmentGroup(category) != null) {
+                groups.add(category);
+            } else {
+                groups.add("default");
+            }
+            section.setList(String.class, "punishment-groups", groups);
             modified = true;
         }
-        punishmentGroupNames = section.getList(String.class, "punishment-groups");
+        List<String> punishmentGroupNames = section.getList(String.class, "punishment-groups");
 
         punishmentGroups.clear();
         for (String groupName : punishmentGroupNames) {

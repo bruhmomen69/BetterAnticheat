@@ -148,12 +148,14 @@ public class CheckManager {
 
             // Assign to default punishment group if category group doesn't exist.
             if (check.getPunishmentGroups().isEmpty()) {
-                List<String> punishmentGroupNames = node.getList(String.class, "punishment-groups");
-                if (punishmentGroupNames.isEmpty()) {
+                List<String> punishmentGroupNames = new ArrayList<>();
+                if (plugin.getPunishmentManager().getPunishmentGroup(check.getCategory()) != null) {
+                    punishmentGroupNames.add(check.getCategory());
+                } else {
                     punishmentGroupNames.add("default");
-                    node.setList(String.class, "punishment-groups", punishmentGroupNames);
-                    modified.add(fileName);
                 }
+                node.setList(String.class, "punishment-groups", punishmentGroupNames);
+                modified.add(fileName);
             }
         }
 
