@@ -69,12 +69,14 @@ public class PunishmentManager {
             if (plugin.isPunishmentModulo()) {
                 // Handle group punishments
                 for (int punishVl : group.getPerGroupPunishments().keySet()) {
+                    if (punishVl == 0) continue;
                     if (groupVl % punishVl == 0) {
                         runPunishment(check, punishVl, group.getPerGroupPunishments());
                     }
                 }
                 // Handle check punishments
                 for (int punishVl : group.getPerCheckPunishments().keySet()) {
+                    if (punishVl == 0) continue;
                     if (checkVl % punishVl == 0) {
                         runPunishment(check, punishVl, group.getPerCheckPunishments());
                     }
