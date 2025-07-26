@@ -64,7 +64,7 @@ public class PunishmentManager {
 
     public void runPunishments(Check check) {
         int checkVl = check.getVl();
-        for (PunishmentGroup group : check.getPunishmentGroups()) {
+        for (final var group : check.getPunishmentGroups()) {
             int groupVl = getGroupVl(check.getPlayer(), group.getName());
             if (plugin.isPunishmentModulo()) {
                 // Handle group punishments

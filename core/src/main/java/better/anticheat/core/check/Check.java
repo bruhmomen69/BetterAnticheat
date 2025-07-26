@@ -12,6 +12,7 @@ import lombok.Setter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
+import wtf.spare.sparej.fastlist.FastObjectArrayList;
 
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
@@ -42,7 +43,7 @@ public abstract class Check implements Cloneable {
     private boolean enabled = false;
     private int alertVL = 10, verboseVL = 1;
     @Getter
-    private List<PunishmentGroup> punishmentGroups = new ArrayList<>();
+    private final List<PunishmentGroup> punishmentGroups = new FastObjectArrayList<>();
 
     @Getter
     private int vl = 0;
@@ -185,7 +186,7 @@ public abstract class Check implements Cloneable {
          * Modulo assumes the punishment should be run whenever the vl is divisible by the setting amount.
          * Strict assumes the punishment should be run whenever the vl is the setting amount.
          */
-        for (PunishmentGroup group : punishmentGroups) {
+        for (final var group : punishmentGroups) {
             if (group != null) {
                 plugin.getPunishmentManager().incrementGroupVl(player, group.getName());
             }
@@ -233,25 +234,23 @@ public abstract class Check implements Cloneable {
                 groups.add(category);
             } else {
                 groups.add("default");
+
+                if (plugin.getPunishmentManager().getPunishmentGroup("default") == null) {
+                    plugin.getDataBridge().logWarning("Punishment group 'default' does not exist. The " + name + " check will not have any punishments.");
+                }
             }
             section.setList(String.class, "punishment-groups", groups);
             modified = true;
         }
-        List<String> punishmentGroupNames = section.getList(String.class, "punishment-groups");
+        final var punishmentGroupNames = section.getList(String.class, "punishment-groups");
 
         punishmentGroups.clear();
-        for (String groupName : punishmentGroupNames) {
-            PunishmentGroup group = plugin.getPunishmentManager().getPunishmentGroup(groupName);
+        for (final var groupName : punishmentGroupNames) {
+            final var group = plugin.getPunishmentManager().getPunishmentGroup(groupName);
             if (group != null) {
                 punishmentGroups.add(group);
-            }
-        }
-        if (punishmentGroups.isEmpty()) {
-            PunishmentGroup defaultGroup = plugin.getPunishmentManager().getPunishmentGroup("default");
-            if (defaultGroup != null) {
-                punishmentGroups.add(defaultGroup);
             } else {
-                plugin.getDataBridge().logWarning("Default punishment group not found, and no other groups are defined for this check. This check will not have any punishments.");
+                plugin.getDataBridge().logWarning("Punishment group '" + groupName + "' does not exist. The " + name + " check will not have any punishments.");
             }
         }
 
