@@ -24,6 +24,9 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Getter
 public class Player implements Closeable {
@@ -47,6 +50,7 @@ public class Player implements Closeable {
     private boolean alerts = false, verbose = false;
 
     private final List<Closeable> closeables = new ArrayList<>();
+    private final Map<String, AtomicInteger> groupViolations = new ConcurrentHashMap<>();
 
     public Player(final BetterAnticheat plugin, final User user, final DataBridge dataBridge) {
         this.plugin = plugin;

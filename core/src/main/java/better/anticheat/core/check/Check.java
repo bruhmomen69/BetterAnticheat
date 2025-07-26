@@ -187,7 +187,7 @@ public abstract class Check implements Cloneable {
          */
         for (PunishmentGroup group : punishmentGroups) {
             if (group != null) {
-                plugin.getPunishmentManager().incrementGroupVl(group.getName());
+                plugin.getPunishmentManager().incrementGroupVl(player, group.getName());
             }
         }
         plugin.getPunishmentManager().runPunishments(this);
