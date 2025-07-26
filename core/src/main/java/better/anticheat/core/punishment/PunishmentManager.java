@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -95,13 +94,13 @@ public class PunishmentManager {
 
 
     public void incrementGroupVl(Player player, String groupName) {
-        getPunishmentGroup(groupName).getGroupViolations()
-                .computeIfAbsent(player.getUser().getUUID(), k -> new AtomicInteger(0)).incrementAndGet();
+        player.getGroupViolations()
+                .computeIfAbsent(groupName, k -> new AtomicInteger(0)).incrementAndGet();
     }
 
     public int getGroupVl(Player player, String groupName) {
-        return getPunishmentGroup(groupName).getGroupViolations()
-                .getOrDefault(player.getUser().getUUID(), new AtomicInteger(0)).get();
+        return player.getGroupViolations()
+                .getOrDefault(groupName, new AtomicInteger(0)).get();
     }
 
     private void runPunishment(Check check, int vl, Map<Integer, List<String>> punishmentMap) {

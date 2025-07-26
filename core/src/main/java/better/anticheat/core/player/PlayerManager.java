@@ -55,9 +55,10 @@ public class PlayerManager {
     }
 
     public synchronized void removeUser(User user) throws IOException {
-        idMap.remove(user.getEntityId());
         final var removedPlayer = userMap.remove(user);
         if (removedPlayer == null) return;
+
+        idMap.remove(user.getEntityId());
         removedPlayer.close();
     }
 
