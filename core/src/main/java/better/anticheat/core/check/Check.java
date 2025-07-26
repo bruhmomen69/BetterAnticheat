@@ -3,7 +3,6 @@ package better.anticheat.core.check;
 import better.anticheat.core.BetterAnticheat;
 import better.anticheat.core.configuration.ConfigSection;
 import better.anticheat.core.player.Player;
-import better.anticheat.core.player.PlayerManager;
 import better.anticheat.core.punishment.PunishmentGroup;
 import better.anticheat.core.util.ChatUtil;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
@@ -16,11 +15,7 @@ import net.kyori.adventure.text.event.HoverEvent;
 
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * This is the basis for a check in the anticheat. There are a few core components to understand:
@@ -35,6 +30,7 @@ public abstract class Check implements Cloneable {
 
     protected BetterAnticheat plugin;
     protected Check reference;
+    @Getter
     protected Player player;
 
     @Getter @Setter
@@ -46,6 +42,7 @@ public abstract class Check implements Cloneable {
     private boolean enabled = false;
     private int alertVL = 10, verboseVL = 1;
     private List<String> punishmentGroupNames = new ArrayList<>();
+    @Getter
     private List<PunishmentGroup> punishmentGroups = new ArrayList<>();
 
     @Getter
@@ -189,39 +186,7 @@ public abstract class Check implements Cloneable {
          * Modulo assumes the punishment should be run whenever the vl is divisible by the setting amount.
          * Strict assumes the punishment should be run whenever the vl is the setting amount.
          */
-        if (BetterAnticheat.getInstance().isPunishmentModulo()) {
-            for (PunishmentGroup group : punishmentGroups) {
-                for (int punishVL : group.getPerGroupPunishments().keySet()) {
-                    if (vl % punishVL != 0) continue;
-                    runPunishment(punishVL, group.getPerGroupPunishments());
-                    break;
-                }
-                for (int punishVL : group.getPerCheckPunishments().keySet()) {
-                    if (vl % punishVL != 0) continue;
-                    runPunishment(punishVL, group.getPerCheckPunishments());
-                    break;
-                }
-            }
-        } else {
-            for (PunishmentGroup group : punishmentGroups) {
-                runPunishment(vl, group.getPerGroupPunishments());
-                runPunishment(vl, group.getPerCheckPunishments());
-            }
-        }
-    }
-
-    /**
-     * Runs the punishment associated with the given vl for the player that this check corresponds to.
-     */
-    private void runPunishment(int vl, Map<Integer, List<String>> punishmentMap) {
-        List<String> punishment = punishmentMap.get(vl);
-        if (punishment != null) {
-            for (String command : punishment) {
-                command = command.replaceAll("%username%", player.getUser().getName());
-                command = command.replaceAll("%type%", name);
-                BetterAnticheat.getInstance().getDataBridge().sendCommand(command);
-            }
-        }
+        plugin.getPunishmentManager().runPunishments(this);
     }
 
     /**

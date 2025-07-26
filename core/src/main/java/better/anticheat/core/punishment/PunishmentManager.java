@@ -1,6 +1,7 @@
 package better.anticheat.core.punishment;
 
 import better.anticheat.core.BetterAnticheat;
+import better.anticheat.core.check.Check;
 import better.anticheat.core.configuration.ConfigSection;
 import lombok.RequiredArgsConstructor;
 
@@ -8,12 +9,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @RequiredArgsConstructor
 public class PunishmentManager {
 
     private final BetterAnticheat plugin;
-    private final Map<String, PunishmentGroup> punishmentGroups = new HashMap<>();
+    private final Map<String, PunishmentGroup> punishmentGroups = new ConcurrentHashMap<>();
 
     public void load() {
         punishmentGroups.clear();
@@ -59,5 +61,39 @@ public class PunishmentManager {
 
     public PunishmentGroup getPunishmentGroup(String groupName) {
         return punishmentGroups.get(groupName);
+    }
+
+    public void runPunishments(Check check) {
+        int vl = check.getVl();
+        if (plugin.isPunishmentModulo()) {
+            for (PunishmentGroup group : check.getPunishmentGroups()) {
+                for (int punishVL : group.getPerGroupPunishments().keySet()) {
+                    if (vl % punishVL != 0) continue;
+                    runPunishment(check, punishVL, group.getPerGroupPunishments());
+                    break;
+                }
+                for (int punishVL : group.getPerCheckPunishments().keySet()) {
+                    if (vl % punishVL != 0) continue;
+                    runPunishment(check, punishVL, group.getPerCheckPunishments());
+                    break;
+                }
+            }
+        } else {
+            for (PunishmentGroup group : check.getPunishmentGroups()) {
+                runPunishment(check, vl, group.getPerGroupPunishments());
+                runPunishment(check, vl, group.getPerCheckPunishments());
+            }
+        }
+    }
+
+    private void runPunishment(Check check, int vl, Map<Integer, List<String>> punishmentMap) {
+        List<String> punishment = punishmentMap.get(vl);
+        if (punishment != null) {
+            for (String command : punishment) {
+                command = command.replaceAll("%username%", check.getPlayer().getUser().getName());
+                command = command.replaceAll("%type%", check.getName());
+                plugin.getDataBridge().sendCommand(command);
+            }
+        }
     }
 }

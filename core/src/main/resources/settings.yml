@@ -89,7 +89,8 @@ ml:
       # The minimum vl required to run a verbose alert, after the samples/threshold requirement have been met.
       verbose-vl: 1
       # The punishment command to run when a player is flagged by this model.
-      punishments: []
+      punishment-groups:
+        - "default"
     statistics-included-v0:
       display-name: "Statistics"
       # Options: "decision_tree_gini", "decision_tree_entropy", "random_forest_gini", "random_forest_entropy".
@@ -120,7 +121,8 @@ ml:
       # The minimum vl required to run a verbose alert, after the samples/threshold requirement have been met.
       verbose-vl: 1
       # The punishment command to run when a player is flagged by this model.
-      punishments: []
+      punishment-groups:
+        - "default"
 
   # ML Combat Damage Modification
   # This feature modifies combat damage based on ML tracker averages
