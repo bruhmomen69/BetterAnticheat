@@ -21,7 +21,12 @@ public class PunishmentManager {
         punishmentGroups.clear();
         ConfigSection section = plugin.getFile("settings.yml").getRoot().getConfigSection("punishment-groups");
         if (section == null) {
+            plugin.getDataBridge().logWarning("Punishment groups section not found in settings.yml!");
             return;
+        }
+
+        if (!section.hasNode("default")) {
+            plugin.getDataBridge().logWarning("Default punishment group not found in settings.yml! Please add it back.");
         }
 
         for (ConfigSection groupSection : section.getChildren()) {

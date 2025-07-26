@@ -145,6 +145,16 @@ public class CheckManager {
             // Load the check with its appropriate config.
             if (check.load(node)) modified.add(fileName);
             if (check.isEnabled()) enabled++;
+
+            // Assign to default punishment group if category group doesn't exist.
+            if (check.getPunishmentGroups().isEmpty()) {
+                List<String> punishmentGroupNames = node.getList(String.class, "punishment-groups");
+                if (punishmentGroupNames.isEmpty()) {
+                    punishmentGroupNames.add("default");
+                    node.setList(String.class, "punishment-groups", punishmentGroupNames);
+                    modified.add(fileName);
+                }
+            }
         }
 
         for (String file : modified) configMap.get(file).save();
