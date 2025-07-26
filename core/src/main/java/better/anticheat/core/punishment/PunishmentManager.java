@@ -111,6 +111,7 @@ public class PunishmentManager {
             for (String command : punishment) {
                 command = command.replaceAll("%username%", check.getPlayer().getUser().getName());
                 command = command.replaceAll("%type%", check.getName());
+                command = command.replaceAll("%vl%", Integer.toString(vl));
                 plugin.getDataBridge().sendCommand(command);
             }
         }

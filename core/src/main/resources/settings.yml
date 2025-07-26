@@ -37,8 +37,14 @@ click-command: 'tp %username%'
 # Ex: At 8 vls, 8, yes. 4, no. 3, no. 2, no. 1, no.
 punishment-modulo: true
 
-# It is recommended to not remove the default group.
+# Configure the punishments per group instead of per check, in order to reduce the total number of punish configurations you need to make.
+# Each check can be assigned many groups, and each group can have many punishments.
+# Available Placeholders:
+# %type% - The check that was failed.
+# %username% - The username of the player who failed the check.
+# %vl% - The amount of times this player has failed the check.
 punishment-groups:
+  # It is recommended to not remove the default group.
   default:
     per-group-punishments:
       - "10:say %username% has accumulated 10 total VL!"
