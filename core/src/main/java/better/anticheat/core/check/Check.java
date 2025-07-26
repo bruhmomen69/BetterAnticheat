@@ -3,7 +3,7 @@ package better.anticheat.core.check;
 import better.anticheat.core.BetterAnticheat;
 import better.anticheat.core.configuration.ConfigSection;
 import better.anticheat.core.player.Player;
-import better.anticheat.core.player.PlayerManager;
+import better.anticheat.core.punishment.PunishmentGroup;
 import better.anticheat.core.util.ChatUtil;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.event.simple.PacketPlaySendEvent;
@@ -15,11 +15,7 @@ import net.kyori.adventure.text.event.HoverEvent;
 
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * This is the basis for a check in the anticheat. There are a few core components to understand:
@@ -34,6 +30,7 @@ public abstract class Check implements Cloneable {
 
     protected BetterAnticheat plugin;
     protected Check reference;
+    @Getter
     protected Player player;
 
     @Getter @Setter
@@ -44,7 +41,8 @@ public abstract class Check implements Cloneable {
     @Getter @Setter
     private boolean enabled = false;
     private int alertVL = 10, verboseVL = 1;
-    private Map<Integer, List<String>> punishments = new HashMap<>();
+    @Getter
+    private List<PunishmentGroup> punishmentGroups = new ArrayList<>();
 
     @Getter
     private int vl = 0;
@@ -90,7 +88,6 @@ public abstract class Check implements Cloneable {
         if (reference == null) return;
         enabled = reference.enabled;
         alertVL = reference.alertVL;
-        punishments = reference.punishments;
         vl = reference.vl;
     }
 
@@ -188,26 +185,12 @@ public abstract class Check implements Cloneable {
          * Modulo assumes the punishment should be run whenever the vl is divisible by the setting amount.
          * Strict assumes the punishment should be run whenever the vl is the setting amount.
          */
-        if (BetterAnticheat.getInstance().isPunishmentModulo()) {
-            for (int punishVL : punishments.keySet()) {
-                if (vl % punishVL != 0) continue;
-                runPunishment(punishVL);
-                break;
-            }
-        } else runPunishment(vl);
-    }
-
-    /**
-     * Runs the punishment associated with the given vl for the player that this check corresponds to.
-     */
-    private void runPunishment(int vl) {
-        List<String> punishment = punishments.get(vl);
-        if (punishment != null) {
-            for (String command : punishment) {
-                command = command.replaceAll("%username%", player.getUser().getName());
-                BetterAnticheat.getInstance().getDataBridge().sendCommand(command);
+        for (PunishmentGroup group : punishmentGroups) {
+            if (group != null) {
+                plugin.getPunishmentManager().incrementGroupVl(player, group.getName());
             }
         }
+        plugin.getPunishmentManager().runPunishments(this);
     }
 
     /**
@@ -244,23 +227,31 @@ public abstract class Check implements Cloneable {
         }
         verboseVL = section.getObject(Integer.class, "verbose-vl", 1);
 
-        if (!section.hasNode("punishments")) {
-            List<String> defaultPunishments = new ArrayList<>();
-            defaultPunishments.add("1:say %username% would be kicked for " + name + "!");
-            defaultPunishments.add("5:say %username% would be banned for " + name + "!");
-            section.setList(String.class, "punishments", defaultPunishments);
+        if (!section.hasNode("punishment-groups")) {
+            List<String> groups = new ArrayList<>();
+            if (plugin.getPunishmentManager().getPunishmentGroup(category) != null) {
+                groups.add(category);
+            } else {
+                groups.add("default");
+            }
+            section.setList(String.class, "punishment-groups", groups);
             modified = true;
         }
-        punishments.clear();
-        List<String> punishmentList = section.getList(String.class, "punishments");
-        for (String punishment : punishmentList) {
-            String[] elements = punishment.split(":", 2);
-            try {
-                int vl = Integer.parseInt(elements[0]);
-                if (!punishments.containsKey(vl)) punishments.put(vl, new ArrayList<>());
-                punishments.get(vl).add(elements[1]);
-            } catch (Exception e) {
-                e.printStackTrace();
+        List<String> punishmentGroupNames = section.getList(String.class, "punishment-groups");
+
+        punishmentGroups.clear();
+        for (String groupName : punishmentGroupNames) {
+            PunishmentGroup group = plugin.getPunishmentManager().getPunishmentGroup(groupName);
+            if (group != null) {
+                punishmentGroups.add(group);
+            }
+        }
+        if (punishmentGroups.isEmpty()) {
+            PunishmentGroup defaultGroup = plugin.getPunishmentManager().getPunishmentGroup("default");
+            if (defaultGroup != null) {
+                punishmentGroups.add(defaultGroup);
+            } else {
+                plugin.getDataBridge().logWarning("Default punishment group not found, and no other groups are defined for this check. This check will not have any punishments.");
             }
         }
 

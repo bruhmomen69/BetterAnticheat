@@ -37,6 +37,66 @@ click-command: 'tp %username%'
 # Ex: At 8 vls, 8, yes. 4, no. 3, no. 2, no. 1, no.
 punishment-modulo: true
 
+# It is recommended to not remove the default group.
+punishment-groups:
+  default:
+    per-group-punishments:
+      - "10:say %username% has accumulated 10 total VL!"
+    per-check-punishments:
+      - "1:say %username% would be kicked for %type%!"
+      - "5:say %username% would be banned for %type%!"
+  ml-checks:
+    per-group-punishments: []
+    per-check-punishments: []
+  chat:
+    per-group-punishments:
+      - "10:say %username% has accumulated 10 total VL!"
+    per-check-punishments:
+      - "1:say %username% would be kicked for %type%!"
+      - "5:say %username% would be banned for %type%!"
+  combat:
+    per-group-punishments:
+      - "10:say %username% has accumulated 10 total VL!"
+    per-check-punishments:
+      - "1:say %username% would be kicked for %type%!"
+      - "5:say %username% would be banned for %type%!"
+  dig:
+    per-group-punishments:
+      - "10:say %username% has accumulated 10 total VL!"
+    per-check-punishments:
+      - "1:say %username% would be kicked for %type%!"
+      - "5:say %username% would be banned for %type%!"
+  flying:
+    per-group-punishments:
+      - "10:say %username% has accumulated 10 total VL!"
+    per-check-punishments:
+      - "1:say %username% would be kicked for %type%!"
+      - "5:say %username% would be banned for %type%!"
+  heuristic:
+    per-group-punishments:
+      - "10:say %username% has accumulated 10 total VL!"
+    per-check-punishments:
+      - "1:say %username% would be kicked for %type%!"
+      - "5:say %username% would be banned for %type%!"
+  misc:
+    per-group-punishments:
+      - "10:say %username% has accumulated 10 total VL!"
+    per-check-punishments:
+      - "1:say %username% would be kicked for %type%!"
+      - "5:say %username% would be banned for %type%!"
+  packet:
+    per-group-punishments:
+      - "10:say %username% has accumulated 10 total VL!"
+    per-check-punishments:
+      - "1:say %username% would be kicked for %type%!"
+      - "5:say %username% would be banned for %type%!"
+  place:
+    per-group-punishments:
+      - "10:say %username% has accumulated 10 total VL!"
+    per-check-punishments:
+      - "1:say %username% would be kicked for %type%!"
+      - "5:say %username% would be banned for %type%!"
+
 # Sends alerts only to the user who triggered it. Used for testing purposes.
 test-mode: false
 
@@ -81,7 +141,8 @@ ml:
       # The minimum vl required to run a verbose alert, after the samples/threshold requirement have been met.
       verbose-vl: 1
       # The punishment command to run when a player is flagged by this model.
-      punishments: []
+      punishment-groups:
+        - "ml-checks"
     statistics-included-v0:
       display-name: "Statistics"
       # Options: "decision_tree_gini", "decision_tree_entropy", "random_forest_gini", "random_forest_entropy".
@@ -112,7 +173,8 @@ ml:
       # The minimum vl required to run a verbose alert, after the samples/threshold requirement have been met.
       verbose-vl: 1
       # The punishment command to run when a player is flagged by this model.
-      punishments: []
+      punishment-groups:
+        - "ml-checks"
 
   # ML Combat Damage Modification
   # This feature modifies combat damage based on ML tracker averages

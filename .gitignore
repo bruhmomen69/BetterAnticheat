@@ -28,6 +28,7 @@ replay_pid*
 /target
 /*/target
 *.iml
+/.vscode
 
 # Per-user files #
 build.sh
