@@ -33,37 +33,24 @@ public class PunishmentManager {
 
         for (ConfigSection groupSection : section.getChildren()) {
             String groupName = groupSection.getKey();
-            Map<Integer, List<String>> perGroupPunishments = new HashMap<>();
-            List<String> perGroupPunishmentList = groupSection.getList(String.class, "per-group-punishments");
-            for (String punishment : perGroupPunishmentList) {
-                String[] elements = punishment.split(":", 2);
-                try {
-                    int vl = Integer.parseInt(elements[0]);
-                    if (!perGroupPunishments.containsKey(vl)) {
-                        perGroupPunishments.put(vl, new ArrayList<>());
-                    }
-                    perGroupPunishments.get(vl).add(elements[1]);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-
-            Map<Integer, List<String>> perCheckPunishments = new HashMap<>();
-            List<String> perCheckPunishmentList = groupSection.getList(String.class, "per-check-punishments");
-            for (String punishment : perCheckPunishmentList) {
-                String[] elements = punishment.split(":", 2);
-                try {
-                    int vl = Integer.parseInt(elements[0]);
-                    if (!perCheckPunishments.containsKey(vl)) {
-                        perCheckPunishments.put(vl, new ArrayList<>());
-                    }
-                    perCheckPunishments.get(vl).add(elements[1]);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-            punishmentGroups.put(groupName, new PunishmentGroup(perGroupPunishments, perCheckPunishments));
+            Map<Integer, List<String>> perGroupPunishments = parsePunishments(groupSection.getList(String.class, "per-group-punishments"), groupName);
+            Map<Integer, List<String>> perCheckPunishments = parsePunishments(groupSection.getList(String.class, "per-check-punishments"), groupName);
+            punishmentGroups.put(groupName, new PunishmentGroup(groupName, perGroupPunishments, perCheckPunishments));
         }
+    }
+
+    private Map<Integer, List<String>> parsePunishments(List<String> punishmentList, String groupName) {
+        Map<Integer, List<String>> punishments = new HashMap<>();
+        for (String punishment : punishmentList) {
+            String[] elements = punishment.split(":", 2);
+            try {
+                int vl = Integer.parseInt(elements[0]);
+                punishments.computeIfAbsent(vl, k -> new ArrayList<>()).add(elements[1]);
+            } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
+                plugin.getDataBridge().logWarning("Could not parse punishment '" + punishment + "' in group '" + groupName + "'.");
+            }
+        }
+        return punishments;
     }
 
     public PunishmentGroup getPunishmentGroup(String groupName) {
@@ -86,12 +73,12 @@ public class PunishmentManager {
         } else {
             for (PunishmentGroup group : check.getPunishmentGroups()) {
                 for (int punishVL : group.getPerGroupPunishments().keySet()) {
-                    if (vl >= punishVL) {
+                    if (vl == punishVL) {
                         runPunishment(check, punishVL, group.getPerGroupPunishments());
                     }
                 }
                 for (int punishVL : group.getPerCheckPunishments().keySet()) {
-                    if (vl >= punishVL) {
+                    if (vl == punishVL) {
                         runPunishment(check, punishVL, group.getPerCheckPunishments());
                     }
                 }
