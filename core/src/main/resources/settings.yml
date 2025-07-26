@@ -49,29 +49,53 @@ punishment-groups:
     per-group-punishments: []
     per-check-punishments: []
   chat:
-    per-group-punishments: []
-    per-check-punishments: []
+    per-group-punishments:
+      - "10:say %username% has accumulated 10 total VL!"
+    per-check-punishments:
+      - "1:say %username% would be kicked for %type%!"
+      - "5:say %username% would be banned for %type%!"
   combat:
-    per-group-punishments: []
-    per-check-punishments: []
+    per-group-punishments:
+      - "10:say %username% has accumulated 10 total VL!"
+    per-check-punishments:
+      - "1:say %username% would be kicked for %type%!"
+      - "5:say %username% would be banned for %type%!"
   dig:
-    per-group-punishments: []
-    per-check-punishments: []
+    per-group-punishments:
+      - "10:say %username% has accumulated 10 total VL!"
+    per-check-punishments:
+      - "1:say %username% would be kicked for %type%!"
+      - "5:say %username% would be banned for %type%!"
   flying:
-    per-group-punishments: []
-    per-check-punishments: []
+    per-group-punishments:
+      - "10:say %username% has accumulated 10 total VL!"
+    per-check-punishments:
+      - "1:say %username% would be kicked for %type%!"
+      - "5:say %username% would be banned for %type%!"
   heuristic:
-    per-group-punishments: []
-    per-check-punishments: []
+    per-group-punishments:
+      - "10:say %username% has accumulated 10 total VL!"
+    per-check-punishments:
+      - "1:say %username% would be kicked for %type%!"
+      - "5:say %username% would be banned for %type%!"
   misc:
-    per-group-punishments: []
-    per-check-punishments: []
+    per-group-punishments:
+      - "10:say %username% has accumulated 10 total VL!"
+    per-check-punishments:
+      - "1:say %username% would be kicked for %type%!"
+      - "5:say %username% would be banned for %type%!"
   packet:
-    per-group-punishments: []
-    per-check-punishments: []
+    per-group-punishments:
+      - "10:say %username% has accumulated 10 total VL!"
+    per-check-punishments:
+      - "1:say %username% would be kicked for %type%!"
+      - "5:say %username% would be banned for %type%!"
   place:
-    per-group-punishments: []
-    per-check-punishments: []
+    per-group-punishments:
+      - "10:say %username% has accumulated 10 total VL!"
+    per-check-punishments:
+      - "1:say %username% would be kicked for %type%!"
+      - "5:say %username% would be banned for %type%!"
 
 # Sends alerts only to the user who triggered it. Used for testing purposes.
 test-mode: false

@@ -186,6 +186,9 @@ public abstract class Check implements Cloneable {
          * Modulo assumes the punishment should be run whenever the vl is divisible by the setting amount.
          * Strict assumes the punishment should be run whenever the vl is the setting amount.
          */
+        for (String groupName : punishmentGroupNames) {
+            plugin.getPunishmentManager().incrementGroupVl(groupName);
+        }
         plugin.getPunishmentManager().runPunishments(this);
     }
 

@@ -16,9 +16,11 @@ public class PunishmentManager {
 
     private final BetterAnticheat plugin;
     private final Map<String, PunishmentGroup> punishmentGroups = new ConcurrentHashMap<>();
+    private final Map<String, Integer> groupViolations = new ConcurrentHashMap<>();
 
     public void load() {
         punishmentGroups.clear();
+        groupViolations.clear();
         ConfigSection section = plugin.getFile("settings.yml").getRoot().getConfigSection("punishment-groups");
         if (section == null) {
             plugin.getDataBridge().logWarning("Punishment groups section not found in settings.yml!");
@@ -75,20 +77,34 @@ public class PunishmentManager {
                 for (int punishVL : group.getPerGroupPunishments().keySet()) {
                     if (vl % punishVL != 0) continue;
                     runPunishment(check, punishVL, group.getPerGroupPunishments());
-                    break;
                 }
                 for (int punishVL : group.getPerCheckPunishments().keySet()) {
                     if (vl % punishVL != 0) continue;
                     runPunishment(check, punishVL, group.getPerCheckPunishments());
-                    break;
                 }
             }
         } else {
             for (PunishmentGroup group : check.getPunishmentGroups()) {
-                runPunishment(check, vl, group.getPerGroupPunishments());
-                runPunishment(check, vl, group.getPerCheckPunishments());
+                for (int punishVL : group.getPerGroupPunishments().keySet()) {
+                    if (vl >= punishVL) {
+                        runPunishment(check, punishVL, group.getPerGroupPunishments());
+                    }
+                }
+                for (int punishVL : group.getPerCheckPunishments().keySet()) {
+                    if (vl >= punishVL) {
+                        runPunishment(check, punishVL, group.getPerCheckPunishments());
+                    }
+                }
             }
         }
+    }
+
+    public void incrementGroupVl(String groupName) {
+        groupViolations.put(groupName, groupViolations.getOrDefault(groupName, 0) + 1);
+    }
+
+    public int getGroupVl(String groupName) {
+        return groupViolations.getOrDefault(groupName, 0);
     }
 
     private void runPunishment(Check check, int vl, Map<Integer, List<String>> punishmentMap) {
