@@ -186,7 +186,9 @@ public abstract class Check implements Cloneable {
          * Strict assumes the punishment should be run whenever the vl is the setting amount.
          */
         for (PunishmentGroup group : punishmentGroups) {
-            plugin.getPunishmentManager().incrementGroupVl(group.getName());
+            if (group != null) {
+                plugin.getPunishmentManager().incrementGroupVl(group.getName());
+            }
         }
         plugin.getPunishmentManager().runPunishments(this);
     }

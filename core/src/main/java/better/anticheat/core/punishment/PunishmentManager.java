@@ -42,12 +42,17 @@ public class PunishmentManager {
     private Map<Integer, List<String>> parsePunishments(List<String> punishmentList, String groupName) {
         Map<Integer, List<String>> punishments = new HashMap<>();
         for (String punishment : punishmentList) {
+            if (punishment == null) continue;
             String[] elements = punishment.split(":", 2);
+            if (elements.length != 2) {
+                plugin.getDataBridge().logWarning("Could not parse punishment '" + punishment + "' in group '" + groupName + "'. Invalid format.");
+                continue;
+            }
             try {
                 int vl = Integer.parseInt(elements[0]);
                 punishments.computeIfAbsent(vl, k -> new ArrayList<>()).add(elements[1]);
-            } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
-                plugin.getDataBridge().logWarning("Could not parse punishment '" + punishment + "' in group '" + groupName + "'.");
+            } catch (NumberFormatException e) {
+                plugin.getDataBridge().logWarning("Could not parse punishment '" + punishment + "' in group '" + groupName + "'. Invalid VL number.");
             }
         }
         return punishments;
@@ -72,15 +77,11 @@ public class PunishmentManager {
             }
         } else {
             for (PunishmentGroup group : check.getPunishmentGroups()) {
-                for (int punishVL : group.getPerGroupPunishments().keySet()) {
-                    if (vl == punishVL) {
-                        runPunishment(check, punishVL, group.getPerGroupPunishments());
-                    }
+                if (group.getPerGroupPunishments().containsKey(vl)) {
+                    runPunishment(check, vl, group.getPerGroupPunishments());
                 }
-                for (int punishVL : group.getPerCheckPunishments().keySet()) {
-                    if (vl == punishVL) {
-                        runPunishment(check, punishVL, group.getPerCheckPunishments());
-                    }
+                if (group.getPerCheckPunishments().containsKey(vl)) {
+                    runPunishment(check, vl, group.getPerCheckPunishments());
                 }
             }
         }
