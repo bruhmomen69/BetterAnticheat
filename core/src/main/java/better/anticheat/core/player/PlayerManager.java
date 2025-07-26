@@ -102,9 +102,7 @@ public class PlayerManager {
     public void sendVerbose(Component text) {
         // We do not use PacketEvents user collection here as we REQUIRE the player object to process this.
         for (final var player : userMap.values()) {
-            if (!player.isVerbose()) continue;
-            // Do not send alerts to users who are not in the play state
-            if (player.getUser().getConnectionState() != ConnectionState.PLAY) continue;
+            if (!player.isVerbose() || player.getUser().getConnectionState() != ConnectionState.PLAY) continue;
 
             player.getUser().sendMessage(text);
         }
