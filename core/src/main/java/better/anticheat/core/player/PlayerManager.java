@@ -3,6 +3,7 @@ package better.anticheat.core.player;
 import better.anticheat.core.BetterAnticheat;
 import better.anticheat.core.DataBridge;
 import com.github.retrooper.packetevents.PacketEvents;
+import com.github.retrooper.packetevents.protocol.ConnectionState;
 import com.github.retrooper.packetevents.protocol.player.User;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectRBTreeMap;
@@ -89,6 +90,8 @@ public class PlayerManager {
          * a staff member.
          */
         for (final var user : PacketEvents.getAPI().getProtocolManager().getUsers()) {
+            // Do not send alerts to users who are not in the play state
+            if (user.getConnectionState() != ConnectionState.PLAY) continue;
             final var player = getPlayer(user);
             if ((player == null && !plugin.getDataBridge().hasPermission(user, BetterAnticheat.getInstance().getAlertPermission()))
                     || (player != null && !player.isAlerts())) continue;
@@ -99,7 +102,7 @@ public class PlayerManager {
     public void sendVerbose(Component text) {
         // We do not use PacketEvents user collection here as we REQUIRE the player object to process this.
         for (final var player : userMap.values()) {
-            if (!player.isVerbose()) continue;
+            if (!player.isVerbose() || player.getUser().getConnectionState() != ConnectionState.PLAY) continue;
 
             player.getUser().sendMessage(text);
         }

@@ -6,6 +6,7 @@ import better.anticheat.core.player.tracker.impl.confirmation.allocator.Sequenti
 import better.anticheat.core.util.EasyLoops;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.event.simple.PacketPlaySendEvent;
+import com.github.retrooper.packetevents.protocol.ConnectionState;
 import com.github.retrooper.packetevents.resources.ResourceLocation;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientCookieResponse;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientKeepAlive;
@@ -189,6 +190,12 @@ public class ConfirmationTracker extends Tracker {
      * @return A combined confirmation object.
      */
     public CombinedConfirmation confirm() {
+        if (getPlayer().getUser().getConnectionState() != ConnectionState.PLAY) {
+            final var last = this.recentConfirmations.peekLast();
+            final var future = new SimpleFuture<ConfirmationState>();
+            future.complete(last);
+            return new CombinedConfirmation(future, future, new IntIncrementer(0));
+        }
         final var now = System.currentTimeMillis();
         // Send last tick, and recent arrival.
         final var hasRecentArrival = !recentConfirmations.isEmpty() && now - recentConfirmations.getLast().getTimestampConfirmed() <= 50 && now - recentConfirmations.getLast().getTimestamp() <= 50;
@@ -272,6 +279,9 @@ public class ConfirmationTracker extends Tracker {
      * @return The confirmation state.
      */
     public ConfirmationState sendCookieOrLatest(final long now) {
+        if (getPlayer().getUser().getConnectionState() != ConnectionState.PLAY) {
+            return this.recentConfirmations.peekLast();
+        }
         synchronized (cookieLock) {
             if (this.nextPostPacket == null) {
                 log.trace("[BetterAntiCheat] Constructing and Allocating cookie");
@@ -287,6 +297,10 @@ public class ConfirmationTracker extends Tracker {
      * Sends a keepalive and flushes a cookie if needed.
      */
     public synchronized void tick() {
+        if (getPlayer().getUser().getConnectionState() != ConnectionState.PLAY) {
+            return;
+        }
+
         // First, check if we can skip, because we already sent a keepalive and a cookie last tick
         final var now = System.currentTimeMillis();
         if (EasyLoops.anyMatch(this.confirmations, (c) -> c.getType() == ConfirmationType.KEEPALIVE & now - c.getTimestamp() < 55)
