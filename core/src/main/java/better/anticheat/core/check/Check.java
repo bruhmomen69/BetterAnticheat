@@ -186,7 +186,9 @@ public abstract class Check implements Cloneable {
          * Strict assumes the punishment should be run whenever the vl is the setting amount.
          */
         for (PunishmentGroup group : punishmentGroups) {
-            plugin.getPunishmentManager().incrementGroupVl(group.toString());
+            if (group != null) {
+                plugin.getPunishmentManager().incrementGroupVl(group.getName());
+            }
         }
         plugin.getPunishmentManager().runPunishments(this);
     }
@@ -245,7 +247,12 @@ public abstract class Check implements Cloneable {
             }
         }
         if (punishmentGroups.isEmpty()) {
-            punishmentGroups.add(plugin.getPunishmentManager().getPunishmentGroup("default"));
+            PunishmentGroup defaultGroup = plugin.getPunishmentManager().getPunishmentGroup("default");
+            if (defaultGroup != null) {
+                punishmentGroups.add(defaultGroup);
+            } else {
+                plugin.getDataBridge().logWarning("Default punishment group not found, and no other groups are defined for this check. This check will not have any punishments.");
+            }
         }
 
         return modified;

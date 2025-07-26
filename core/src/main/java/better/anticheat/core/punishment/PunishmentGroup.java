@@ -7,6 +7,7 @@ import java.util.Map;
 
 @Data
 public class PunishmentGroup {
+    private final String name;
     private final Map<Integer, List<String>> perGroupPunishments;
     private final Map<Integer, List<String>> perCheckPunishments;
 }
