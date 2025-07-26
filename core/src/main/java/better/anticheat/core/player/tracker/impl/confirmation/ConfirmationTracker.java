@@ -280,7 +280,7 @@ public class ConfirmationTracker extends Tracker {
      */
     public ConfirmationState sendCookieOrLatest(final long now) {
         if (getPlayer().getUser().getConnectionState() != ConnectionState.PLAY) {
-            return EasyLoops.findLast(this.recentConfirmations, c -> true);
+            return this.recentConfirmations.peekLast();
         }
         synchronized (cookieLock) {
             if (this.nextPostPacket == null) {
