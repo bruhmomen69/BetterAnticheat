@@ -191,7 +191,7 @@ public class ConfirmationTracker extends Tracker {
      */
     public CombinedConfirmation confirm() {
         if (getPlayer().getUser().getConnectionState() != ConnectionState.PLAY) {
-            final var last = EasyLoops.findLast(this.recentConfirmations, c -> true);
+            final var last = this.recentConfirmations.peekLast();
             final var future = new SimpleFuture<ConfirmationState>();
             future.complete(last);
             return new CombinedConfirmation(future, future, new IntIncrementer(0));
