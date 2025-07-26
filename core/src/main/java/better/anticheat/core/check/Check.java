@@ -244,6 +244,9 @@ public abstract class Check implements Cloneable {
                 punishmentGroups.add(group);
             }
         }
+        if (punishmentGroups.isEmpty()) {
+            punishmentGroups.add(plugin.getPunishmentManager().getPunishmentGroup("default"));
+        }
 
         return modified;
     }
