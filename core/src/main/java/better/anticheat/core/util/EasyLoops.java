@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Queue;
+import java.util.Deque;
 import java.util.function.Predicate;
 
 /**
@@ -96,6 +97,17 @@ public class EasyLoops {
      */
     public <A> A findFirst(final Collection<A> collection, final Predicate<A> predicate) {
         for (A item : collection) {
+            if (predicate.test(item)) {
+                return item;
+            }
+        }
+        return null;
+    }
+
+    public <A> A findLast(final Deque<A> collection, final Predicate<A> predicate) {
+        final Iterator<A> iterator = collection.descendingIterator();
+        while (iterator.hasNext()) {
+            A item = iterator.next();
             if (predicate.test(item)) {
                 return item;
             }

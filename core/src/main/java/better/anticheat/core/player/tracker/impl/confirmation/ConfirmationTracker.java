@@ -191,8 +191,9 @@ public class ConfirmationTracker extends Tracker {
      */
     public CombinedConfirmation confirm() {
         if (getPlayer().getUser().getConnectionState() != ConnectionState.PLAY) {
+            final var last = EasyLoops.findLast(this.recentConfirmations, c -> true);
             final var future = new SimpleFuture<ConfirmationState>();
-            future.complete(null);
+            future.complete(last);
             return new CombinedConfirmation(future, future, new IntIncrementer(0));
         }
         final var now = System.currentTimeMillis();
@@ -279,9 +280,7 @@ public class ConfirmationTracker extends Tracker {
      */
     public ConfirmationState sendCookieOrLatest(final long now) {
         if (getPlayer().getUser().getConnectionState() != ConnectionState.PLAY) {
-            final var future = new SimpleFuture<ConfirmationState>();
-            future.complete(null);
-            return new ConfirmationState(new byte[0], ConfirmationType.COOKIE, 0, false);
+            return EasyLoops.findLast(this.recentConfirmations, c -> true);
         }
         synchronized (cookieLock) {
             if (this.nextPostPacket == null) {
