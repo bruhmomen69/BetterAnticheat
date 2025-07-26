@@ -16,7 +16,6 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import wtf.spare.sparej.fastlist.FastObjectArrayList;
 import wtf.spare.sparej.fastlist.evicting.ord.OrderedArrayDoubleEvictingList;
-import wtf.spare.sparej.incrementer.IntIncrementer;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -45,7 +44,6 @@ public class CMLTracker extends Tracker {
     private int lastEntityId;
     private double averageScore;
     private boolean recordingNow = false;
-    private IntIncrementer mitigationTicks = new IntIncrementer(0);
     private int ticksSinceLastAttack = 0;
 
     public void onPlayerInit() {
@@ -134,12 +132,6 @@ public class CMLTracker extends Tracker {
                 if (totalCount == 0) return;
 
                 final double overallAverage = totalSum / totalCount;
-                final double threshold = BetterAnticheat.getInstance().getMlCombatDamageThreshold();
-                if (overallAverage >= threshold) {
-                    this.mitigationTicks.increment();
-                }
-
-                this.mitigationTicks.decrementOrMin(0);
 
                 this.averageScore = overallAverage;
             }
@@ -187,17 +179,29 @@ public class CMLTracker extends Tracker {
             final var avg = MathUtil.getAverage(this.history.getArray());
 
             // We use `Math.round(modelConfig.getThreshold() - 0.5)` instead of `Math.floor(modelConfig.getThreshold())`, but they will both return the same integer result if all numbers are divisible by 0.5, but they are not.
-            final var extendedCheck = MathUtil.getConsecutiveAboveX(modelConfig.getThreshold() - 0.5, this.history.getArray())
-                    > Math.max(Math.min(3, modelConfig.getSamples() / 2), Math.round(modelConfig.getThreshold() - 0.5))
-                    && avg >= modelConfig.getThreshold();
-            final var basicCheck = avg >= modelConfig.getThreshold() + 0.5;
+            final var extendedCheck = MathUtil.getConsecutiveAboveX(modelConfig.getAlertThreshold() - 0.5, this.history.getArray())
+                    > Math.max(Math.min(3, modelConfig.getSamples() / 2), Math.round(modelConfig.getAlertThreshold() - 0.5))
+                    && avg >= modelConfig.getAlertThreshold();
+            final var basicCheck = avg >= modelConfig.getAlertThreshold() + 0.5;
 
-            if (!basicCheck && !extendedCheck) {
-                log.debug("[BetterAnticheat] [ML] {} passed {} as {}", player.getUser().getName(), getName(), df.format(avg));
+            if (basicCheck || extendedCheck) {
+                fail("ML " + df.format(avg) + " via " + this.history);
+                this.player.getMitigationTracker().getMitigationTicks().increment(15);
                 return;
             }
 
-            fail("ML " + df.format(avg) + " via " + this.history);
+            final var mitigationExtendedCheck = MathUtil.getConsecutiveAboveX(modelConfig.getMitigationThreshold() - 0.5, this.history.getArray())
+                    > Math.max(Math.min(3, modelConfig.getSamples() / 2), Math.round(modelConfig.getMitigationThreshold() - 0.5))
+                    && avg >= modelConfig.getMitigationThreshold();
+            final var mitigationBasicCheck = avg >= modelConfig.getMitigationThreshold() + 0.5;
+
+            if (mitigationExtendedCheck || mitigationBasicCheck) {
+                fail("ML " + df.format(avg) + " via " + this.history, true);
+                this.player.getMitigationTracker().getMitigationTicks().increment(modelConfig.getMitigationTicks());
+                return;
+            }
+
+            log.debug("[BetterAnticheat] [ML] {} passed {} as {}", player.getUser().getName(), getName(), df.format(avg));
         }
     }
 }

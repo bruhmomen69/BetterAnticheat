@@ -56,7 +56,13 @@ public class ModelConfig implements Serializable {
     /**
      * Required average of samples to flag the player (9.5 == Definitely cheating, 3 == Probably not cheating).
      */
-    private final double threshold;
+    private final double alertThreshold;
+
+    /**
+     * Required average of samples to flag the player (9.5 == Definitely cheating, 3 == Probably not cheating).
+     */
+    private final double mitigationThreshold;
+    private final int mitigationTicks;
 
     private final int treeDepth;
 

@@ -139,7 +139,14 @@ ml:
       samples: 15
       # Required average of samples to flag the player (9.5 == Definitely cheating, 3 == Probably not cheating).
       # This is more a guide for the internal validation settings, than it is a strict value.
-      threshold: 6.5
+      alert-threshold: 7.5
+      # How many ticks to mitigate the player for, when we are flagging them in an alert. Remember: 20 ticks per second.
+      combat-mitigation-ticks: 20
+      # Required average of samples to mitigate the player to remove any advantage from cheating.
+      # This is more a guide for the internal validation settings, than it is a strict value.
+      mitigation-threshold: 6
+      # How many ticks to mitigate the player for, when we are flagging them, when only flagging them in mitigation state. Remember: 20 ticks per second.
+      mitigation-only-ticks: 10
       # Enable this model check?
       enabled: true
       # The minimum vl required to run an alert, after the samples/threshold requirement have been met.
@@ -171,7 +178,14 @@ ml:
       samples: 20
       # Required average of samples to flag the player (9.5 == Definitely cheating, 2.5 == Probably not cheating).
       # This is more a guide for the internal validation settings, than it is a strict value.
-      threshold: 5.5
+      alert-threshold: 6
+      # How many ticks to mitigate the player for, when we are flagging them in an alert. Remember: 20 ticks per second.
+      combat-mitigation-ticks: 20
+      # Required average of samples to mitigate the player (9.5 == Definitely cheating, 3 == Probably not cheating).
+      # This is more a guide for the internal validation settings, than it is a strict value.
+      mitigation-threshold: 5
+      # How many ticks to mitigate the player for, when we are flagging them, when only flagging them in mitigation state. Remember: 20 ticks per second.
+      mitigation-only-ticks: 10
       # Enable this model check?
       enabled: true
       # The minimum vl required to run an alert, after the samples/threshold requirement have been met.
@@ -182,30 +196,31 @@ ml:
       punishment-groups:
         - "ml-checks"
 
-  # ML Combat Damage Modification
-  # This feature modifies combat damage based on ML tracker averages
-  combat-damage-mitigation:
-    # Whether to enable ML-based combat damage modification
-    # Only works when ML is enabled.
+# Combat Damage Modification
+combat-damage-mitigation:
+  # Whether to enable ML-based combat damage modification
+  # Only works when ML is enabled.
+  enabled: true
+  # Multiplier for hit cancellation chance (average * multiplier = % chance), average is 1-10, where 10 is definitely cheating, and 1 is not cheating.
+  hit-cancellation-chance: 20.0
+  # Multiplier for damage reduction calculation. Will reduce damage by reduction%.
+  # Not supported on Sponge and Velocity.
+  damage-dealt-reduction: 40.0
+  # Multiplier for knockback reduction calculation. Will reduce damage by reduction%.
+  # Not supported on Sponge and Velocity.
+  velocity-dealt-reduction: 40.0
+  # Multiplier for damage increase calculation. Will increase damage by increase%.
+  # Not supported on Sponge and Velocity.
+  damage-taken-increase: 40.0
+  # Mess with hitreg to make life horrible for cheaters? Works by giving the person who is attacking the cheater server-side hitbox and reach cheats.
+  # Can break other anticheat's reach and hitbox checks.
+  # Is probably the most OP mitigation.
+  mess-with-hitreg: true
+  # Tick-based attack cancellation. Is effectively a cps limit for cheaters.
+  tick-mitigation:
     enabled: true
-    # The threshold average value above which damage modification is applied
-    threshold: 5.0
-    # Multiplier for hit cancellation chance (average * multiplier = % chance), average is 1-10, where 10 is definitely cheating, and 1 is not cheating.
-    cancellation-multiplier: 2.5
-    # Multiplier for damage reduction calculation (100 - (average * multiplier))% of original damage, average is 1-10, where 10 is definitely cheating, and 1 is not cheating.
-    # Not supported on Sponge and Velocity.
-    damage-reduction-multiplier: 4.0
-    # Mess with hitreg to make life horrible for cheaters? Works by giving the person who is attacking the cheater server-side hitbox and reach cheats.
-    # Can break other anticheat's reach and hitbox checks.
-    # Is probably the most OP mitigation.
-    mess-with-hitreg: true
-    # Tick-based attack cancellation. Is effectively a cps limit for cheaters.
-    tick-mitigation:
-      enabled: true
-      # Minimum number of ticks allowed since the last attack.
-      min-ticks-since-last-attack: 3
-      # The minimum ML average required to apply the tick check.
-      min-average-for-tick-check: 7.0
+    # Minimum number of ticks since the last attack, in order to allow a new attack.
+    min-ticks-since-last-attack: 4
 
 cookie-allocator:
   # The type of cookie ID allocator to use.

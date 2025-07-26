@@ -35,31 +35,14 @@ public class CombatDamageListener {
         final var player = BetterAnticheat.getInstance().getPlayerManager().getPlayer(user);
         if (player == null) return;
         
-        final var cmlTracker = player.getCmlTracker();
-        if (cmlTracker == null) return;
+        final var mitigationTracker = player.getMitigationTracker();
+        if (mitigationTracker == null) return;
         
-        if (!BetterAnticheat.getInstance().isMlCombatDamageEnabled()) return;
+        if (!BetterAnticheat.getInstance().isMitigationCombatDamageEnabled()) return;
+
+        if (mitigationTracker.getMitigationTicks().get() <= 0) return;
         
-        double totalSum = 0.0;
-        int totalCount = 0;
-        
-        for (final var mlCheck : cmlTracker.getInternalChecks()) {
-            if (!mlCheck.getHistory().isFull()) continue;
-            
-            final double[] historyArray = mlCheck.getHistory().getArray();
-            for (final double value : historyArray) {
-                totalSum += value;
-                totalCount++;
-            }
-        }
-        
-        if (totalCount == 0) return;
-        
-        final double overallAverage = totalSum / totalCount;
-        final double threshold = BetterAnticheat.getInstance().getMlCombatDamageThreshold();
-        if (overallAverage <= threshold) return;
-        
-        final double cancellationChance = overallAverage * BetterAnticheat.getInstance().getMlCombatDamageCancellationMultiplier();
+        final double cancellationChance = BetterAnticheat.getInstance().getMitigationCombatDamageCancellationChance();
         
         if (random.nextDouble() * 100.0 < cancellationChance) {
             event.setCancelled(true);

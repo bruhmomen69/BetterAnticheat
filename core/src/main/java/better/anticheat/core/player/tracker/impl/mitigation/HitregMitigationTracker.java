@@ -11,6 +11,7 @@ import com.github.retrooper.packetevents.protocol.world.Location;
 import com.github.retrooper.packetevents.util.Vector3f;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientAnimation;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientInteractEntity;
+import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import wtf.spare.sparej.incrementer.IntIncrementer;
 
@@ -22,6 +23,8 @@ import java.util.Optional;
  * WARNING: THIS TRACKER DOES NOT HANDLE SEND PACKETS FOR PERFORMANCE REASONS
  */
 public class HitregMitigationTracker extends Tracker {
+    @Getter
+    private final IntIncrementer mitigationTicks = new IntIncrementer(0);
     private final IntIncrementer unprocessedFakeCounter = new IntIncrementer(0);
     private final IntIncrementer hitCancelCounter = new IntIncrementer(0);
     private final BetterAnticheat betterAnticheat;
@@ -41,23 +44,24 @@ public class HitregMitigationTracker extends Tracker {
 
                 // Skip if unprocessed fake packet
                 // Cancel if cancel counter requires it.
-                if (this.unprocessedFakeCounter.get() <= 0) {
-                    if (this.hitCancelCounter.get() > 0) {
-                        this.hitCancelCounter.decrementOrMin(0);
-                        event.setCancelled(true);
-                    }
+                // TODO: Uncomment if the silent packet sending gets broken again.
+                // if (this.unprocessedFakeCounter.get() <= 0) {
+                if (this.hitCancelCounter.get() > 0) {
+                    this.hitCancelCounter.decrementOrMin(0);
+                    event.setCancelled(true);
                 }
+                // }
 
                 // Decrement unprocessed fake packet counter
                 this.unprocessedFakeCounter.decrementOrMin(0);
 
                 // Now, handle hit debounce mitigations.
-                if (this.player.getCmlTracker().getMitigationTicks().get() <= 0 || !this.betterAnticheat.isVelocityTickCheckEnabled()) return;
-                final var overallAverage = this.player.getCmlTracker().getAverageScore();
-                final boolean isAttackTooFast = this.player.getCmlTracker().getTicksSinceLastAttack() < this.betterAnticheat.getMinTicksSinceLastAttack();
-                final boolean isAverageTooHigh = overallAverage > this.betterAnticheat.getMinAverageForTickCheck();
+                if (this.mitigationTicks.get() <= 0 || !this.betterAnticheat.isMitigationCombatTickEnabled())
+                    return;
+                final boolean isAttackTooFast = this.player.getCmlTracker().getTicksSinceLastAttack() < this.betterAnticheat.getMitigationCombatTickDuration();
+                final boolean isMitigating = this.mitigationTicks.get() > 0;
 
-                final boolean tickCheckFailed = isAttackTooFast && isAverageTooHigh;
+                final boolean tickCheckFailed = isAttackTooFast && isMitigating;
 
                 // Hit debounce/cps limit mitigation
                 if (tickCheckFailed) {
@@ -124,7 +128,7 @@ public class HitregMitigationTracker extends Tracker {
                     // Only expand against cheaters.
                     final var otherPlayer = BetterAnticheat.getInstance().getPlayerManager().getPlayerByEntityId(entity.getId());
                     if (otherPlayer == null) continue;
-                    if (otherPlayer.getCmlTracker().getMitigationTicks().get() <= 0) continue;
+                    if (otherPlayer.getMitigationTracker().getMitigationTicks().get() <= 0) continue;
 
                     // Raycast the hitbox
 
@@ -157,7 +161,10 @@ public class HitregMitigationTracker extends Tracker {
                     return;
                 }
             }
-            case CLIENT_TICK_END -> hitCancelCounter.set(0);
+            case CLIENT_TICK_END -> {
+                this.mitigationTicks.decrementOrMin(0);
+                this.hitCancelCounter.set(0);
+            }
         }
     }
 }

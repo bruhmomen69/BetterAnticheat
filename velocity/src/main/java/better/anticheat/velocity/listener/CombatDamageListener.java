@@ -35,41 +35,16 @@ public final class CombatDamageListener extends PacketListenerAbstract {
             return;
         }
 
-        final var cmlTracker = playerData.getCmlTracker();
-        if (cmlTracker == null || !this.betterAnticheat.isVelocityTickCheckEnabled()) {
+        final var mitigationTracker = playerData.getMitigationTracker();
+        if (mitigationTracker == null
+                || mitigationTracker.getMitigationTicks().get() <= 0
+                || !this.betterAnticheat.isMitigationCombatTickEnabled()) {
             return;
         }
 
-        var totalSum = 0.0;
-        var totalCount = 0;
+        final boolean generalCheckFailed = (Math.random() * 100) > this.betterAnticheat.getMitigationCombatDamageCancellationChance();
 
-        for (final var mlCheck : cmlTracker.getInternalChecks()) {
-            if (!mlCheck.getHistory().isFull()) {
-                continue;
-            }
-
-            final var historyArray = mlCheck.getHistory().getArray();
-            for (final double value : historyArray) {
-                totalSum += value;
-                totalCount++;
-            }
-        }
-
-        if (totalCount == 0) {
-            return;
-        }
-
-        final double overallAverage = totalSum / totalCount;
-        final boolean isAttackTooFast = cmlTracker.getTicksSinceLastAttack() < this.betterAnticheat.getMinTicksSinceLastAttack();
-        final boolean isAverageTooHigh = overallAverage > this.betterAnticheat.getMinAverageForTickCheck();
-
-        final boolean generalCheckThreshold = overallAverage > this.betterAnticheat.getMlCombatDamageThreshold();
-        final boolean generalCheckChance = (Math.random() * 100) > (overallAverage * this.betterAnticheat.getMlCombatDamageCancellationMultiplier());
-
-        final boolean tickCheckFailed = isAttackTooFast && isAverageTooHigh;
-        final boolean generalCheckFailed = generalCheckThreshold && generalCheckChance;
-
-        if (tickCheckFailed || generalCheckFailed) {
+        if (generalCheckFailed) {
             event.setCancelled(true);
         }
     }

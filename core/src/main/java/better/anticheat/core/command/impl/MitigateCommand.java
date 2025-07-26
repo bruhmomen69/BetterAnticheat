@@ -47,7 +47,7 @@ public class MitigateCommand extends Command {
             return;
         }
 
-        targetPlayer.getCmlTracker().getMitigationTicks().increment(seconds * 20);
+        targetPlayer.getMitigationTracker().getMitigationTicks().increment(seconds * 20);
         sendReply(actor, Component.text("Player " + targetPlayer.getUser().getName() + " will be mitigated for " + seconds + " seconds").color(TextColor.color(0x00FF00)));
 
     }

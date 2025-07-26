@@ -99,7 +99,7 @@ public class Player implements Closeable {
         this.cmlTracker.handlePacketPlayReceive(event);
         this.actionTracker.handlePacketPlayReceive(event);
 
-        if (this.plugin.isMlCombatDamageHitregEnabled()) {
+        if (this.plugin.isMitigationCombatDamageHitregEnabled()) {
             this.mitigationTracker.handlePacketPlayReceive(event);
         }
 

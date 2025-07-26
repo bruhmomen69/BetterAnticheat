@@ -34,14 +34,17 @@ public abstract class Check implements Cloneable {
     @Getter
     protected Player player;
 
-    @Getter @Setter
+    @Getter
+    @Setter
     private String name, category, config;
     @Getter
     private final boolean experimental;
 
-    @Getter @Setter
+    @Getter
+    @Setter
     private boolean enabled = false;
     private int alertVL = 10, verboseVL = 1;
+    private int combatMitigationTicks = 0;
     @Getter
     private final List<PunishmentGroup> punishmentGroups = new FastObjectArrayList<>();
 
@@ -77,9 +80,11 @@ public abstract class Check implements Cloneable {
         this.experimental = experimental;
     }
 
-    public void handleReceivePlayPacket(PacketPlayReceiveEvent event) {}
+    public void handleReceivePlayPacket(PacketPlayReceiveEvent event) {
+    }
 
-    public void handleSendPlayPacket(PacketPlaySendEvent event) {}
+    public void handleSendPlayPacket(PacketPlaySendEvent event) {
+    }
 
     /*
      * Check set up.
@@ -124,6 +129,13 @@ public abstract class Check implements Cloneable {
      * Handles failing the check for the player with a debug.
      */
     protected void fail(Object debug) {
+        fail(debug, false);
+    }
+
+    /**
+     * Handles failing the check for the player with a debug.
+     */
+    protected void fail(Object debug, final boolean verboseOnly) {
         // Prevent unnecessary vl increases.
         vl = Math.min(10000, vl + 1);
         final long currentMS = System.currentTimeMillis();
@@ -132,7 +144,13 @@ public abstract class Check implements Cloneable {
         final var deltaVerboseMS = currentMS - lastVerboseMS;
         final var verboseLimit = BetterAnticheat.getInstance().getAlertCooldown() / BetterAnticheat.getInstance().getVerboseCooldownDivisor();
 
+        // First do mitigations.
+        if (vl >= alertVL && !verboseOnly) {
+            player.getMitigationTracker().getMitigationTicks().increment(combatMitigationTicks);
+        }
+
         /*
+         * Now check if we should alert, and dispatch the alert if required.
          * 1. Ensure alerts are enabled (alertVL != -1)
          * 2. Ensure vl is high enough to alert (vl >= alertVL)
          * 3. Ensure the anti-spam cooldown has elapsed (elapsed >= alertCooldown)
@@ -169,11 +187,13 @@ public abstract class Check implements Cloneable {
                 else {
                     // Now we know we are sending to staff, we need to determine if we use a verbose, or an alert.
                     // First, we try a verbose, if alert is too low, or cooldown has not elapsed. Otherwise, alert.
-                    if (this.vl >= this.verboseVL && (this.vl < this.alertVL || deltaAlertMS < BetterAnticheat.getInstance().getAlertCooldown()) &&
+                    if (this.vl >= this.verboseVL && (this.vl < this.alertVL || verboseOnly ||
+                            deltaAlertMS < BetterAnticheat.getInstance().getAlertCooldown()) &&
                             deltaVerboseMS >= verboseLimit) {
                         BetterAnticheat.getInstance().getPlayerManager().sendVerbose(finalMessage);
                         this.lastVerboseMS = currentMS;
-                    } else if (this.vl >= this.alertVL && deltaAlertMS >= BetterAnticheat.getInstance().getAlertCooldown()) {
+                    } else if (this.vl >= this.alertVL && deltaAlertMS >= BetterAnticheat.getInstance().getAlertCooldown() &&
+                            !verboseOnly) {
                         BetterAnticheat.getInstance().getPlayerManager().sendAlert(finalMessage);
                         this.lastAlertMS = currentMS;
                     }
@@ -227,6 +247,18 @@ public abstract class Check implements Cloneable {
             modified = true;
         }
         verboseVL = section.getObject(Integer.class, "verbose-vl", 1);
+
+        if (!section.hasNode("combat-mitigation-ticks")) {
+            final var lowerCategory = category.toLowerCase();
+            final var lowerName = name.toLowerCase();
+            final var isCombatAdjacent = lowerCategory.contains("combat") || lowerCategory.contains("place")
+                    || lowerCategory.contains("heuristic") || lowerName.contains("aim");
+            section.setObject(Integer.class, "combat-mitigation-ticks",
+                    isCombatAdjacent ? 40 : 0);
+            modified = true;
+        }
+
+        combatMitigationTicks = section.getObject(Integer.class, "combat-mitigation-ticks", 20);
 
         if (!section.hasNode("punishment-groups")) {
             List<String> groups = new ArrayList<>();

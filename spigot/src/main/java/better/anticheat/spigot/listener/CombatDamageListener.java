@@ -10,7 +10,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import java.util.Random;
 
 /**
- * Handles ML-based combat damage modification for Spigot.
+ * Handles ML-based combat damage modification for Paper.
  * Monitors player damage events and applies modifications based on CMLTracker averages.
  */
 public class CombatDamageListener implements Listener {
@@ -34,22 +34,20 @@ public class CombatDamageListener implements Listener {
         final var player = BetterAnticheat.getInstance().getPlayerManager().getPlayer(user);
         if (player == null) return;
 
-        final var cmlTracker = player.getCmlTracker();
-        if (cmlTracker == null) return;
+        final var mitigationTracker = player.getMitigationTracker();
+        if (mitigationTracker == null) return;
 
-        if (!BetterAnticheat.getInstance().isMlCombatDamageEnabled()) return;
+        if (!BetterAnticheat.getInstance().isMitigationCombatDamageEnabled()) return;
 
-        if (cmlTracker.getMitigationTicks().get() <= 0) return;
+        if (mitigationTracker.getMitigationTicks().get() <= 0) return;
 
-        final double cancellationChance = cmlTracker.getAverageScore() * BetterAnticheat.getInstance().getMlCombatDamageCancellationMultiplier();
-
-        if (random.nextDouble() * 100.0 < cancellationChance) {
+        if (random.nextDouble() * 100.0 < BetterAnticheat.getInstance().getMitigationCombatDamageCancellationChance()) {
             event.setCancelled(true);
             return;
         }
 
-        final double damageMultiplier = BetterAnticheat.getInstance().getMlCombatDamageReductionMultiplier();
-        final double damagePercentage = Math.max(0.0, (100.0 - (cmlTracker.getAverageScore() * damageMultiplier)) / 100.0);
+        final double damageMultiplier = BetterAnticheat.getInstance().getMitigationCombatDamageDealtDecrease();
+        final double damagePercentage = Math.max(0.1, (100.0 - damageMultiplier)) / 100.0;
 
         final double originalDamage = event.getDamage();
         final double newDamage = originalDamage * damagePercentage;
@@ -71,15 +69,15 @@ public class CombatDamageListener implements Listener {
         final var player = BetterAnticheat.getInstance().getPlayerManager().getPlayer(user);
         if (player == null) return;
 
-        final var cmlTracker = player.getCmlTracker();
-        if (cmlTracker == null) return;
+        final var mitigationTracker = player.getMitigationTracker();
+        if (mitigationTracker == null) return;
 
-        if (!BetterAnticheat.getInstance().isMlCombatDamageEnabled()) return;
+        if (!BetterAnticheat.getInstance().isMitigationCombatDamageEnabled()) return;
 
-        if (cmlTracker.getMitigationTicks().get() <= 0) return;
+        if (mitigationTracker.getMitigationTicks().get() <= 0) return;
 
-        final double damageMultiplier = BetterAnticheat.getInstance().getMlCombatDamageReductionMultiplier();
-        final double damagePercentage = 1 + Math.max(0.0, (100.0 - (cmlTracker.getAverageScore() * damageMultiplier)) / 100.0);
+        final double damageMultiplier = BetterAnticheat.getInstance().getMitigationCombatDamageTakenIncrease();
+        final double damagePercentage = 1 + Math.max(0.0, (100.0 - damageMultiplier) / 100.0);
 
         final double originalDamage = event.getDamage();
         final double newDamage = originalDamage * damagePercentage;
