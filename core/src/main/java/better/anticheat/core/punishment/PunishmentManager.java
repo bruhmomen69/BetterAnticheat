@@ -6,12 +6,15 @@ import better.anticheat.core.configuration.ConfigSection;
 import better.anticheat.core.player.Player;
 import lombok.RequiredArgsConstructor;
 
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @RequiredArgsConstructor
 public class PunishmentManager {
@@ -65,7 +68,7 @@ public class PunishmentManager {
     public void runPunishments(Check check) {
         int checkVl = check.getVl();
         for (final var group : check.getPunishmentGroups()) {
-            int groupVl = getGroupVl(check.getPlayer(), group.getName());
+            int groupVl = check.getPlayer().getViolations().stream().filter(v -> v.getGroupName().equals(group.getName())).mapToInt(p -> p.getVl()).sum();
             if (plugin.isPunishmentModulo()) {
                 // Handle group punishments
                 for (int punishVl : group.getPerGroupPunishments().keySet()) {
@@ -95,15 +98,6 @@ public class PunishmentManager {
     }
 
 
-    public void incrementGroupVl(Player player, String groupName) {
-        player.getGroupViolations()
-                .computeIfAbsent(groupName, k -> new AtomicInteger(0)).incrementAndGet();
-    }
-
-    public int getGroupVl(Player player, String groupName) {
-        return player.getGroupViolations()
-                .getOrDefault(groupName, new AtomicInteger(0)).get();
-    }
 
     private void runPunishment(Check check, int vl, Map<Integer, List<String>> punishmentMap) {
         List<String> punishment = punishmentMap.get(vl);
@@ -143,14 +137,14 @@ public class PunishmentManager {
         message = message.replaceAll("%vl%", Integer.toString(vl));
 
         try {
-            java.net.http.HttpClient client = java.net.http.HttpClient.newHttpClient();
+            HttpClient client = HttpClient.newHttpClient();
             String json = "{\"content\":\"" + message + "\"}";
-            java.net.http.HttpRequest request = java.net.http.HttpRequest.newBuilder()
-                    .uri(java.net.URI.create(webhookUrl))
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(webhookUrl))
                     .header("Content-Type", "application/json")
-                    .POST(java.net.http.HttpRequest.BodyPublishers.ofString(json))
+                    .POST(HttpRequest.BodyPublishers.ofString(json))
                     .build();
-            client.sendAsync(request, java.net.http.HttpResponse.BodyHandlers.ofString());
+            client.sendAsync(request, HttpResponse.BodyHandlers.ofString());
         } catch (Exception e) {
             plugin.getDataBridge().logWarning("Failed to send webhook: " + e.getMessage());
         }

@@ -143,9 +143,6 @@ public abstract class Check implements Cloneable {
         if (decay > 0) {
             player.getViolations().removeIf(v -> System.currentTimeMillis() - v.getCreationTime() > decay);
             vl = player.getViolations().stream().filter(v -> v.getCheck().equals(this)).mapToInt(Violation::getVl).sum();
-            for (PunishmentGroup group : punishmentGroups) {
-                player.getGroupViolations().get(group.getName()).set(player.getViolations().stream().filter(v -> v.getGroupName().equals(group.getName())).mapToInt(Violation::getVl).sum());
-            }
         }
         vl = Math.min(10000, vl + 1);
         for (PunishmentGroup group : punishmentGroups) {
@@ -222,11 +219,6 @@ public abstract class Check implements Cloneable {
          * Modulo assumes the punishment should be run whenever the vl is divisible by the setting amount.
          * Strict assumes the punishment should be run whenever the vl is the setting amount.
          */
-        for (final var group : punishmentGroups) {
-            if (group != null) {
-                plugin.getPunishmentManager().incrementGroupVl(player, group.getName());
-            }
-        }
         plugin.getPunishmentManager().runPunishments(this);
     }
 

@@ -114,8 +114,12 @@ public class BetterAnticheat {
         punishmentModulo = settings.getObject(Boolean.class, "punishment-modulo", true);
         testMode = settings.getObject(Boolean.class, "test-mode", false);
         useCommand = settings.getObject(Boolean.class, "enable-commands", true); // Default to true for people who have not updated their config.
-        webhookUrl = settings.getObject(String.class, "webhook-url", "");
-        webhookMessage = settings.getObject(String.class, "webhook-message", "");
+
+        final var webhookNode = settings.getConfigSection("webhook");
+        if (webhookNode != null) {
+            webhookUrl = webhookNode.getObject(String.class, "url", "");
+            webhookMessage = webhookNode.getObject(String.class, "message", "**%username%** failed **%type%** (VL: %vl%)");
+        }
 
 
         final var combatMitigationNode = settings.getConfigSection("combat-damage-mitigation");

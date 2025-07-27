@@ -52,7 +52,6 @@ public class Player implements Closeable {
     private boolean alerts = false, verbose = false;
 
     private final List<Closeable> closeables = new ArrayList<>();
-    private final Map<String, AtomicInteger> groupViolations = new ConcurrentHashMap<>();
     private final List<Violation> violations = new FastObjectArrayList<>();
 
     public Player(final BetterAnticheat plugin, final User user, final DataBridge dataBridge) {
