@@ -18,10 +18,6 @@ public class PlayerNameSuggestionProvider implements SuggestionProvider<CommandA
             list.add(player.getName());
         }
 
-        for (var player : BetterAnticheat.getInstance().getPlayerManager().getUserMap().keySet()) {
-            list.add(player.getUUID().toString());
-        }
-
         return list;
     }
 }
