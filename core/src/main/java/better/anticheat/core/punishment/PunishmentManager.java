@@ -12,6 +12,10 @@ import com.alibaba.fastjson2.JSON;
 
 import java.net.URI;
 import java.net.http.HttpClient;
+import com.alibaba.fastjson2.JSON;
+
+import java.net.URI;
+import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.ArrayList;
@@ -147,7 +151,9 @@ public class PunishmentManager {
 
         try {
             HttpClient client = HttpClient.newHttpClient();
-            String json = "{\"content\":\"" + message + "\"}";
+            Map<String, String> data = new HashMap<>();
+            data.put("content", message);
+            String json = JSON.toJSONString(data);
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(webhookUrl))
                     .header("Content-Type", "application/json")
