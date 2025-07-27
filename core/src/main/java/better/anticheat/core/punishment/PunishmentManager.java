@@ -68,7 +68,7 @@ public class PunishmentManager {
     public void runPunishments(Check check) {
         int checkVl = check.getVl();
         for (final var group : check.getPunishmentGroups()) {
-            int groupVl = check.getPlayer().getViolations().stream().filter(v -> v.getGroupNameHash() == group.getName().hashCode()).mapToInt(p -> p.getVl()).sum();
+            int groupVl = check.getPlayer().getViolations().stream().filter(v -> v.getGroupNameHash() == group.getNameHash()).mapToInt(p -> p.getVl()).sum();
             if (plugin.isPunishmentModulo()) {
                 // Handle group punishments
                 for (int punishVl : group.getPerGroupPunishments().keySet()) {
