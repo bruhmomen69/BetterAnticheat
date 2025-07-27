@@ -291,7 +291,12 @@ public abstract class Check implements Cloneable {
             modified = true;
         }
         if (!section.hasNode("combat-mitigation-ticks-on-verbose")) {
-            section.setObject(Integer.class, "combat-mitigation-ticks-on-verbose", 5);
+            final var lowerCategory = category.toLowerCase();
+            final var lowerName = name.toLowerCase();
+            final var isCombatAdjacent = lowerCategory.contains("combat") || lowerCategory.contains("place")
+                    || lowerCategory.contains("heuristic") || lowerName.contains("aim");
+            section.setObject(Integer.class, "combat-mitigation-ticks-on-verbose",
+                    isCombatAdjacent ? 5 : 0);
             modified = true;
         }
         combatMitigationTicksOnAlert = section.getObject(Integer.class, "combat-mitigation-ticks-on-alert", 20);
