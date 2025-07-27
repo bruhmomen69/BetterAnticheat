@@ -404,9 +404,9 @@ public class EntityTracker extends Tracker {
                 fullSizeTreeShakeTimer.increment();
             }
 
-            if (fullSizeTreeShakeTimer.get() % 50.0 == 0.0) {
-                // Get rid of not very useful data, and do emergency cleanup if >> 200
-                final var maxDelta = entityData.getTreeSize().get() > 200 ? 0.12 : entityData.getTreeSize().get() > 80 ? 0.03 : entityData.getTreeSize().get() > 65 ? 0.025 : 0.015;
+            if (fullSizeTreeShakeTimer.get() % 40.0 == 0.0) {
+                // Get rid of not very useful data, and do emergency cleanup if >> 180
+                final var maxDelta = entityData.getTreeSize().get() > 180 ? 0.12 : entityData.getTreeSize().get() > 75 ? 0.03 : entityData.getTreeSize().get() > 60 ? 0.025 : 0.015;
 
                 shakeTreeRecursive(entityData.getRootState(), (state) -> {
                     var statee = (EntityTrackerState) state;
@@ -438,7 +438,7 @@ public class EntityTracker extends Tracker {
                 // Run a special task on massively oversized trees
                 // This is an emergency task when things get bad
                 if (entityData.getTreeSize().get() > 120) {
-                    treeShrinkRecursive(entityData.getRootState(), 0, 10);
+                    treeShrinkRecursive(entityData.getRootState(), 0, 8);
                 }
             }
         } finally {
