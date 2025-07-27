@@ -8,16 +8,9 @@ import lombok.RequiredArgsConstructor;
 
 import java.net.URI;
 import java.net.http.HttpClient;
-import com.alibaba.fastjson2.JSON;
-
-import java.net.URI;
-import java.net.http.HttpClient;
-import com.alibaba.fastjson2.JSON;
-
-import java.net.URI;
-import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import com.alibaba.fastjson2.JSON;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
