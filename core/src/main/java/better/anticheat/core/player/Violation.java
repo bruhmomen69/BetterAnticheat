@@ -6,7 +6,7 @@ import lombok.Data;
 @Data
 public class Violation {
     private final Check check;
-    private final int groupNameHash;
+    private final int[] groupNameHashs;
     private final long creationTime;
     private final int vl;
 }

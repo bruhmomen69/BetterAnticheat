@@ -3,25 +3,14 @@ package better.anticheat.core.punishment;
 import better.anticheat.core.BetterAnticheat;
 import better.anticheat.core.check.Check;
 import better.anticheat.core.configuration.ConfigSection;
-import better.anticheat.core.player.Player;
+import com.alibaba.fastjson2.JSON;
 import lombok.RequiredArgsConstructor;
-
-import java.net.URI;
-import java.net.http.HttpClient;
-import com.alibaba.fastjson2.JSON;
-
-import java.net.URI;
-import java.net.http.HttpClient;
-import com.alibaba.fastjson2.JSON;
 
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 @RequiredArgsConstructor
@@ -79,10 +68,13 @@ public class PunishmentManager {
         for (final var group : check.getPunishmentGroups()) {
             int groupVl = 0;
             for (final var violation : check.getPlayer().getViolations()) {
-                if (violation.getGroupNameHash() == group.getNameHash()) {
+                for (int groupNameHash : violation.getGroupNameHashs()) {
+                    if (groupNameHash != group.getNameHash()) continue;
+
                     groupVl += violation.getVl();
                 }
             }
+
             if (plugin.isPunishmentModulo()) {
                 // Handle group punishments
                 for (int punishVl : group.getPerGroupPunishments().keySet()) {
@@ -110,7 +102,6 @@ public class PunishmentManager {
             }
         }
     }
-
 
 
     private void runPunishment(Check check, int vl, Map<Integer, List<String>> punishmentMap) {

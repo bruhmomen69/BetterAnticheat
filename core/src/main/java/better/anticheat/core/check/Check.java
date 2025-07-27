@@ -139,33 +139,41 @@ public abstract class Check implements Cloneable {
      * Handles failing the check for the player with a debug.
      */
     protected void fail(Object debug, final boolean verboseOnly) {
-        // Prevent unnecessary vl increases.
+        final long currentMS = System.currentTimeMillis();
         int newVl = 0;
+
+        final var punishmentGroupHashs = new int[punishmentGroups.size()];
+        for (int i = 0; i < punishmentGroups.size(); i++) {
+            punishmentGroupHashs[i] = punishmentGroups.get(i).getNameHash();
+        }
+        player.getViolations().add(new Violation(this, punishmentGroupHashs, currentMS, 1));
+
         if (decay > 0) {
-            final long minCreationTime = System.currentTimeMillis() - decay;
+            final long minCreationTime = currentMS - decay;
             for (final var it = player.getViolations().iterator(); it.hasNext(); ) {
                 final var v = it.next();
                 if (v.getCreationTime() < minCreationTime) {
                     it.remove();
                 }
+
+                if (v.getCheck() == this) {
+                    newVl += v.getVl();
+                }
+            }
+        } else {
+            for (final var violation : player.getViolations()) {
+                if (violation.getCheck() == this) {
+                    newVl += violation.getVl();
+                }
             }
         }
 
-        for (final var v : player.getViolations()) {
-            if (v.getCheck().equals(this)) {
-                newVl += v.getVl();
-            }
-        }
-        vl = newVl;
-        vl = Math.min(10000, vl + 1);
-        for (PunishmentGroup group : punishmentGroups) {
-            player.getViolations().add(new Violation(this, group.getName().hashCode(), System.currentTimeMillis(), 1));
-        }
-        final long currentMS = System.currentTimeMillis();
+        vl = Math.min(10000, newVl + 1);
+
         final var smallestDeltaMS = currentMS - Math.min(lastAlertMS, lastVerboseMS);
         final var deltaAlertMS = currentMS - lastAlertMS;
         final var deltaVerboseMS = currentMS - lastVerboseMS;
-        final var verboseLimit = BetterAnticheat.getInstance().getAlertCooldown() / BetterAnticheat.getInstance().getVerboseCooldownDivisor();
+        final var verboseLimit = this.plugin.getAlertCooldown() / this.plugin.getVerboseCooldownDivisor();
 
         // First do mitigations.
         if (vl >= verboseVL) {
@@ -182,7 +190,7 @@ public abstract class Check implements Cloneable {
          * 3. Ensure the anti-spam cooldown has elapsed (elapsed >= alertCooldown)
          */
         if (alertVL != -1 && vl >= Math.min(alertVL, verboseVL) && smallestDeltaMS >= verboseLimit) {
-            var message = BetterAnticheat.getInstance().getAlertMessage();
+            var message = this.plugin.getAlertMessage();
             if (!message.isEmpty()) {
                 // Build the basic message body.
                 message = message.replaceAll("%vl%", String.valueOf(vl));
@@ -192,13 +200,13 @@ public abstract class Check implements Cloneable {
                 Component finalMessage = Component.text(message);
 
                 // Add the click command to the message. Kyori Adventure's syntax is horrible.
-                String click = BetterAnticheat.getInstance().getClickCommand();
+                String click = this.plugin.getClickCommand();
                 if (!click.isEmpty())
                     finalMessage = finalMessage.clickEvent(ClickEvent.clickEvent(ClickEvent.Action.RUN_COMMAND, "/" + click.replaceAll("%username%", player.getUser().getName())));
 
                 // Assemble and add the hover message.
                 final var hoverBuild = new StringBuilder();
-                for (final var string : BetterAnticheat.getInstance().getAlertHover()) {
+                for (final var string : this.plugin.getAlertHover()) {
                     hoverBuild.append(string
                                     .replaceAll("%clientversion%", player.getUser().getClientVersion().getReleaseName())
                                     .replaceAll("%debug%", debug == null ? "NO DEBUG" : debug.toString()))
@@ -209,18 +217,18 @@ public abstract class Check implements Cloneable {
                 if (hoverBuild.length() > 2)
                     finalMessage = finalMessage.hoverEvent(HoverEvent.hoverEvent(HoverEvent.Action.SHOW_TEXT, Component.text(ChatUtil.translateColors(hoverBuild.substring(0, hoverBuild.length() - 1)))));
 
-                if (BetterAnticheat.getInstance().isTestMode()) player.getUser().sendMessage(finalMessage);
+                if (this.plugin.isTestMode()) player.getUser().sendMessage(finalMessage);
                 else {
                     // Now we know we are sending to staff, we need to determine if we use a verbose, or an alert.
                     // First, we try a verbose, if alert is too low, or cooldown has not elapsed. Otherwise, alert.
                     if (this.vl >= this.verboseVL && (this.vl < this.alertVL || verboseOnly ||
-                            deltaAlertMS < BetterAnticheat.getInstance().getAlertCooldown()) &&
+                            deltaAlertMS < this.plugin.getAlertCooldown()) &&
                             deltaVerboseMS >= verboseLimit) {
-                        BetterAnticheat.getInstance().getPlayerManager().sendVerbose(finalMessage);
+                        this.plugin.getPlayerManager().sendVerbose(finalMessage);
                         this.lastVerboseMS = currentMS;
-                    } else if (this.vl >= this.alertVL && deltaAlertMS >= BetterAnticheat.getInstance().getAlertCooldown() &&
+                    } else if (this.vl >= this.alertVL && deltaAlertMS >= this.plugin.getAlertCooldown() &&
                             !verboseOnly) {
-                        BetterAnticheat.getInstance().getPlayerManager().sendAlert(finalMessage);
+                        this.plugin.getPlayerManager().sendAlert(finalMessage);
                         this.lastAlertMS = currentMS;
                     }
                 }
