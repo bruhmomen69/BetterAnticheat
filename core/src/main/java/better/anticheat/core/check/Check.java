@@ -152,7 +152,7 @@ public abstract class Check implements Cloneable {
             final long minCreationTime = currentMS - decay;
             for (final var it = player.getViolations().iterator(); it.hasNext(); ) {
                 final var v = it.next();
-                if (v.getCreationTime() < minCreationTime) {
+                if (v.getCreationTime() < minCreationTime && v.getCheck() == this) {
                     it.remove();
                 }
 

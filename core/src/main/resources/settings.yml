@@ -170,7 +170,7 @@ ml:
       combat-mitigation-ticks-on-verbose: 5
       # Required average of samples to mitigate the player to remove any advantage from cheating.
       # This is more a guide for the internal validation settings, than it is a strict value.
-      mitigation-threshold: 6
+      mitigation-threshold: 6.0
       # How many ticks to mitigate the player for, when we are flagging them, when only flagging them in mitigation state. Remember: 20 ticks per second.
       mitigation-only-ticks: 10
       # Enable this model check?
@@ -211,7 +211,7 @@ ml:
       combat-mitigation-ticks-on-verbose: 5
       # Required average of samples to mitigate the player (9.5 == Definitely cheating, 3 == Probably not cheating).
       # This is more a guide for the internal validation settings, than it is a strict value.
-      mitigation-threshold: 5
+      mitigation-threshold: 5.0
       # How many ticks to mitigate the player for, when we are flagging them, when only flagging them in mitigation state. Remember: 20 ticks per second.
       mitigation-only-ticks: 10
       # Enable this model check?
