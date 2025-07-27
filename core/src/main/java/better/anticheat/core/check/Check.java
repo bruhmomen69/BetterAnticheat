@@ -175,12 +175,10 @@ public abstract class Check implements Cloneable {
         final var deltaVerboseMS = currentMS - lastVerboseMS;
         final var verboseLimit = this.plugin.getAlertCooldown() / this.plugin.getVerboseCooldownDivisor();
 
-        // First do mitigations.
-        if (vl >= verboseVL) {
-            player.getMitigationTracker().getMitigationTicks().increment(combatMitigationTicksOnVerbose);
-        }
         if (vl >= alertVL && !verboseOnly) {
             player.getMitigationTracker().getMitigationTicks().increment(combatMitigationTicksOnAlert);
+        } else if (vl >= verboseVL) {
+            player.getMitigationTracker().getMitigationTicks().increment(combatMitigationTicksOnVerbose);
         }
 
         /*
