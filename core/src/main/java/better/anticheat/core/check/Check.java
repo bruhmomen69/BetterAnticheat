@@ -294,7 +294,6 @@ public abstract class Check implements Cloneable {
             section.setObject(Integer.class, "combat-mitigation-ticks-on-verbose", 5);
             modified = true;
         }
-
         combatMitigationTicksOnAlert = section.getObject(Integer.class, "combat-mitigation-ticks-on-alert", 20);
         combatMitigationTicksOnVerbose = section.getObject(Integer.class, "combat-mitigation-ticks-on-verbose", 5);
 
