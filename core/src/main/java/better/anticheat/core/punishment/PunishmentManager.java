@@ -6,17 +6,29 @@ import better.anticheat.core.configuration.ConfigSection;
 import better.anticheat.core.player.Player;
 import lombok.RequiredArgsConstructor;
 
+import java.net.URI;
+import java.net.http.HttpClient;
+import com.alibaba.fastjson2.JSON;
+
+import java.net.URI;
+import java.net.http.HttpClient;
+import com.alibaba.fastjson2.JSON;
+
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @RequiredArgsConstructor
 public class PunishmentManager {
 
     private final BetterAnticheat plugin;
+    private final HttpClient httpClient = HttpClient.newHttpClient();
     private final Map<String, PunishmentGroup> punishmentGroups = new ConcurrentHashMap<>();
 
     public void load() {
@@ -65,7 +77,12 @@ public class PunishmentManager {
     public void runPunishments(Check check) {
         int checkVl = check.getVl();
         for (final var group : check.getPunishmentGroups()) {
-            int groupVl = getGroupVl(check.getPlayer(), group.getName());
+            int groupVl = 0;
+            for (final var violation : check.getPlayer().getViolations()) {
+                if (violation.getGroupNameHash() == group.getNameHash()) {
+                    groupVl += violation.getVl();
+                }
+            }
             if (plugin.isPunishmentModulo()) {
                 // Handle group punishments
                 for (int punishVl : group.getPerGroupPunishments().keySet()) {
@@ -95,25 +112,56 @@ public class PunishmentManager {
     }
 
 
-    public void incrementGroupVl(Player player, String groupName) {
-        player.getGroupViolations()
-                .computeIfAbsent(groupName, k -> new AtomicInteger(0)).incrementAndGet();
-    }
-
-    public int getGroupVl(Player player, String groupName) {
-        return player.getGroupViolations()
-                .getOrDefault(groupName, new AtomicInteger(0)).get();
-    }
 
     private void runPunishment(Check check, int vl, Map<Integer, List<String>> punishmentMap) {
         List<String> punishment = punishmentMap.get(vl);
         if (punishment != null) {
             for (String command : punishment) {
-                command = command.replaceAll("%username%", check.getPlayer().getUser().getName());
-                command = command.replaceAll("%type%", check.getName());
-                command = command.replaceAll("%vl%", Integer.toString(vl));
-                plugin.getDataBridge().sendCommand(command);
+                if (command.startsWith("[mitigate")) {
+                    String[] parts = command.split(" ");
+                    if (parts.length == 2) {
+                        try {
+                            int ticks = Integer.parseInt(parts[1].replace("]", ""));
+                            check.getPlayer().getMitigationTracker().getMitigationTicks().set(ticks);
+                        } catch (NumberFormatException e) {
+                            plugin.getDataBridge().logWarning("Invalid mitigate ticks in punishment: " + command);
+                        }
+                    }
+                } else if (command.startsWith("[webhook]")) {
+                    sendWebhook(check, vl);
+                } else {
+                    command = command.replaceAll("%username%", check.getPlayer().getUser().getName());
+                    command = command.replaceAll("%type%", check.getName());
+                    command = command.replaceAll("%vl%", Integer.toString(vl));
+                    plugin.getDataBridge().sendCommand(command);
+                }
             }
+        }
+    }
+
+    private void sendWebhook(Check check, int vl) {
+        String webhookUrl = plugin.getWebhookUrl();
+        if (webhookUrl == null || webhookUrl.isEmpty()) {
+            return;
+        }
+
+        String message = plugin.getWebhookMessage();
+        message = message.replaceAll("%username%", check.getPlayer().getUser().getName());
+        message = message.replaceAll("%type%", check.getName());
+        message = message.replaceAll("%vl%", Integer.toString(vl));
+
+        try {
+            Map<String, String> data = new HashMap<>();
+            data.put("content", message);
+            String json = JSON.toJSONString(data);
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(webhookUrl))
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(json))
+                    .build();
+            httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString());
+        } catch (Exception e) {
+            plugin.getDataBridge().logWarning("Failed to send webhook: " + e.getMessage());
         }
     }
 }

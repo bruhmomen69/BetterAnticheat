@@ -43,6 +43,9 @@ punishment-modulo: true
 # %type% - The check that was failed.
 # %username% - The username of the player who failed the check.
 # %vl% - The amount of times this player has failed the check.
+# Punishment actions:
+# [mitigate <ticks>] - Mitigates the player for a certain amount of ticks.
+# [webhook] - Sends a webhook message.
 punishment-groups:
   # It is recommended to not remove the default group.
   default:
@@ -51,57 +54,78 @@ punishment-groups:
     per-check-punishments:
       - "1:say %username% would be kicked for %type%!"
       - "5:say %username% would be banned for %type%!"
+      - "10:[webhook]"
   ml-checks:
     per-group-punishments: []
-    per-check-punishments: []
+    per-check-punishments:
+      - "1:[mitigate 20]"
+      - "5:[webhook]"
   chat:
     per-group-punishments:
       - "10:say %username% has accumulated 10 total VL!"
     per-check-punishments:
       - "1:say %username% would be kicked for %type%!"
       - "5:say %username% would be banned for %type%!"
+      - "10:[webhook]"
   combat:
     per-group-punishments:
       - "10:say %username% has accumulated 10 total VL!"
     per-check-punishments:
       - "1:say %username% would be kicked for %type%!"
+      - "5:[mitigate 20]"
       - "5:say %username% would be banned for %type%!"
+      - "10:[webhook]"
   dig:
     per-group-punishments:
       - "10:say %username% has accumulated 10 total VL!"
     per-check-punishments:
       - "1:say %username% would be kicked for %type%!"
       - "5:say %username% would be banned for %type%!"
+      - "10:[webhook]"
   flying:
     per-group-punishments:
       - "10:say %username% has accumulated 10 total VL!"
     per-check-punishments:
       - "1:say %username% would be kicked for %type%!"
       - "5:say %username% would be banned for %type%!"
+      - "10:[webhook]"
   heuristic:
     per-group-punishments:
       - "10:say %username% has accumulated 10 total VL!"
     per-check-punishments:
       - "1:say %username% would be kicked for %type%!"
+      - "5:[mitigate 20]"
       - "5:say %username% would be banned for %type%!"
+      - "10:[webhook]"
   misc:
     per-group-punishments:
       - "10:say %username% has accumulated 10 total VL!"
     per-check-punishments:
       - "1:say %username% would be kicked for %type%!"
       - "5:say %username% would be banned for %type%!"
+      - "10:[webhook]"
   packet:
     per-group-punishments:
       - "10:say %username% has accumulated 10 total VL!"
     per-check-punishments:
       - "1:say %username% would be kicked for %type%!"
       - "5:say %username% would be banned for %type%!"
+      - "10:[webhook]"
   place:
     per-group-punishments:
       - "10:say %username% has accumulated 10 total VL!"
     per-check-punishments:
       - "1:say %username% would be kicked for %type%!"
+      - "5:[mitigate 20]"
       - "5:say %username% would be banned for %type%!"
+      - "10:[webhook]"
+
+# Webhook settings
+webhook:
+  # The URL of the webhook to send messages to.
+  url: ""
+  # The message to send to the webhook.
+  message: "**%username%** failed **%type%** (VL: %vl%)"
 
 # Sends alerts only to the user who triggered it. Used for testing purposes.
 test-mode: false
@@ -141,7 +165,9 @@ ml:
       # This is more a guide for the internal validation settings, than it is a strict value.
       alert-threshold: 7.5
       # How many ticks to mitigate the player for, when we are flagging them in an alert. Remember: 20 ticks per second.
-      combat-mitigation-ticks: 20
+      combat-mitigation-ticks-on-alert: 20
+      # How many ticks to mitigate the player for, when we are flagging them in a verbose alert. Remember: 20 ticks per second.
+      combat-mitigation-ticks-on-verbose: 5
       # Required average of samples to mitigate the player to remove any advantage from cheating.
       # This is more a guide for the internal validation settings, than it is a strict value.
       mitigation-threshold: 6
@@ -180,7 +206,9 @@ ml:
       # This is more a guide for the internal validation settings, than it is a strict value.
       alert-threshold: 6
       # How many ticks to mitigate the player for, when we are flagging them in an alert. Remember: 20 ticks per second.
-      combat-mitigation-ticks: 20
+      combat-mitigation-ticks-on-alert: 20
+      # How many ticks to mitigate the player for, when we are flagging them in a verbose alert. Remember: 20 ticks per second.
+      combat-mitigation-ticks-on-verbose: 5
       # Required average of samples to mitigate the player (9.5 == Definitely cheating, 3 == Probably not cheating).
       # This is more a guide for the internal validation settings, than it is a strict value.
       mitigation-threshold: 5

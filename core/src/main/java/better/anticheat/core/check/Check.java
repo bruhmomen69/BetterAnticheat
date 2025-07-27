@@ -3,6 +3,7 @@ package better.anticheat.core.check;
 import better.anticheat.core.BetterAnticheat;
 import better.anticheat.core.configuration.ConfigSection;
 import better.anticheat.core.player.Player;
+import better.anticheat.core.player.Violation;
 import better.anticheat.core.punishment.PunishmentGroup;
 import better.anticheat.core.util.ChatUtil;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
@@ -44,7 +45,9 @@ public abstract class Check implements Cloneable {
     @Setter
     private boolean enabled = false;
     private int alertVL = 10, verboseVL = 1;
-    private int combatMitigationTicks = 0;
+    private int decay = -1;
+    private int combatMitigationTicksOnAlert = 0;
+    private int combatMitigationTicksOnVerbose = 0;
     @Getter
     private final List<PunishmentGroup> punishmentGroups = new FastObjectArrayList<>();
 
@@ -137,7 +140,27 @@ public abstract class Check implements Cloneable {
      */
     protected void fail(Object debug, final boolean verboseOnly) {
         // Prevent unnecessary vl increases.
+        int newVl = 0;
+        if (decay > 0) {
+            final long minCreationTime = System.currentTimeMillis() - decay;
+            for (final var it = player.getViolations().iterator(); it.hasNext(); ) {
+                final var v = it.next();
+                if (v.getCreationTime() < minCreationTime) {
+                    it.remove();
+                }
+            }
+        }
+
+        for (final var v : player.getViolations()) {
+            if (v.getCheck().equals(this)) {
+                newVl += v.getVl();
+            }
+        }
+        vl = newVl;
         vl = Math.min(10000, vl + 1);
+        for (PunishmentGroup group : punishmentGroups) {
+            player.getViolations().add(new Violation(this, group.getName().hashCode(), System.currentTimeMillis(), 1));
+        }
         final long currentMS = System.currentTimeMillis();
         final var smallestDeltaMS = currentMS - Math.min(lastAlertMS, lastVerboseMS);
         final var deltaAlertMS = currentMS - lastAlertMS;
@@ -145,8 +168,11 @@ public abstract class Check implements Cloneable {
         final var verboseLimit = BetterAnticheat.getInstance().getAlertCooldown() / BetterAnticheat.getInstance().getVerboseCooldownDivisor();
 
         // First do mitigations.
+        if (vl >= verboseVL) {
+            player.getMitigationTracker().getMitigationTicks().increment(combatMitigationTicksOnVerbose);
+        }
         if (vl >= alertVL && !verboseOnly) {
-            player.getMitigationTracker().getMitigationTicks().increment(combatMitigationTicks);
+            player.getMitigationTracker().getMitigationTicks().increment(combatMitigationTicksOnAlert);
         }
 
         /*
@@ -206,11 +232,6 @@ public abstract class Check implements Cloneable {
          * Modulo assumes the punishment should be run whenever the vl is divisible by the setting amount.
          * Strict assumes the punishment should be run whenever the vl is the setting amount.
          */
-        for (final var group : punishmentGroups) {
-            if (group != null) {
-                plugin.getPunishmentManager().incrementGroupVl(player, group.getName());
-            }
-        }
         plugin.getPunishmentManager().runPunishments(this);
     }
 
@@ -248,17 +269,28 @@ public abstract class Check implements Cloneable {
         }
         verboseVL = section.getObject(Integer.class, "verbose-vl", 1);
 
-        if (!section.hasNode("combat-mitigation-ticks")) {
+        if (!section.hasNode("decay")) {
+            section.setObject(Integer.class, "decay", -1);
+            modified = true;
+        }
+        decay = section.getObject(Integer.class, "decay", -1);
+
+        if (!section.hasNode("combat-mitigation-ticks-on-alert")) {
             final var lowerCategory = category.toLowerCase();
             final var lowerName = name.toLowerCase();
             final var isCombatAdjacent = lowerCategory.contains("combat") || lowerCategory.contains("place")
                     || lowerCategory.contains("heuristic") || lowerName.contains("aim");
-            section.setObject(Integer.class, "combat-mitigation-ticks",
+            section.setObject(Integer.class, "combat-mitigation-ticks-on-alert",
                     isCombatAdjacent ? 40 : 0);
             modified = true;
         }
+        if (!section.hasNode("combat-mitigation-ticks-on-verbose")) {
+            section.setObject(Integer.class, "combat-mitigation-ticks-on-verbose", 5);
+            modified = true;
+        }
 
-        combatMitigationTicks = section.getObject(Integer.class, "combat-mitigation-ticks", 20);
+        combatMitigationTicksOnAlert = section.getObject(Integer.class, "combat-mitigation-ticks-on-alert", 20);
+        combatMitigationTicksOnVerbose = section.getObject(Integer.class, "combat-mitigation-ticks-on-verbose", 5);
 
         if (!section.hasNode("punishment-groups")) {
             List<String> groups = new ArrayList<>();
