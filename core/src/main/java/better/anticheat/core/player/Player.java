@@ -25,6 +25,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import wtf.spare.sparej.fastlist.FastObjectArrayList;
+
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -51,6 +53,7 @@ public class Player implements Closeable {
 
     private final List<Closeable> closeables = new ArrayList<>();
     private final Map<String, AtomicInteger> groupViolations = new ConcurrentHashMap<>();
+    private final List<Violation> violations = new FastObjectArrayList<>();
 
     public Player(final BetterAnticheat plugin, final User user, final DataBridge dataBridge) {
         this.plugin = plugin;

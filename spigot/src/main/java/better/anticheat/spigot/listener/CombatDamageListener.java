@@ -52,6 +52,12 @@ public class CombatDamageListener implements Listener {
         final double originalDamage = event.getDamage();
         final double newDamage = originalDamage * damagePercentage;
         event.setDamage(newDamage);
+
+        if (event.getEntity() instanceof Player && !event.getEntity().getVelocity().isZero()) {
+            final double knockbackMultiplier = BetterAnticheat.getInstance().getMitigationCombatKnockbackDealtDecrease();
+            final double knockbackPercentage = Math.max(0.0, (100.0 - knockbackMultiplier) / 100.0);
+            event.getEntity().setVelocity(event.getEntity().getVelocity().multiply(knockbackPercentage));
+        }
     }
 
     /**

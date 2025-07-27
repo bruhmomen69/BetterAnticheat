@@ -50,6 +50,7 @@ public class BetterAnticheat {
     private List<String> alertHover;
     private String alertMessage, alertPermission, clickCommand;
     private boolean punishmentModulo, testMode, useCommand;
+    private String webhookUrl, webhookMessage;
     private final Map<String, ModelConfig> modelConfigs = new Object2ObjectArrayMap<>();
     private boolean mitigationCombatDamageEnabled;
     private double mitigationCombatDamageCancellationChance;
@@ -113,6 +114,8 @@ public class BetterAnticheat {
         punishmentModulo = settings.getObject(Boolean.class, "punishment-modulo", true);
         testMode = settings.getObject(Boolean.class, "test-mode", false);
         useCommand = settings.getObject(Boolean.class, "enable-commands", true); // Default to true for people who have not updated their config.
+        webhookUrl = settings.getObject(String.class, "webhook-url", "");
+        webhookMessage = settings.getObject(String.class, "webhook-message", "");
 
 
         final var combatMitigationNode = settings.getConfigSection("combat-damage-mitigation");

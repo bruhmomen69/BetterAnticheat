@@ -109,11 +109,50 @@ public class PunishmentManager {
         List<String> punishment = punishmentMap.get(vl);
         if (punishment != null) {
             for (String command : punishment) {
-                command = command.replaceAll("%username%", check.getPlayer().getUser().getName());
-                command = command.replaceAll("%type%", check.getName());
-                command = command.replaceAll("%vl%", Integer.toString(vl));
-                plugin.getDataBridge().sendCommand(command);
+                if (command.startsWith("[mitigate")) {
+                    String[] parts = command.split(" ");
+                    if (parts.length == 2) {
+                        try {
+                            int ticks = Integer.parseInt(parts[1].replace("]", ""));
+                            check.getPlayer().getMitigationTracker().getMitigationTicks().set(ticks);
+                        } catch (NumberFormatException e) {
+                            plugin.getDataBridge().logWarning("Invalid mitigate ticks in punishment: " + command);
+                        }
+                    }
+                } else if (command.startsWith("[webhook]")) {
+                    sendWebhook(check, vl);
+                } else {
+                    command = command.replaceAll("%username%", check.getPlayer().getUser().getName());
+                    command = command.replaceAll("%type%", check.getName());
+                    command = command.replaceAll("%vl%", Integer.toString(vl));
+                    plugin.getDataBridge().sendCommand(command);
+                }
             }
+        }
+    }
+
+    private void sendWebhook(Check check, int vl) {
+        String webhookUrl = plugin.getWebhookUrl();
+        if (webhookUrl == null || webhookUrl.isEmpty()) {
+            return;
+        }
+
+        String message = plugin.getWebhookMessage();
+        message = message.replaceAll("%username%", check.getPlayer().getUser().getName());
+        message = message.replaceAll("%type%", check.getName());
+        message = message.replaceAll("%vl%", Integer.toString(vl));
+
+        try {
+            java.net.http.HttpClient client = java.net.http.HttpClient.newHttpClient();
+            String json = "{\"content\":\"" + message + "\"}";
+            java.net.http.HttpRequest request = java.net.http.HttpRequest.newBuilder()
+                    .uri(java.net.URI.create(webhookUrl))
+                    .header("Content-Type", "application/json")
+                    .POST(java.net.http.HttpRequest.BodyPublishers.ofString(json))
+                    .build();
+            client.sendAsync(request, java.net.http.HttpResponse.BodyHandlers.ofString());
+        } catch (Exception e) {
+            plugin.getDataBridge().logWarning("Failed to send webhook: " + e.getMessage());
         }
     }
 }
