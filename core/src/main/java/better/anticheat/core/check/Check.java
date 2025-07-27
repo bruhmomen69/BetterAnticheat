@@ -146,7 +146,7 @@ public abstract class Check implements Cloneable {
         }
         vl = Math.min(10000, vl + 1);
         for (PunishmentGroup group : punishmentGroups) {
-            player.getViolations().add(new Violation(this, group.getName(), System.currentTimeMillis(), 1));
+            player.getViolations().add(new Violation(this, group.getName().hashCode(), System.currentTimeMillis(), 1));
         }
         final long currentMS = System.currentTimeMillis();
         final var smallestDeltaMS = currentMS - Math.min(lastAlertMS, lastVerboseMS);
