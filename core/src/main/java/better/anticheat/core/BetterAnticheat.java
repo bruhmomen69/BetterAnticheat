@@ -119,6 +119,9 @@ public class BetterAnticheat {
         if (webhookNode != null) {
             webhookUrl = webhookNode.getObject(String.class, "url", "");
             webhookMessage = webhookNode.getObject(String.class, "message", "**%username%** failed **%type%** (VL: %vl%)");
+        } else {
+            webhookUrl = "";
+            webhookMessage = "**%username%** failed **%type%** (VL: %vl%)";
         }
 
 
