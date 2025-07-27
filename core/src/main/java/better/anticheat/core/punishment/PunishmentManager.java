@@ -8,9 +8,16 @@ import lombok.RequiredArgsConstructor;
 
 import java.net.URI;
 import java.net.http.HttpClient;
+import com.alibaba.fastjson2.JSON;
+
+import java.net.URI;
+import java.net.http.HttpClient;
+import com.alibaba.fastjson2.JSON;
+
+import java.net.URI;
+import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import com.alibaba.fastjson2.JSON;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -21,6 +28,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class PunishmentManager {
 
     private final BetterAnticheat plugin;
+    private final HttpClient httpClient = HttpClient.newHttpClient();
     private final Map<String, PunishmentGroup> punishmentGroups = new ConcurrentHashMap<>();
 
     public void load() {
@@ -143,7 +151,6 @@ public class PunishmentManager {
         message = message.replaceAll("%vl%", Integer.toString(vl));
 
         try {
-            HttpClient client = HttpClient.newHttpClient();
             Map<String, String> data = new HashMap<>();
             data.put("content", message);
             String json = JSON.toJSONString(data);
@@ -152,7 +159,7 @@ public class PunishmentManager {
                     .header("Content-Type", "application/json")
                     .POST(HttpRequest.BodyPublishers.ofString(json))
                     .build();
-            client.sendAsync(request, HttpResponse.BodyHandlers.ofString());
+            httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString());
         } catch (Exception e) {
             plugin.getDataBridge().logWarning("Failed to send webhook: " + e.getMessage());
         }

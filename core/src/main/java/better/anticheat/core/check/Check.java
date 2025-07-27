@@ -140,13 +140,19 @@ public abstract class Check implements Cloneable {
      */
     protected void fail(Object debug, final boolean verboseOnly) {
         // Prevent unnecessary vl increases.
-        final long minCreationTime = System.currentTimeMillis() - decay;
         int newVl = 0;
-        for (final var it = player.getViolations().iterator(); it.hasNext(); ) {
-            final var v = it.next();
-            if (v.getCreationTime() < minCreationTime) {
-                it.remove();
-            } else if (v.getCheck().equals(this)) {
+        if (decay > 0) {
+            final long minCreationTime = System.currentTimeMillis() - decay;
+            for (final var it = player.getViolations().iterator(); it.hasNext(); ) {
+                final var v = it.next();
+                if (v.getCreationTime() < minCreationTime) {
+                    it.remove();
+                }
+            }
+        }
+
+        for (final var v : player.getViolations()) {
+            if (v.getCheck().equals(this)) {
                 newVl += v.getVl();
             }
         }
