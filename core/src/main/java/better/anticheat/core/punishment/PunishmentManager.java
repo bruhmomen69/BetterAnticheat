@@ -8,6 +8,10 @@ import lombok.RequiredArgsConstructor;
 
 import java.net.URI;
 import java.net.http.HttpClient;
+import com.alibaba.fastjson2.JSON;
+
+import java.net.URI;
+import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.ArrayList;
@@ -68,7 +72,12 @@ public class PunishmentManager {
     public void runPunishments(Check check) {
         int checkVl = check.getVl();
         for (final var group : check.getPunishmentGroups()) {
-            int groupVl = check.getPlayer().getViolations().stream().filter(v -> v.getGroupNameHash() == group.getNameHash()).mapToInt(p -> p.getVl()).sum();
+            int groupVl = 0;
+            for (final var violation : check.getPlayer().getViolations()) {
+                if (violation.getGroupNameHash() == group.getNameHash()) {
+                    groupVl += violation.getVl();
+                }
+            }
             if (plugin.isPunishmentModulo()) {
                 // Handle group punishments
                 for (int punishVl : group.getPerGroupPunishments().keySet()) {

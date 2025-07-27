@@ -140,10 +140,17 @@ public abstract class Check implements Cloneable {
      */
     protected void fail(Object debug, final boolean verboseOnly) {
         // Prevent unnecessary vl increases.
-        if (decay > 0) {
-            player.getViolations().removeIf(v -> System.currentTimeMillis() - v.getCreationTime() > decay);
-            vl = player.getViolations().stream().filter(v -> v.getCheck().equals(this)).mapToInt(Violation::getVl).sum();
+        final long minCreationTime = System.currentTimeMillis() - decay;
+        int newVl = 0;
+        for (final var it = player.getViolations().iterator(); it.hasNext(); ) {
+            final var v = it.next();
+            if (v.getCreationTime() < minCreationTime) {
+                it.remove();
+            } else if (v.getCheck().equals(this)) {
+                newVl += v.getVl();
+            }
         }
+        vl = newVl;
         vl = Math.min(10000, vl + 1);
         for (PunishmentGroup group : punishmentGroups) {
             player.getViolations().add(new Violation(this, group.getName().hashCode(), System.currentTimeMillis(), 1));
