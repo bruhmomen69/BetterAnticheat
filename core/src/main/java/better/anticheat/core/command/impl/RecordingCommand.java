@@ -13,12 +13,12 @@ import com.github.luben.zstd.Zstd;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import org.jetbrains.annotations.Nullable;
+import revxrsal.commands.annotation.Default;
 import revxrsal.commands.annotation.Optional;
 import revxrsal.commands.annotation.Range;
 import revxrsal.commands.annotation.Subcommand;
 import revxrsal.commands.command.CommandActor;
 import smile.classification.Classifier;
-
 import smile.data.Tuple;
 import smile.data.type.StructType;
 import smile.plot.swing.FigurePane;
@@ -238,52 +238,19 @@ public class RecordingCommand extends Command {
     }
 
     @Subcommand("compare")
-    public void recordingCompare(final CommandActor actor, final String legit, @Range(min = 0, max = 2) final short column, final List<String> cheating) throws IOException {
+    public void recordingCompare(final CommandActor actor, @Range(min = 0, max = 2) final short column, final String legit, final String cheating,
+                                 final @Optional @Default("false") boolean randomForests, final @Optional @Default("false") boolean statistics) throws IOException {
         final var legitData = loadData(legit);
         if (legitData == null) {
             sendReply(actor, Component.text("Failed to load data for " + legit));
             return;
         }
 
-        final var cheatingDataList = new ArrayList<double[][][]>();
-        for (final var cheatSet : cheating) {
-            final var data = loadData(cheatSet);
-            if (data == null) {
-                sendReply(actor, Component.text("Failed to load data for " + cheatSet));
-                return;
-            }
-            cheatingDataList.add(data);
+        final var cheatingData = loadData(cheating);
+        if (cheatingData == null) {
+            sendReply(actor, Component.text("Failed to load data for " + cheating));
+            return;
         }
-
-        // Combine cheating data
-        int totalYaws = 0;
-        int totalOffsets = 0;
-        int totalEnhancedOffsets = 0;
-
-        for (double[][][] data : cheatingDataList) {
-            totalYaws += data[0].length;
-            totalOffsets += data[1].length;
-            totalEnhancedOffsets += data[2].length;
-        }
-
-        double[][] combinedYaws = new double[totalYaws][];
-        double[][] combinedOffsets = new double[totalOffsets][];
-        double[][] combinedEnhancedOffsets = new double[totalEnhancedOffsets][];
-
-        int yawsIndex = 0;
-        int offsetsIndex = 0;
-        int enhancedOffsetsIndex = 0;
-
-        for (double[][][] data : cheatingDataList) {
-            System.arraycopy(data[0], 0, combinedYaws, yawsIndex, data[0].length);
-            yawsIndex += data[0].length;
-            System.arraycopy(data[1], 0, combinedOffsets, offsetsIndex, data[1].length);
-            offsetsIndex += data[1].length;
-            System.arraycopy(data[2], 0, combinedEnhancedOffsets, enhancedOffsetsIndex, data[2].length);
-            enhancedOffsetsIndex += data[2].length;
-        }
-
-        final double[][][] finalCheatingData = new double[][][]{combinedYaws, combinedOffsets, combinedEnhancedOffsets};
 
         ForkJoinPool.commonPool().execute(() -> {
             actor.reply("=== CONFIGURATION COMPARISON RESULTS ===");
@@ -298,7 +265,8 @@ public class RecordingCommand extends Command {
             for (int depth : depths) {
                 StringBuilder line = new StringBuilder("Depth " + depth + ": ");
                 for (int nodeSize : nodeSizes) {
-                    double accuracy = testConfiguration(legitData, finalCheatingData, column, depth, depth, nodeSize, nodeSize, depth, depth, nodeSize, nodeSize, "gini_tree");
+                    double accuracy = testConfiguration(legitData, cheatingData, column, depth, depth, nodeSize, nodeSize, depth,
+                            depth, nodeSize, nodeSize, "gini_tree", statistics);
                     line.append(String.format("%d,%d->%.1f%% ", depth, nodeSize, accuracy));
                 }
                 actor.reply(line.toString());
@@ -309,32 +277,37 @@ public class RecordingCommand extends Command {
             for (int depth : depths) {
                 StringBuilder line = new StringBuilder("Depth " + depth + ": ");
                 for (int nodeSize : nodeSizes) {
-                    double accuracy = testConfiguration(legitData, finalCheatingData, column, depth, depth, nodeSize, nodeSize, depth, depth, nodeSize, nodeSize, "entropy_tree");
+                    double accuracy = testConfiguration(legitData, cheatingData, column, depth, depth, nodeSize, nodeSize, depth,
+                            depth, nodeSize, nodeSize, "entropy_tree", statistics);
                     line.append(String.format("%d,%d->%.1f%% ", depth, nodeSize, accuracy));
                 }
                 actor.reply(line.toString());
             }
 
-            actor.reply("");
-            actor.reply("--- GINI RANDOM FOREST ---");
-            for (int depth : depths) {
-                StringBuilder line = new StringBuilder("Depth " + depth + ": ");
-                for (int nodeSize : nodeSizes) {
-                    double accuracy = testConfiguration(legitData, finalCheatingData, column, 26, 27, 4, 3, depth, depth, nodeSize, nodeSize, "gini_forest");
-                    line.append(String.format("%d,%d->%.1f%% ", depth, nodeSize, accuracy));
+            if (randomForests) {
+                actor.reply("");
+                actor.reply("--- GINI RANDOM FOREST ---");
+                for (int depth : depths) {
+                    StringBuilder line = new StringBuilder("Depth " + depth + ": ");
+                    for (int nodeSize : nodeSizes) {
+                        double accuracy = testConfiguration(legitData, cheatingData, column, 26, 27, 4,
+                                3, depth, depth, nodeSize, nodeSize, "gini_forest", statistics);
+                        line.append(String.format("%d,%d->%.1f%% ", depth, nodeSize, accuracy));
+                    }
+                    actor.reply(line.toString());
                 }
-                actor.reply(line.toString());
-            }
 
-            actor.reply("");
-            actor.reply("--- ENTROPY RANDOM FOREST ---");
-            for (int depth : depths) {
-                StringBuilder line = new StringBuilder("Depth " + depth + ": ");
-                for (int nodeSize : nodeSizes) {
-                    double accuracy = testConfiguration(legitData, finalCheatingData, column, 26, 27, 4, 3, depth, depth, nodeSize, nodeSize, "entropy_forest");
-                    line.append(String.format("%d,%d->%.1f%% ", depth, nodeSize, accuracy));
+                actor.reply("");
+                actor.reply("--- ENTROPY RANDOM FOREST ---");
+                for (int depth : depths) {
+                    StringBuilder line = new StringBuilder("Depth " + depth + ": ");
+                    for (int nodeSize : nodeSizes) {
+                        double accuracy = testConfiguration(legitData, cheatingData, column, 26, 27, 4,
+                                3, depth, depth, nodeSize, nodeSize, "entropy_forest", statistics);
+                        line.append(String.format("%d,%d->%.1f%% ", depth, nodeSize, accuracy));
+                    }
+                    actor.reply(line.toString());
                 }
-                actor.reply(line.toString());
             }
         });
     }
@@ -580,9 +553,9 @@ public class RecordingCommand extends Command {
     private double testConfiguration(double[][][] legitData, double[][][] cheatingData, short column,
                                      int giniMaxDepth, int entropyMaxDepth, int giniNodeSize, int entropyNodeSize,
                                      int giniForestMaxDepth, int entropyForestMaxDepth, int giniForestNodeSize, int entropyForestNodeSize,
-                                     String modelType) {
+                                     String modelType, boolean statistics) {
         try {
-            final MLTrainer trainer = new MLTrainer(legitData, cheatingData, column, false,true, modelType.contains("forest"),
+            final MLTrainer trainer = new MLTrainer(legitData, cheatingData, column, false, true, modelType.contains("forest"),
                     giniMaxDepth, entropyMaxDepth, giniNodeSize, entropyNodeSize,
                     giniForestMaxDepth, entropyForestMaxDepth, giniForestNodeSize, entropyForestNodeSize);
 

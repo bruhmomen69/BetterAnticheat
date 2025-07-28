@@ -13,6 +13,7 @@ import revxrsal.commands.command.CommandActor;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * This command toggles alerts for players, assuming they have the correct permissions.
@@ -32,12 +33,13 @@ public class MitigateCommand extends Command {
         if (!hasPermission(actor)) return;
 
         final var player = getPlayerFromActor(actor);
-        if (player == null) {
+        final var console = actor.name().equalsIgnoreCase("console");
+        if (player == null && !console) {
             sendReply(actor, Component.text("You must be a player to run this command.").color(TextColor.color(0xFF0000)));
             return;
         }
 
-        if (!plugin.getDataBridge().hasPermission(player.getUser(), changeOthersPerms)) {
+        if (!console && !plugin.getDataBridge().hasPermission(player.getUser(), changeOthersPerms)) {
             sendReply(actor, Component.text("You do not have permission to toggle alerts for other players.").color(TextColor.color(0xFF0000)));
             return;
         }

@@ -276,10 +276,10 @@ public abstract class Check implements Cloneable {
         verboseVL = section.getObject(Integer.class, "verbose-vl", 1);
 
         if (!section.hasNode("decay")) {
-            section.setObject(Integer.class, "decay", -1);
+            section.setObject(Integer.class, "decay", 1200000);
             modified = true;
         }
-        decay = section.getObject(Integer.class, "decay", -1);
+        decay = section.getObject(Integer.class, "decay", 1200000);
 
         if (!section.hasNode("combat-mitigation-ticks-on-alert")) {
             final var lowerCategory = category.toLowerCase();
@@ -326,6 +326,13 @@ public abstract class Check implements Cloneable {
             } else {
                 plugin.getDataBridge().logWarning("Punishment group '" + groupName + "' does not exist. The " + name + " check will not have any punishments.");
             }
+        }
+
+
+        // Remove old sections.
+        if (section.hasNode("punishments")) {
+            section.removeNode("punishments");
+            modified = true;
         }
 
         return modified;
