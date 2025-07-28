@@ -64,14 +64,10 @@ public class RecordingCommand extends Command {
                 return;
             }
 
-            player.getCmlTracker().setRecordingNow(true);
-            player.getCmlTracker().getRecording().clear();
+            targetPlayer.getCmlTracker().setRecordingNow(true);
+            targetPlayer.getCmlTracker().getRecording().clear();
             sendReply(actor, Component.text("Reset recording, and begun for: " + targetPlayerName));
         }
-
-        player.getCmlTracker().setRecordingNow(true);
-
-
     }
 
     @Subcommand("toggle")
