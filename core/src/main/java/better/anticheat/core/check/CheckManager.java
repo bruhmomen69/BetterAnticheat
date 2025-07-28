@@ -10,8 +10,10 @@ import better.anticheat.core.check.impl.dig.DigOrderCheck;
 import better.anticheat.core.check.impl.dig.MultiBreakCheck;
 import better.anticheat.core.check.impl.dig.RepeatedDigCheck;
 import better.anticheat.core.check.impl.flying.*;
+import better.anticheat.core.check.impl.heuristic.AimStabilizationCheck;
 import better.anticheat.core.check.impl.heuristic.CombatAccelerationCheck;
 import better.anticheat.core.check.impl.heuristic.LinearAimDeviationCheck;
+import better.anticheat.core.check.impl.heuristic.MicroMovementCheck;
 import better.anticheat.core.check.impl.misc.*;
 import better.anticheat.core.check.impl.packet.BalanceCheck;
 import better.anticheat.core.check.impl.packet.PostCheck;
@@ -65,8 +67,10 @@ public class CheckManager {
                 new RepeatedSteerCheck(plugin),
 
                 // Heuristic Checks
+                new AimStabilizationCheck(plugin),
                 new CombatAccelerationCheck(plugin),
                 new LinearAimDeviationCheck(plugin),
+                new MicroMovementCheck(plugin),
 
                 // Misc Checks
                 new ImpossibleHorseJumpCheck(plugin),

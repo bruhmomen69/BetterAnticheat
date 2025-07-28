@@ -201,6 +201,14 @@ public class MathUtil {
         return number.doubleValue() > 10000 && Double.toString(number.doubleValue()).contains("E");
     }
 
+    public float getDistanceBetweenAngles(final float angle1, final float angle2) {
+        float distance = Math.abs(angle1 - angle2) % 360.0f;
+        if (distance > 180.0f) {
+            distance = 360.0f - distance;
+        }
+        return distance;
+    }
+
     public long getGCD(final long current, final long previous) {
         return (previous <= 16384L) ? current : getGCD(previous, current % previous);
     }
@@ -227,5 +235,15 @@ public class MathUtil {
         } catch (NumberFormatException e) {
             return value;
         }
+    }
+
+    public static float yawTo180F(float flub) {
+        if ((flub %= 360.0f) >= 180.0f) {
+            flub -= 360.0f;
+        }
+        if (flub < -180.0f) {
+            flub += 360.0f;
+        }
+        return flub;
     }
 }

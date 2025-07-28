@@ -203,9 +203,9 @@ public class LinearAimDeviationCheck extends Check {
         }
 
         if (!anyFlag) {
-            fastAimBuffer -= 0.1;
+            fastAimBuffer = Math.max(fastAimBuffer - 0.1, 0);
             if (ticksSinceAttack < (20 * 20)) {
-                aimBurstBuffer -= 0.035;
+                aimBurstBuffer = Math.max(aimBurstBuffer - 0.035, 0);
             }
         }
     }
