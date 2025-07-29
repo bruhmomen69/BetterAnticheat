@@ -63,7 +63,7 @@ public abstract class Check implements Cloneable {
     public Check(BetterAnticheat plugin) {
         this.plugin = plugin;
         CheckInfo info = this.getClass().getAnnotation(CheckInfo.class);
-        if (info == null) throw new InvalidParameterException("No CheckInfo annotation!");
+        if (info == null) throw new InvalidParameterException("No CheckInfo annotation on class: " + this.getClass().getName() + "!");
 
         // Copy values from annotation.
         name = info.name();
