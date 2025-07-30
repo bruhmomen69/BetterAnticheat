@@ -12,6 +12,7 @@ import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientIn
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerFlying;
 import it.unimi.dsi.fastutil.doubles.DoubleDoubleImmutablePair;
 import it.unimi.dsi.fastutil.doubles.DoubleDoublePair;
+import wtf.spare.sparej.EvictingDeque;
 import wtf.spare.sparej.EvictingLinkedList;
 
 /**
@@ -20,7 +21,7 @@ import wtf.spare.sparej.EvictingLinkedList;
 @CheckInfo(name = "LinearAimDeviation", category = "heuristic")
 public class LinearAimDeviationCheck extends Check {
 
-    private final EvictingLinkedList<DoubleDoublePair> yaws = new EvictingLinkedList<>(25);
+    private final EvictingDeque<DoubleDoublePair> yaws = new EvictingDeque<>(25);
     private int ticksSinceAttack = 40, interactedEntity;
 
     private double aimBurstBuffer = 0, fastAimBuffer = 0, smoothFollowBuffer = 0;
@@ -84,20 +85,23 @@ public class LinearAimDeviationCheck extends Check {
          * sampleTwo - yaw offsets in each tick
          * differences - the difference between delta yaw and yaw offset.
          */
-        for (int i = 0; i < yaws.size(); i++) {
-            final DoubleDoublePair stored = yaws.get(i);
+        int i = 0;
+        for (final var stored : yaws) {
             sampleOne[i] = stored.firstDouble();
             sampleTwo[i] = stored.secondDouble();
             differences[i] = Math.abs(stored.firstDouble() - stored.secondDouble());
+            i++;
         }
 
         final LinearRegression regression = LinearRegression.simple(sampleOne, sampleTwo);
 
         // Run our linear regression predictions.
-        for (int i = 0; i < yaws.size(); i++) {
-            final double regObj = regression.predict(yaws.get(i).firstDouble());
-            final double out = Math.abs(regObj - yaws.get(i).secondDouble());
+        i = 0;
+        for (final var stored : yaws) {
+            final double regObj = regression.predict(stored.firstDouble());
+            final double out = Math.abs(regObj - stored.secondDouble());
             offsets[i] = out;
+            i++;
         }
 
         /*
