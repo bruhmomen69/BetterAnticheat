@@ -10,6 +10,7 @@ import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.github.luben.zstd.Zstd;
+import lombok.extern.slf4j.Slf4j;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import org.jetbrains.annotations.Nullable;
@@ -34,6 +35,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ForkJoinPool;
 
+@Slf4j
 @CommandInfo(name = "recording", parent = BACCommand.class)
 public class RecordingCommand extends Command {
     private String[] changeOthersPerms;
@@ -402,7 +404,7 @@ public class RecordingCommand extends Command {
         var cheatingAsLegit = 0;
         var cheatingAsCheating = 0;
         var cheatingAvg = 0.0;
-        final var struct = MLTrainer.PREDICTION_STRUCT_XL;
+        final var struct = MLTrainer.PREDICTION_STRUCT;
 
 
         for (final var legitArray : legitData) {
@@ -561,7 +563,7 @@ public class RecordingCommand extends Command {
             int correctPredictions = 0;
             int totalPredictions = legitTestData.length + cheatingTestData.length;
 
-            final StructType treeStructType = MLTrainer.PREDICTION_STRUCT_XL;
+            final StructType treeStructType = statistics ? MLTrainer.PREDICTION_STRUCT_XL : MLTrainer.PREDICTION_STRUCT;
             final Classifier<smile.data.Tuple> model = switch (modelType) {
                 case "gini_tree" -> trainer.getGiniTree();
                 case "entropy_tree" -> trainer.getEntropyTree();
@@ -572,8 +574,7 @@ public class RecordingCommand extends Command {
 
             // Test legit data (should predict < 5)
             for (final var legitArray : legitTestData) {
-                final var wrappedValidationData = new double[3][];
-                wrappedValidationData[trainer.getSlice()] = legitArray;
+                final var wrappedValidationData = new double[][]{legitArray,legitArray,legitArray};
 
                 final var prediction = model.predict(Tuple.of(
                                 treeStructType,
@@ -586,8 +587,7 @@ public class RecordingCommand extends Command {
 
             // Test cheating data (should predict >= 5)
             for (final var cheatingArray : cheatingTestData) {
-                final var wrappedValidationData = new double[3][];
-                wrappedValidationData[trainer.getSlice()] = cheatingArray;
+                final var wrappedValidationData = new double[][]{cheatingArray,cheatingArray,cheatingArray};
 
                 final var prediction = model.predict(Tuple.of(
                                 treeStructType,
@@ -600,6 +600,7 @@ public class RecordingCommand extends Command {
 
             return (double) correctPredictions / totalPredictions * 100.0;
         } catch (Exception e) {
+            log.error("Error while testing configuration: ", e);
             return 0.0; // Return 0% accuracy if there's an error
         }
     }

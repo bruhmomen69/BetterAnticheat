@@ -256,4 +256,38 @@ public class MathUtil {
         }
         return flub;
     }
+
+    /**
+     * Idfk what this does but GladUrBad's research said this was important so here it is
+     * https://github.com/infinitesm/AimAware/blob/main/aimaware-spigot/src/main/java/ai/aimaware/data/feature/FeatureExtractor.java#L124
+     */
+    public static double getEnergy(double[] values) {
+        if (values.length == 0) return 0.0;
+        double sumSquares = 0.0;
+        for (double v : values) {
+            sumSquares += v * v;
+        }
+        return sumSquares;
+    }
+
+    /**
+     * Idfk what this does but GladUrBad's research said this was important so here it is
+     * https://github.com/infinitesm/AimAware/blob/main/aimaware-spigot/src/main/java/ai/aimaware/data/feature/FeatureExtractor.java#L75
+     */
+    public static double autocorr(double[] values, int lag) {
+        if (values.length <= lag) return 0.0;
+
+        double mean = getAverage(values);
+        double num = 0.0;
+        double denom = 0.0;
+
+        for (int i = 0; i < values.length - lag; i++) {
+            num += (values[i] - mean) * (values[i] - mean);
+        }
+        for (double v : values) {
+            denom += Math.pow(v - mean, 2);
+        }
+
+        return denom == 0.0 ? 0.0 : num / denom;
+    }
 }

@@ -199,7 +199,7 @@ ml:
       # For decision trees/random forests, what should be the maximum depth of the tree?
       # Higher values can increase accuracy, but lead to severe overfitting.
       # Lower values will significantly reduce overfitting, but slightly decrease accuracy (~15% drop from 40 to 25).
-      tree-depth: 35
+      tree-depth: 30
       # How many samples to use for runtime classification.
       samples: 20
       # Required average of samples to flag the player (9.5 == Definitely cheating, 2.5 == Probably not cheating).

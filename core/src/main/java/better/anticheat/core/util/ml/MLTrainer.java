@@ -48,7 +48,7 @@ public class MLTrainer {
     private RandomForest giniForest;
     private RandomForest entropyForest;
 
-    public static final StructType PREDICTION_STRUCT_XL = new StructType(
+    public static final StructType PREDICTION_STRUCT = new StructType(
             new StructField("V2", DataTypes.IntType),
             new StructField("V3", DataTypes.IntType),
             new StructField("V4", DataTypes.IntType),
@@ -60,6 +60,24 @@ public class MLTrainer {
             new StructField("V10", DataTypes.IntType),
             new StructField("V11", DataTypes.IntType)
     );
+
+    public static final StructType PREDICTION_STRUCT_XL = new StructType(
+            new StructField("V2", DataTypes.IntType),
+            new StructField("V3", DataTypes.IntType),
+            new StructField("V4", DataTypes.IntType),
+            new StructField("V5", DataTypes.IntType),
+            new StructField("V6", DataTypes.IntType),
+            new StructField("V7", DataTypes.IntType),
+            new StructField("V8", DataTypes.IntType),
+            new StructField("V9", DataTypes.IntType),
+            new StructField("V10", DataTypes.IntType),
+            new StructField("V11", DataTypes.IntType),
+            new StructField("V12", DataTypes.IntType),
+            new StructField("V13", DataTypes.IntType),
+            new StructField("V14", DataTypes.IntType),
+            new StructField("V15", DataTypes.IntType)
+    );
+
 
 
     /**
@@ -139,18 +157,6 @@ public class MLTrainer {
                 giniForestMaxDepth, entropyForestMaxDepth, giniForestNodeSize, entropyForestNodeSize);
     }
 
-    public double[] statistiize(final double[] datum) {
-        final var shrunk = new double[5];
-        System.arraycopy(datum, 0, shrunk, 0, 5);
-        return new double[]{
-                MathUtil.getStandardDeviation(shrunk),
-                MathUtil.getSkewness(shrunk),
-                MathUtil.getAverage(shrunk),
-                MathUtil.getFluctuation(shrunk),
-                MathUtil.getOscillation(shrunk),
-        };
-    }
-
     public double[] statistiizeAndRetainFive(final double[] datum) {
         final var shrunk = new double[5];
         System.arraycopy(datum, 0, shrunk, 0, 5);
@@ -160,6 +166,10 @@ public class MLTrainer {
                 MathUtil.getAverage(shrunk),
                 MathUtil.getFluctuation(shrunk),
                 MathUtil.getOscillation(shrunk),
+                MathUtil.getEnergy(shrunk),
+                MathUtil.getEnergy(datum),
+                MathUtil.autocorr(datum, 1),
+                MathUtil.autocorr(datum, 5),
                 shrunk[0],
                 shrunk[1],
                 shrunk[2],
@@ -170,7 +180,8 @@ public class MLTrainer {
 
     public int[] prepareInputForTree(final double[][] input) {
         double[] prepared = statistics ? this.statistiizeAndRetainFive(input[slice]) : input[slice];
-        int[] tupleData = new int[prepared.length];
+        int[] tupleData = new int[statistics ? prepared.length : 10];
+
         for (int i = 0; i < prepared.length; i++) {
             tupleData[i] = (int) Math.round(prepared[i] * 2_500_000);
         }
@@ -178,14 +189,12 @@ public class MLTrainer {
         return tupleData;
     }
 
-
-
     private void buildDTree(final boolean trainRandomForest, int giniMaxDepth, int entropyMaxDepth, int giniNodeSize, int entropyNodeSize,
                             int giniForestMaxDepth, int entropyForestMaxDepth, int giniForestNodeSize, int entropyForestNodeSize) {
         final double[][] statTrain = new double[this.train.length][];
         if (this.statistics) {
             for (int i = 0; i < this.train.length; i++) {
-                statTrain[i] = statistiize(this.train[i]);
+                statTrain[i] = statistiizeAndRetainFive(this.train[i]);
             }
         } else {
             System.arraycopy(this.train, 0, statTrain, 0, this.train.length);
@@ -195,7 +204,6 @@ public class MLTrainer {
         if (this.statistics) {
             for (int i = 0; i < statTrain.length; i++) {
                 final var array = statTrain[i];
-                final var noStatArray = this.train[i];
                 xArrays[i] = new int[]{
                         this.labels[i],
                         (int) Math.round(array[0] * 2_500_000),
@@ -203,11 +211,15 @@ public class MLTrainer {
                         (int) Math.round(array[2] * 2_500_000),
                         (int) Math.round(array[3] * 2_500_000),
                         (int) Math.round(array[4] * 2_500_000),
-                        (int) Math.round(noStatArray[0] * 2_500_000),
-                        (int) Math.round(noStatArray[1] * 2_500_000),
-                        (int) Math.round(noStatArray[2] * 2_500_000),
-                        (int) Math.round(noStatArray[3] * 2_500_000),
-                        (int) Math.round(noStatArray[4] * 2_500_000)
+                        (int) Math.round(array[5] * 2_500_000),
+                        (int) Math.round(array[6] * 2_500_000),
+                        (int) Math.round(array[7] * 2_500_000),
+                        (int) Math.round(array[8] * 2_500_000),
+                        (int) Math.round(array[9] * 2_500_000),
+                        (int) Math.round(array[10] * 2_500_000),
+                        (int) Math.round(array[11] * 2_500_000),
+                        (int) Math.round(array[12] * 2_500_000),
+                        (int) Math.round(array[13] * 2_500_000),
                 };
             }
         } else {
@@ -257,14 +269,6 @@ public class MLTrainer {
         this.giniForest = RandomForest.fit(Formula.lhs("V1"), df, new RandomForest.Options(125, 0, SplitRule.GINI, giniForestMaxDepth, 0, giniForestNodeSize, 1.0, null, null, null));
         this.entropyForest = RandomForest.fit(Formula.lhs("V1"), df, new RandomForest.Options(125, 0, SplitRule.ENTROPY, entropyForestMaxDepth, 0, entropyForestNodeSize, 1.0, null, null, null));
     }
-
-    /**
-     * Prepares a 5-long aim double array for ML
-     *
-     * @param input the pre-attack input slice
-     * @return the prepared input
-     */
-
 
     /**
      * Creates a prediction function from configured datasets and model parameters.
@@ -323,7 +327,7 @@ public class MLTrainer {
                 yield (double[][] input) -> {
                     // Do not pre-intlify for decision tree-family models.
                     int[] tupleData = trainer.prepareInputForTree(input);
-                    return (double) model.predict(Tuple.of(PREDICTION_STRUCT_XL, tupleData));
+                    return (double) model.predict(Tuple.of(statistics ? PREDICTION_STRUCT_XL : PREDICTION_STRUCT, tupleData));
                 };
             }
             case "decision_tree_entropy" -> {
@@ -331,7 +335,7 @@ public class MLTrainer {
                 yield (double[][] input) -> {
                     // Do not pre-intlify for decision tree-family models.
                     int[] tupleData = trainer.prepareInputForTree(input);
-                    return (double) model.predict(Tuple.of(PREDICTION_STRUCT_XL, tupleData));
+                    return (double) model.predict(Tuple.of(statistics ? PREDICTION_STRUCT_XL : PREDICTION_STRUCT, tupleData));
                 };
             }
             case "random_forest_gini" -> {
@@ -339,7 +343,7 @@ public class MLTrainer {
                 yield (double[][] input) -> {
                     // Do not pre-intlify for decision tree-family models.
                     int[] tupleData = trainer.prepareInputForTree(input);
-                    return (double) model.predict(Tuple.of(PREDICTION_STRUCT_XL, tupleData));
+                    return (double) model.predict(Tuple.of(statistics ? PREDICTION_STRUCT_XL : PREDICTION_STRUCT, tupleData));
                 };
             }
             case "random_forest_entropy" -> {
@@ -347,7 +351,7 @@ public class MLTrainer {
                 yield (double[][] input) -> {
                     // Do not pre-intlify for decision tree-family models.
                     int[] tupleData = trainer.prepareInputForTree(input);
-                    return (double) model.predict(Tuple.of(PREDICTION_STRUCT_XL, tupleData));
+                    return (double) model.predict(Tuple.of(statistics ? PREDICTION_STRUCT_XL : PREDICTION_STRUCT, tupleData));
                 };
             }
 
