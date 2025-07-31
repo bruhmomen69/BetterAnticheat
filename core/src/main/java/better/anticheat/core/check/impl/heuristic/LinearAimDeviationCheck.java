@@ -13,7 +13,6 @@ import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPl
 import it.unimi.dsi.fastutil.doubles.DoubleDoubleImmutablePair;
 import it.unimi.dsi.fastutil.doubles.DoubleDoublePair;
 import wtf.spare.sparej.EvictingDeque;
-import wtf.spare.sparej.EvictingLinkedList;
 
 /**
  * This check uses linear regression to catch aim cheats.
@@ -184,7 +183,7 @@ public class LinearAimDeviationCheck extends Check {
             // Run the following if within 30 seconds of an attack.
             if (ticksSinceAttack > (30 * 20)) break low_randomization;
 
-            if (avg < 0.5 && stddev < 1.75 && avgDiff > 1.5 && diffDev > 3 && !(avgDiff < 10 && avg < 0.3 && stddev < 0.8 && diffDev < 6 )) {// TODO: Sensitivity! && data.getRotationProcessor().getSensitivityY() < 60)) {
+            if (avg < 0.5 && stddev < 1.75 && avgDiff > 1.5 && diffDev > 3 && !(avgDiff < 10 && avg < 0.3 && stddev < 0.8 && diffDev < 6)) {// TODO: Sensitivity! && data.getRotationProcessor().getSensitivityY() < 60)) {
                 if (avg < 0.45 && (player.getRotationTracker().isCinematic() || player.getRotationTracker().isCinematic2() || avg < 0.1)) {
                     anyFlag = true;
                     fail("Low Randomization");
