@@ -65,6 +65,7 @@ public class ModelConfig implements Serializable {
     private final int mitigationTicks;
 
     private final int treeDepth;
+    private final int nodeSize;
 
     private final ConfigSection configSection;
 

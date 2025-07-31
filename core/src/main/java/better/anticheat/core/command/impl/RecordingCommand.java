@@ -256,8 +256,8 @@ public class RecordingCommand extends Command {
             actor.reply("");
 
             // Test different depth and node size configurations
-            int[] depths = {10, 15, 20, 25, 30, 35, 40};
-            int[] nodeSizes = {1, 2, 3, 4, 5, 6, 8, 10};
+            int[] depths = {10, 15, 20, 25, 30, 35, 40, 45, 50, 60, 70, 80, 90};
+            int[] nodeSizes = {2, 3, 4, 5, 6, 8, 10};
 
             actor.reply("--- GINI DECISION TREE ---");
             for (int depth : depths) {

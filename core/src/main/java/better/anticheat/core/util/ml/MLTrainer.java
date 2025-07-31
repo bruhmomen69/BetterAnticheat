@@ -294,6 +294,7 @@ public class MLTrainer {
             boolean statistics,
             boolean shrink,
             int maxDepth,
+            int nodeSize,
             Path dataDirectory
     ) throws IOException {
         List<double[][][]> legitDataList = new ArrayList<>();
@@ -319,7 +320,7 @@ public class MLTrainer {
         double[][][] mergedLegitData = mergeData(legitDataList);
         double[][][] mergedCheatingData = mergeData(cheatingDataList);
 
-        final var trainer = new MLTrainer(mergedLegitData, mergedCheatingData, slice, shrink, statistics, modelType.toLowerCase().contains("forest"), maxDepth, maxDepth, maxDepth, maxDepth);
+        final var trainer = new MLTrainer(mergedLegitData, mergedCheatingData, slice, shrink, statistics, modelType.toLowerCase().contains("forest"), maxDepth, maxDepth, nodeSize, nodeSize, maxDepth, maxDepth, nodeSize, nodeSize);
 
         return switch (modelType.toLowerCase()) {
             case "decision_tree_gini" -> {

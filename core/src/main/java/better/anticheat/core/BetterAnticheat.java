@@ -193,7 +193,8 @@ public class BetterAnticheat {
                         child.getObject(Double.class, "alert-threshold", 7.5),
                         child.getObject(Double.class, "mitigation-threshold", 6.0),
                         child.getObject(Integer.class, "mitigation-only-ticks", 20),
-                        child.getObject(Integer.class, "tree-depth", 40),
+                        child.getObject(Integer.class, "tree-depth", 35),
+                        child.getObject(Integer.class, "node-size", 4),
                         child
                 ));
             }
@@ -202,7 +203,7 @@ public class BetterAnticheat {
         this.modelConfigs.forEach((name, config) -> {
             try {
                 this.dataBridge.logInfo("Loading model for " + name + "...");
-                final var model = MLTrainer.create(config.getLegitDatasetNames(), config.getCheatDatasetNames(), config.getType(), config.getSlice(), config.isStatistics(), config.isStatistics(), config.isShrink(), config.getTreeDepth(), this.directory);
+                final var model = MLTrainer.create(config.getLegitDatasetNames(), config.getCheatDatasetNames(), config.getType(), config.getSlice(), config.isStatistics(), config.isStatistics(), config.isShrink(), config.getTreeDepth(), config.getNodeSize(), this.directory);
                 config.setClassifierFunction(model);
                 this.dataBridge.logInfo("Model for " + name + " loaded!");
             } catch (IOException e) {
