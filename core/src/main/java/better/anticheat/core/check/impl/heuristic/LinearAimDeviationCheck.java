@@ -12,7 +12,7 @@ import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientIn
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerFlying;
 import it.unimi.dsi.fastutil.doubles.DoubleDoubleImmutablePair;
 import it.unimi.dsi.fastutil.doubles.DoubleDoublePair;
-import wtf.spare.sparej.EvictingLinkedList;
+import wtf.spare.sparej.EvictingDeque;
 
 /**
  * This check uses linear regression to catch aim cheats.
@@ -20,7 +20,7 @@ import wtf.spare.sparej.EvictingLinkedList;
 @CheckInfo(name = "LinearAimDeviation", category = "heuristic")
 public class LinearAimDeviationCheck extends Check {
 
-    private final EvictingLinkedList<DoubleDoublePair> yaws = new EvictingLinkedList<>(25);
+    private final EvictingDeque<DoubleDoublePair> yaws = new EvictingDeque<>(25);
     private int ticksSinceAttack = 40, interactedEntity;
 
     private double aimBurstBuffer = 0, fastAimBuffer = 0, smoothFollowBuffer = 0;
@@ -84,20 +84,23 @@ public class LinearAimDeviationCheck extends Check {
          * sampleTwo - yaw offsets in each tick
          * differences - the difference between delta yaw and yaw offset.
          */
-        for (int i = 0; i < yaws.size(); i++) {
-            final DoubleDoublePair stored = yaws.get(i);
+        int i = 0;
+        for (final var stored : yaws) {
             sampleOne[i] = stored.firstDouble();
             sampleTwo[i] = stored.secondDouble();
             differences[i] = Math.abs(stored.firstDouble() - stored.secondDouble());
+            i++;
         }
 
         final LinearRegression regression = LinearRegression.simple(sampleOne, sampleTwo);
 
         // Run our linear regression predictions.
-        for (int i = 0; i < yaws.size(); i++) {
-            final double regObj = regression.predict(yaws.get(i).firstDouble());
-            final double out = Math.abs(regObj - yaws.get(i).secondDouble());
+        i = 0;
+        for (final var stored : yaws) {
+            final double regObj = regression.predict(stored.firstDouble());
+            final double out = Math.abs(regObj - stored.secondDouble());
             offsets[i] = out;
+            i++;
         }
 
         /*
@@ -180,7 +183,7 @@ public class LinearAimDeviationCheck extends Check {
             // Run the following if within 30 seconds of an attack.
             if (ticksSinceAttack > (30 * 20)) break low_randomization;
 
-            if (avg < 0.5 && stddev < 1.75 && avgDiff > 1.5 && diffDev > 3 && !(avgDiff < 10 && avg < 0.3 && stddev < 0.8 && diffDev < 6 )) {// TODO: Sensitivity! && data.getRotationProcessor().getSensitivityY() < 60)) {
+            if (avg < 0.5 && stddev < 1.75 && avgDiff > 1.5 && diffDev > 3 && !(avgDiff < 10 && avg < 0.3 && stddev < 0.8 && diffDev < 6)) {// TODO: Sensitivity! && data.getRotationProcessor().getSensitivityY() < 60)) {
                 if (avg < 0.45 && (player.getRotationTracker().isCinematic() || player.getRotationTracker().isCinematic2() || avg < 0.1)) {
                     anyFlag = true;
                     fail("Low Randomization");

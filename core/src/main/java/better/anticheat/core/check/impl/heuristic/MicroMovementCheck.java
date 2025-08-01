@@ -2,19 +2,24 @@ package better.anticheat.core.check.impl.heuristic;
 
 import better.anticheat.core.BetterAnticheat;
 import better.anticheat.core.check.Check;
+import better.anticheat.core.check.CheckInfo;
+import better.anticheat.core.util.EasyLoops;
+import better.anticheat.core.util.MathUtil;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientInteractEntity;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerFlying;
 import wtf.spare.sparej.EvictingDeque;
+import wtf.spare.sparej.fastlist.evicting.ord.OrderedArrayFloatEvictingList;
 
 /**
  * This check looks for very small mouse movement during combat.
  */
+@CheckInfo(name = "MicroAimMovement", category = "heuristic")
 public class MicroMovementCheck extends Check {
 
     private int ticksSinceAttack = 0, buffer = 0;
-    private final EvictingDeque<Float> yawSamples = new EvictingDeque<>(128);
-    private final EvictingDeque<Float> pitchSamples = new EvictingDeque<>(128);
+    private final OrderedArrayFloatEvictingList yawSamples = new OrderedArrayFloatEvictingList(128);
+    private final OrderedArrayFloatEvictingList pitchSamples = new OrderedArrayFloatEvictingList(128);
 
     public MicroMovementCheck(BetterAnticheat plugin) {
         super(plugin);
@@ -43,23 +48,20 @@ public class MicroMovementCheck extends Check {
         if (cinematic) return;
         if (!(deltaPitch > 0 && deltaYaw > 0 && deltaPitch < 20 && deltaYaw < 20)) return;
 
-        pitchSamples.add(deltaPitch);
-        yawSamples.add(deltaYaw);
+        pitchSamples.push(deltaPitch);
+        yawSamples.push(deltaYaw);
 
         if (!yawSamples.isFull()) return;
 
-        final double averagePitch = pitchSamples.stream().mapToDouble(d -> d).average().orElse(0);
-        final double averageYaw = yawSamples.stream().mapToDouble(d -> d).average().orElse(0);
+        final double averagePitch = MathUtil.getAverage(pitchSamples.getArray());
+        final double averageYaw = MathUtil.getAverage(yawSamples.getArray());
         long count = 0;
-        count += pitchSamples.stream().filter(delta -> delta < 0.001).count();
-        count += yawSamples.stream().filter(delta -> delta < 0.001).count();
+        count += EasyLoops.count(pitchSamples, (delta -> delta < 0.001));
+        count += EasyLoops.count(yawSamples, (delta -> delta < 0.001));
 
         if (((averageYaw > 0 && averageYaw < 1.1) || averagePitch <= 0.01) && count >= 80) {
             buffer++;
-            if (buffer > 2) fail();
+            if (buffer > 2) fail("pitch: " + averagePitch + ", yaw: " + averageYaw + ", count: " + count + ", bf: " + buffer);
         } else buffer = Math.max(--buffer, 0);
-
-        pitchSamples.clear();
-        yawSamples.clear();
     }
 }

@@ -20,7 +20,13 @@ public class PacketListener extends SimplePacketListenerAbstract {
     public void onPacketPlayReceive(PacketPlayReceiveEvent event) {
         Player player = plugin.getPlayerManager().getPlayer(event.getUser());
         if (player == null) return;
-        player.handleReceivePacket(event);
+
+        try {
+            player.handleReceivePacket(event);
+        } catch (final Exception e) {
+            log.error("Error while handling packet (i) for player, closing connection {}: ", event.getUser().getName(), e);
+            event.getUser().closeConnection();
+        }
     }
 
     @Override
@@ -32,7 +38,12 @@ public class PacketListener extends SimplePacketListenerAbstract {
 
         Player player = plugin.getPlayerManager().getPlayer(event.getUser());
         if (player == null) return;
-        player.handleSendPacket(event);
+        try {
+            player.handleSendPacket(event);
+        } catch (final Exception e) {
+            log.error("Error while handling packet (o) for player, closing connection {}: ", event.getUser().getName(), e);
+            event.getUser().closeConnection();
+        }
     }
 
     @Override

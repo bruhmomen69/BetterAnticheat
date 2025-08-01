@@ -222,13 +222,13 @@ public class ConfirmationTracker extends Tracker {
             final var post = sendCookieOrLatest(now);
             final var acquiredConfirmation = new CombinedConfirmation(new SimpleFuture<>(), new SimpleFuture<>(), new IntIncrementer(0));
             sentOption.getListeners().add(() -> {
-                acquiredConfirmation.getOnBegin().complete(this.recentConfirmations.isEmpty() ? null : this.recentConfirmations.getLast());
-                acquiredConfirmation.getState().increment();
+                if (acquiredConfirmation.getOnBegin().completeIfIncomplete(this.recentConfirmations.isEmpty() ? null : this.recentConfirmations.getLast())) {
+                    acquiredConfirmation.getState().increment();
+                }
             });
 
             post.getListeners().add(() -> {
-                if (!acquiredConfirmation.getOnBegin().isComplete()) {
-                    acquiredConfirmation.getOnBegin().complete(post);
+                if (acquiredConfirmation.getOnBegin().completeIfIncomplete(post)) {
                     acquiredConfirmation.getState().increment();
                 }
 

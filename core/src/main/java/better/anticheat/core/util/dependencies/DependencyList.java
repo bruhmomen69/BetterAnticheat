@@ -5,7 +5,7 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class DependencyList {
     public static final String[] DEPENDENCIES = new String[]{
-            "wtf.spare:sparej:1.0.0",
+            "wtf.spare:sparej:1.0.1",
             "it.unimi.dsi:fastutil:8.5.16",
             "org.yaml:snakeyaml:2.4",
             "io.github.revxrsal:lamp.bukkit:4.0.0-rc.12",

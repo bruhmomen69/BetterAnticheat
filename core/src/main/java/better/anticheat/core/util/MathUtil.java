@@ -147,6 +147,16 @@ public class MathUtil {
         return sum / data.length;
     }
 
+    public double getAverage(float[] data) {
+        double sum = 0.0;
+
+        for (final double number : data) {
+            sum += number;
+        }
+
+        return sum / data.length;
+    }
+
     public double getFluctuation(double[] collection) {
         double max = 0;
         double min = Double.MAX_VALUE;

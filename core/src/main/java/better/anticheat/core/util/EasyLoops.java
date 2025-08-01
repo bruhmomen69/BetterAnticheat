@@ -33,6 +33,16 @@ public class EasyLoops {
         return false;
     }
 
+    public <A> int count(final Iterable<A> collection, final Predicate<A> predicate) {
+        int count = 0;
+
+        for (A predictedMotion : collection) {
+            if (predicate.test(predictedMotion)) count++;
+        }
+
+        return count;
+    }
+
     /**
      * Verifies if all elements in the specified collection satisfy the given predicate.
      * This method iterates through the collection and returns false upon finding the first non-matching element, optimizing for early termination.
