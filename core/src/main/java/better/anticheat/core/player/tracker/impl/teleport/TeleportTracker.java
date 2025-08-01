@@ -74,7 +74,8 @@ public class TeleportTracker extends Tracker {
              * behavior.
              * This could also be fixed with a prediction system, but that's a long ways out.
              */
-            if (!teleport.isHandled()) break;
+            // Note: Commented out for now to try to increase handler performance!
+            //if (!teleport.isHandled()) break;
         }
     }
 
