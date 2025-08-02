@@ -311,4 +311,46 @@ public class MathUtil {
         }
         return count;
     }
+
+    /**
+     * Excess kurtosis (Fisher definition) of an array. Returns 0 for length < 4.
+     */
+    public static double getKurtosis(double[] data) {
+        if (data == null || data.length < 4) return 0.0;
+        double mean = getAverage(data);
+        double m2 = 0.0, m4 = 0.0;
+        for (double v : data) {
+            double d = v - mean;
+            double d2 = d * d;
+            m2 += d2;
+            m4 += d2 * d2;
+        }
+        int n = data.length;
+        if (m2 == 0.0) return 0.0;
+        return (n * m4) / (m2 * m2) - 3.0;
+    }
+
+    /**
+     * Shannon entropy over normalized magnitudes of data.
+     * Values are converted to abs, normalized to sum=1, then H = -sum p*log(p).
+     * Returns 0 if all magnitudes are zero.
+     */
+    public static double getEntropy(double[] data) {
+        if (data == null || data.length == 0) return 0.0;
+        double sum = 0.0;
+        double[] mags = new double[data.length];
+        for (int i = 0; i < data.length; i++) {
+            mags[i] = Math.abs(data[i]);
+            sum += mags[i];
+        }
+        if (sum == 0.0) return 0.0;
+        double h = 0.0;
+        for (double m : mags) {
+            double p = m / sum;
+            if (p > 0.0) {
+                h -= p * Math.log(p);
+            }
+        }
+        return h;
+    }
 }

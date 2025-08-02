@@ -83,7 +83,17 @@ public class MLTrainer {
             new StructField("V20", DataTypes.IntType),
             new StructField("V21", DataTypes.IntType),
             new StructField("V22", DataTypes.IntType),
-            new StructField("V23", DataTypes.IntType)
+            new StructField("V23", DataTypes.IntType),
+            new StructField("V24", DataTypes.IntType),
+            new StructField("V25", DataTypes.IntType),
+            new StructField("V26", DataTypes.IntType),
+            new StructField("V27", DataTypes.IntType),
+            new StructField("V28", DataTypes.IntType),
+            new StructField("V29", DataTypes.IntType),
+            new StructField("V30", DataTypes.IntType),
+            new StructField("V31", DataTypes.IntType),
+            new StructField("V32", DataTypes.IntType),
+            new StructField("V33", DataTypes.IntType)
     );
 
 
