@@ -198,6 +198,14 @@ public class MLTrainer {
         final int accZeroX = MathUtil.zeroCrossings(acc3);
         final double accAvg = MathUtil.getAverage(acc3);
 
+        // Additional yaw-related features:
+        // From last 5 yaw deltas (shrunk)
+        final double deltaYawKurtosis = MathUtil.getKurtosis(shrunk);
+        final double deltaYawEntropy  = MathUtil.getEntropy(shrunk);
+        // From last 3 yaw accelerations (acc3)
+        final double accelerationYawKurtosis = MathUtil.getKurtosis(acc3);
+        final double accelerationYawEntropy  = MathUtil.getEntropy(acc3);
+
         return new double[]{
                 MathUtil.getStandardDeviation(shrunk), // 0
                 MathUtil.getSkewness(shrunk),          // 1
@@ -220,7 +228,11 @@ public class MLTrainer {
                 accAvg,                                 // 18
                 acc3[0],                                // 19
                 acc3[1],                                // 20
-                acc3[2]                                 // 21
+                acc3[2],                                // 21
+                deltaYawKurtosis,                       // 22
+                deltaYawEntropy,                        // 23
+                accelerationYawKurtosis,                // 24
+                accelerationYawEntropy                  // 25
         };
     }
 
