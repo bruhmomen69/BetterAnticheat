@@ -75,7 +75,15 @@ public class MLTrainer {
             new StructField("V12", DataTypes.IntType),
             new StructField("V13", DataTypes.IntType),
             new StructField("V14", DataTypes.IntType),
-            new StructField("V15", DataTypes.IntType)
+            new StructField("V15", DataTypes.IntType),
+            new StructField("V16", DataTypes.IntType),
+            new StructField("V17", DataTypes.IntType),
+            new StructField("V18", DataTypes.IntType),
+            new StructField("V19", DataTypes.IntType),
+            new StructField("V20", DataTypes.IntType),
+            new StructField("V21", DataTypes.IntType),
+            new StructField("V22", DataTypes.IntType),
+            new StructField("V23", DataTypes.IntType)
     );
 
 
@@ -160,21 +168,49 @@ public class MLTrainer {
     public double[] statistiizeAndRetainFive(final double[] datum) {
         final var shrunk = new double[5];
         System.arraycopy(datum, 0, shrunk, 0, 5);
+
+        // Compute last 3 accelerations before the attack from the first 5 samples:
+        // velocity diffs (size 4)
+        final double[] vel = new double[4];
+        for (int i = 0; i < 4; i++) {
+            vel[i] = shrunk[i + 1] - shrunk[i];
+        }
+        // acceleration diffs (size 3)
+        final double[] acc3 = new double[3];
+        for (int i = 0; i < 3; i++) {
+            acc3[i] = vel[i + 1] - vel[i];
+        }
+
+        // Stats on the 3-acceleration window
+        final double accAutocorr1 = MathUtil.autocorr(acc3, 1);
+        final double accSkew = MathUtil.getSkewness(acc3);
+        final double accStd = MathUtil.getStandardDeviation(acc3);
+        final int accZeroX = MathUtil.zeroCrossings(acc3);
+        final double accAvg = MathUtil.getAverage(acc3);
+
         return new double[]{
-                MathUtil.getStandardDeviation(shrunk),
-                MathUtil.getSkewness(shrunk),
-                MathUtil.getAverage(shrunk),
-                MathUtil.getFluctuation(shrunk),
-                MathUtil.getOscillation(shrunk),
-                MathUtil.getEnergy(shrunk),
-                MathUtil.getEnergy(datum),
-                MathUtil.autocorr(datum, 1),
-                MathUtil.autocorr(datum, 5),
-                shrunk[0],
-                shrunk[1],
-                shrunk[2],
-                shrunk[3],
-                shrunk[4],
+                MathUtil.getStandardDeviation(shrunk), // 0
+                MathUtil.getSkewness(shrunk),          // 1
+                MathUtil.getAverage(shrunk),           // 2
+                MathUtil.getFluctuation(shrunk),       // 3
+                MathUtil.getOscillation(shrunk),       // 4
+                MathUtil.getEnergy(shrunk),            // 5
+                MathUtil.getEnergy(datum),             // 6
+                MathUtil.autocorr(datum, 1),           // 7
+                MathUtil.autocorr(datum, 5),           // 8
+                shrunk[0],                              // 9
+                shrunk[1],                              // 10
+                shrunk[2],                              // 11
+                shrunk[3],                              // 12
+                shrunk[4],                              // 13
+                accAutocorr1,                           // 14
+                accSkew,                                // 15
+                accStd,                                 // 16
+                accZeroX,                               // 17
+                accAvg,                                 // 18
+                acc3[0],                                // 19
+                acc3[1],                                // 20
+                acc3[2]                                 // 21
         };
     }
 
@@ -204,23 +240,11 @@ public class MLTrainer {
         if (this.statistics) {
             for (int i = 0; i < statTrain.length; i++) {
                 final var array = statTrain[i];
-                xArrays[i] = new int[]{
-                        this.labels[i],
-                        (int) Math.round(array[0] * 2_500_000),
-                        (int) Math.round(array[1] * 2_500_000),
-                        (int) Math.round(array[2] * 2_500_000),
-                        (int) Math.round(array[3] * 2_500_000),
-                        (int) Math.round(array[4] * 2_500_000),
-                        (int) Math.round(array[5] * 2_500_000),
-                        (int) Math.round(array[6] * 2_500_000),
-                        (int) Math.round(array[7] * 2_500_000),
-                        (int) Math.round(array[8] * 2_500_000),
-                        (int) Math.round(array[9] * 2_500_000),
-                        (int) Math.round(array[10] * 2_500_000),
-                        (int) Math.round(array[11] * 2_500_000),
-                        (int) Math.round(array[12] * 2_500_000),
-                        (int) Math.round(array[13] * 2_500_000),
-                };
+                xArrays[i] = new int[1 + array.length];
+                xArrays[i][0] = this.labels[i];
+                for (int j = 0; j < array.length; j++) {
+                    xArrays[i][j + 1] = (int) Math.round(array[j] * 2_500_000);
+                }
             }
         } else {
             for (int i = 0; i < statTrain.length; i++) {

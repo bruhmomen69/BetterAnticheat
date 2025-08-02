@@ -290,4 +290,25 @@ public class MathUtil {
 
         return denom == 0.0 ? 0.0 : num / denom;
     }
+
+    /**
+     * Counts the number of zero-crossings in a sequence.
+     * A zero-crossing occurs when consecutive values have opposite signs.
+     * 
+     * Idfk what this does but GladUrBad's research said this was important so here it is
+     * https://github.com/infinitesm/AimAware/blob/main/aimaware-spigot/src/main/java/ai/aimaware/data/feature/FeatureExtractor.java#L75
+     *
+     * @param values array of values
+     * @return number of zero crossings
+     */
+    public static int zeroCrossings(double[] values) {
+        if (values == null || values.length < 2) return 0;
+        int count = 0;
+        for (int i = 1; i < values.length; i++) {
+            if (values[i - 1] * values[i] < 0) {
+                count++;
+            }
+        }
+        return count;
+    }
 }
