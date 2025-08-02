@@ -88,12 +88,7 @@ public class MLTrainer {
             new StructField("V25", DataTypes.IntType),
             new StructField("V26", DataTypes.IntType),
             new StructField("V27", DataTypes.IntType),
-            new StructField("V28", DataTypes.IntType),
-            new StructField("V29", DataTypes.IntType),
-            new StructField("V30", DataTypes.IntType),
-            new StructField("V31", DataTypes.IntType),
-            new StructField("V32", DataTypes.IntType),
-            new StructField("V33", DataTypes.IntType)
+            new StructField("V28", DataTypes.IntType)
     );
 
 
@@ -202,6 +197,8 @@ public class MLTrainer {
         // From last 5 yaw deltas (shrunk)
         final double deltaYawKurtosis = MathUtil.getKurtosis(shrunk);
         final double deltaYawEntropy  = MathUtil.getEntropy(shrunk);
+        // From entire yaw deltas (all data)
+        final double deltaYawKurtosisAll = MathUtil.getKurtosis(datum);
         // From last 3 yaw accelerations (acc3)
         final double accelerationYawKurtosis = MathUtil.getKurtosis(acc3);
         final double accelerationYawEntropy  = MathUtil.getEntropy(acc3);
@@ -232,7 +229,8 @@ public class MLTrainer {
                 deltaYawKurtosis,                       // 22
                 deltaYawEntropy,                        // 23
                 accelerationYawKurtosis,                // 24
-                accelerationYawEntropy                  // 25
+                accelerationYawEntropy,                 // 25
+                deltaYawKurtosisAll                     // 26
         };
     }
 
