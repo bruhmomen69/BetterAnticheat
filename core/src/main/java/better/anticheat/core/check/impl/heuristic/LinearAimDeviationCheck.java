@@ -30,7 +30,7 @@ public class LinearAimDeviationCheck extends Check {
     }
 
     @Override
-    public void handleReceivePlayPacket(PacketPlayReceiveEvent event) {
+    public synchronized void handleReceivePlayPacket(PacketPlayReceiveEvent event) {
         // Track ticks since attack.
         switch (event.getPacketType()) {
             case INTERACT_ENTITY -> {

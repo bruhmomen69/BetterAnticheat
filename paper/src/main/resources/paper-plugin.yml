@@ -1,7 +1,7 @@
 name: BetterAnticheat
 version: 1.0.0
 main: better.anticheat.paper.BetterAnticheatPaper
-api-version: 1.21.4
+api-version: 1.21.2
 load: POSTWORLD
 folia-supported: true
 loader: better.anticheat.paper.BetterAnticheatPaperLoader
