@@ -367,6 +367,100 @@ public class RecordingCommand extends Command {
         });
     }
 
+    @Subcommand("rate")
+    public void recordingRate(final CommandActor actor,
+                              @Range(min = 0, max = 2) final short column,
+                              final String legit,
+                              final String cheating,
+                              final String candidate,
+                              final @Optional @Default("true") boolean processed,
+                              final @Optional @Default("true") boolean statistics) throws IOException {
+        if (!hasPermission(actor)) return;
+
+        final var legitData = loadData(legit);
+        if (legitData == null) {
+            sendReply(actor, Component.text("Failed to load data for " + legit));
+            return;
+        }
+
+        final var cheatingData = loadData(cheating);
+        if (cheatingData == null) {
+            sendReply(actor, Component.text("Failed to load data for " + cheating));
+            return;
+        }
+
+        final var candidateData = loadData(candidate);
+        if (candidateData == null) {
+            sendReply(actor, Component.text("Failed to load data for " + candidate));
+            return;
+        }
+
+        ForkJoinPool.commonPool().execute(() -> {
+            try {
+                final MLTrainer trainer = new MLTrainer(legitData, cheatingData, column, false, statistics, processed);
+
+                // Select the correct struct size based on statistics flag
+                final StructType treeStructType = statistics ? MLTrainer.PREDICTION_STRUCT_XL : MLTrainer.PREDICTION_STRUCT;
+
+                // Build list of models to evaluate
+                final List<String> modelTypes = new ArrayList<>();
+                modelTypes.add("gini_tree");
+                modelTypes.add("entropy_tree");
+                modelTypes.add("gini_forest");
+                modelTypes.add("entropy_forest");
+
+                actor.reply("=== Candidate rating for '" + candidate + "' vs legit='" + legit + "', cheat='" + cheating + "' (slice " + column + ", processed=" + processed + ", statistics=" + statistics + ") ===");
+
+                double sumPercent = 0.0;
+                int counted = 0;
+
+                for (String modelType : modelTypes) {
+                    Classifier<Tuple> model;
+                    switch (modelType) {
+                        case "gini_tree" -> model = trainer.getGiniTree();
+                        case "entropy_tree" -> model = trainer.getEntropyTree();
+                        case "gini_forest" -> model = trainer.getGiniForest();
+                        case "entropy_forest" -> model = trainer.getEntropyForest();
+                        default -> throw new IllegalStateException("Unknown model type: " + modelType);
+                    }
+
+                    // Collect candidate arrays using the selected slice
+                    final double[][] candidateSlice = candidateData[column];
+
+                    int asCheat = 0;
+                    int total = candidateSlice.length;
+                    final int threshold = 5;
+
+                    for (final var sample : candidateSlice) {
+                        final var wrapped = new double[3][];
+                        wrapped[trainer.getSlice()] = sample;
+
+                        final int prediction = model.predict(Tuple.of(
+                                treeStructType,
+                                trainer.prepareInputForTree(wrapped)
+                        ));
+
+                        if (prediction >= threshold) asCheat++;
+                    }
+
+                    double percentCheat = total == 0 ? 0.0 : (asCheat * 100.0 / total);
+                    sumPercent += percentCheat;
+                    counted++;
+
+                    actor.reply(String.format("%s: %d/%d (%.2f%%) classified as cheating", model.getClass().getSimpleName(), asCheat, total, percentCheat));
+                }
+
+                if (counted > 0) {
+                    double average = sumPercent / counted;
+                    actor.reply(String.format("Average cheat rating across models: %.2f%%", average));
+                }
+            } catch (Throwable t) {
+                log.error("Error during recordingRate execution", t);
+                actor.reply("Error during rating: " + t.getClass().getSimpleName() + " - " + t.getMessage());
+            }
+        });
+    }
+
     private void runTrainerTests(double[][][] legitData, double[][][] cheatingData, CommandActor actor, short column, boolean process, boolean statistics) {
         final MLTrainer trainer = new MLTrainer(legitData, cheatingData, column, true, statistics, true);
 
