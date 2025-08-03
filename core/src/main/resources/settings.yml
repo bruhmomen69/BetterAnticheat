@@ -37,6 +37,9 @@ click-command: 'tp %username%'
 # Ex: At 8 vls, 8, yes. 4, no. 3, no. 2, no. 1, no.
 punishment-modulo: true
 
+# Ignore pre-1.21 players to avoid compatibility issues, within the anticheat.
+dont-inject-pre-121-players: true
+
 # Configure the punishments per group instead of per check, in order to reduce the total number of punish configurations you need to make.
 # Each check can be assigned many groups, and each group can have many punishments.
 # Available Placeholders:

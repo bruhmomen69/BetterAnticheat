@@ -49,7 +49,7 @@ public class BetterAnticheat {
     private double verboseCooldownDivisor;
     private List<String> alertHover;
     private String alertMessage, alertPermission, clickCommand;
-    private boolean punishmentModulo, testMode, useCommand;
+    private boolean punishmentModulo, testMode, useCommand, ignorePre121Players;
     private String webhookUrl, webhookMessage;
     private final Map<String, ModelConfig> modelConfigs = new Object2ObjectArrayMap<>();
     private boolean mitigationCombatDamageEnabled;
@@ -92,7 +92,7 @@ public class BetterAnticheat {
         load();
 
         // Ensure players are 1.21+. We will conditionally load checks depending on features (e.g., CLIENT_TICK_END).
-        playerManager.registerQuantifier((user -> user.getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_21)));
+        playerManager.registerQuantifier((user -> !ignorePre121Players || user.getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_21)));
     }
 
     public void disable() {
@@ -113,7 +113,8 @@ public class BetterAnticheat {
         clickCommand = settings.getObject(String.class, "click-command", "");
         punishmentModulo = settings.getObject(Boolean.class, "punishment-modulo", true);
         testMode = settings.getObject(Boolean.class, "test-mode", false);
-        useCommand = settings.getObject(Boolean.class, "enable-commands", true); // Default to true for people who have not updated their config.
+        useCommand = settings.getObject(Boolean.class, "enable-commands", true);
+        ignorePre121Players = settings.getObject(Boolean.class, "dont-inject-pre-121-players", true);
 
         final var webhookNode = settings.getConfigSection("webhook");
         if (webhookNode != null) {
