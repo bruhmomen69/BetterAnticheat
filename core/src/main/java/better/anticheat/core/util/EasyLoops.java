@@ -33,6 +33,14 @@ public class EasyLoops {
         return false;
     }
 
+    public <A> boolean anyMatch(final A[] collection, final Predicate<A> predicate) {
+        for (A predictedMotion : collection) {
+            if (predicate.test(predictedMotion)) return true;
+        }
+
+        return false;
+    }
+
     public <A> int count(final Iterable<A> collection, final Predicate<A> predicate) {
         int count = 0;
 

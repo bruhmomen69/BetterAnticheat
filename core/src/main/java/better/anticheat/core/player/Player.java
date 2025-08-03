@@ -50,7 +50,7 @@ public class Player implements Closeable {
     private final List<Closeable> closeables = new ArrayList<>();
     private final List<Violation> violations = new FastObjectArrayList<>();
 
-    public Player(final BetterAnticheat plugin, final User user, final DataBridge dataBridge) {
+    public Player(final BetterAnticheat plugin, final User user, final DataBridge<?> dataBridge) {
         this.plugin = plugin;
         this.user = user;
         this.positionTracker = new PositionTracker(this);
@@ -60,7 +60,7 @@ public class Player implements Closeable {
         var cookieAllocator = createCookieAllocator(
                 BetterAnticheat.getInstance().getCookieAllocatorConfig()
         );
-        this.confirmationTracker = new ConfirmationTracker(this, cookieAllocator);
+        this.confirmationTracker = new ConfirmationTracker(this, cookieAllocator, dataBridge);
 
         this.entityTracker = new EntityTracker(this, this.confirmationTracker, this.positionTracker, dataBridge);
         this.playerStatusTracker = new PlayerStatusTracker(this, this.confirmationTracker);

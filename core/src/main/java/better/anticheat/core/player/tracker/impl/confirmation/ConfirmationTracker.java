@@ -1,8 +1,8 @@
 package better.anticheat.core.player.tracker.impl.confirmation;
 
+import better.anticheat.core.DataBridge;
 import better.anticheat.core.player.Player;
 import better.anticheat.core.player.tracker.Tracker;
-import better.anticheat.core.player.tracker.impl.confirmation.allocator.SequentialLongCookieAllocator;
 import better.anticheat.core.util.EasyLoops;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.event.simple.PacketPlaySendEvent;
@@ -17,6 +17,7 @@ import com.github.retrooper.packetevents.wrapper.play.server.*;
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 import lombok.extern.slf4j.Slf4j;
 import net.kyori.adventure.text.Component;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import wtf.spare.sparej.EvictingDeque;
 import wtf.spare.sparej.SimpleFuture;
@@ -33,6 +34,10 @@ import java.util.Set;
 public class ConfirmationTracker extends Tracker {
     public static final String COOKIE_KEY = "ad-tracking-id";
     public static final String COOKIE_NAMESPACE = "bac";
+    /**
+     * Application hooks
+     */
+    private final @NotNull DataBridge<?> dataBridge;
     /**
      * A list of awaiting confirmations.
      */
@@ -58,13 +63,10 @@ public class ConfirmationTracker extends Tracker {
      */
     private int packetTickCounter = 0;
 
-    public ConfirmationTracker(Player player) {
-        this(player, new SequentialLongCookieAllocator());
-    }
-
-    public ConfirmationTracker(Player player, CookieIdAllocator cookieIdAllocator) {
+    public ConfirmationTracker(final @NotNull Player player, final @NotNull CookieIdAllocator cookieIdAllocator, final @NotNull DataBridge<?> dataBridge) {
         super(player);
         this.cookieIdAllocator = cookieIdAllocator;
+        this.dataBridge = dataBridge;
     }
 
     @Override
@@ -76,10 +78,7 @@ public class ConfirmationTracker extends Tracker {
                 final var pongConfirmation = EasyLoops.findFirst(confirmations, state ->
                         state.getType() == ConfirmationType.PINGPONG && state.hasLongId() && state.getLongId() == pongId);
                 if (pongConfirmation != null) {
-                    pongConfirmation.setTimestampConfirmed(System.currentTimeMillis());
-                    pongConfirmation.getListeners().forEach(Runnable::run);
-                    confirmations.remove(pongConfirmation);
-                    recentConfirmations.add(pongConfirmation);
+                    processConfirmationState(pongConfirmation);
 
                     if (pongConfirmation.isNeedsCancellation()) {
                         event.setCancelled(true);
@@ -95,10 +94,7 @@ public class ConfirmationTracker extends Tracker {
                 final var keepAliveConfirmation = EasyLoops.findFirst(confirmations, state ->
                         state.getType() == ConfirmationType.KEEPALIVE && state.hasLongId() && state.getLongId() == keepAliveId);
                 if (keepAliveConfirmation != null) {
-                    keepAliveConfirmation.setTimestampConfirmed(System.currentTimeMillis());
-                    keepAliveConfirmation.getListeners().forEach(Runnable::run);
-                    confirmations.remove(keepAliveConfirmation);
-                    recentConfirmations.add(keepAliveConfirmation);
+                    processConfirmationState(keepAliveConfirmation);
 
                     if (keepAliveConfirmation.isNeedsCancellation()) {
                         event.setCancelled(true);
@@ -119,10 +115,7 @@ public class ConfirmationTracker extends Tracker {
                     );
 
                     if (cookieConfirmation != null) {
-                        cookieConfirmation.setTimestampConfirmed(System.currentTimeMillis());
-                        cookieConfirmation.getListeners().forEach(Runnable::run);
-                        confirmations.remove(cookieConfirmation);
-                        recentConfirmations.add(cookieConfirmation);
+                        processConfirmationState(cookieConfirmation);
 
                         if (cookieConfirmation.isNeedsCancellation()) {
                             event.setCancelled(true);
@@ -195,6 +188,13 @@ public class ConfirmationTracker extends Tracker {
                 break;
             }
         }
+    }
+
+    private void processConfirmationState(final ConfirmationState state) {
+        state.setTimestampConfirmed(System.currentTimeMillis());
+        state.getListeners().forEach(Runnable::run);
+        confirmations.remove(state);
+        recentConfirmations.add(state);
     }
 
     /**
@@ -296,6 +296,14 @@ public class ConfirmationTracker extends Tracker {
             return this.recentConfirmations.peekLast();
         }
         synchronized (cookieLock) {
+            // Attempt to use native post confirmations to save on bandwidth.
+            if (this.dataBridge.pfNativeConfirmationSupported()) {
+                final var nativePostConfirmation = this.dataBridge.pfNativeConfirmationRun(getPlayer(), (c) -> this.processConfirmationState((ConfirmationState) c));
+                if (nativePostConfirmation != null) {
+                    return nativePostConfirmation;
+                }
+            }
+
             if (this.nextPostPacket == null) {
                 log.trace("[BetterAntiCheat] Constructing and Allocating cookie");
                 final var cookieId = this.cookieIdAllocator.allocateNext();

@@ -101,6 +101,13 @@
             <artifactId>sparej</artifactId>
             <scope>provided</scope>
         </dependency>
+
+        <dependency>
+            <groupId>ac.grim</groupId>
+            <artifactId>grimac</artifactId>
+            <version>2.3.71</version>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 
     <build>
