@@ -64,8 +64,8 @@ public class EntityTracker extends Tracker {
     private final DataBridge<?> bridge;
 
     // Temporary buffers to avoid allocating each time
-    private final ObjectArrayList<EntityTrackerState> stateBuffer = new ObjectArrayList<>();
-    private final FastObjectArrayList<EntityTrackerState> stateBuffer2 = new FastObjectArrayList<>();
+    private final ObjectArrayList<EntityTrackerState> stateBuffer = new ObjectArrayList<>(30);
+    private final FastObjectArrayList<EntityTrackerState> stateBuffer2 = new FastObjectArrayList<>(30);
     private final Int2ObjectOpenHashMap<EntityTrackerState> treeShakeMap = new Int2ObjectOpenHashMap<>();
 
     private final LongIncrementer fullSizeTreeShakeTimer = new LongIncrementer();
@@ -422,13 +422,13 @@ public class EntityTracker extends Tracker {
      */
     public synchronized void shakeTree(final @NotNull EntityData entityData) {
         try {
-            if (entityData.getTreeSize().get() > 30) {
+            if (entityData.getTreeSize().get() > 20) {
                 fullSizeTreeShakeTimer.increment();
             }
 
             if (fullSizeTreeShakeTimer.get() % 40.0 == 0.0) {
                 // Get rid of not very useful data, and do emergency cleanup if >> 180
-                final var maxDelta = entityData.getTreeSize().get() > 180 ? 0.12 : entityData.getTreeSize().get() > 75 ? 0.03 : entityData.getTreeSize().get() > 60 ? 0.025 : 0.015;
+                final var maxDelta = entityData.getTreeSize().get() > 180 ? 0.12 : entityData.getTreeSize().get() > 75 ? 0.03 : entityData.getTreeSize().get() > 45 ? 0.025 : 0.015;
 
                 shakeTreeRecursive(entityData.getRootState(), (state) -> {
                     var statee = (EntityTrackerState) state;
