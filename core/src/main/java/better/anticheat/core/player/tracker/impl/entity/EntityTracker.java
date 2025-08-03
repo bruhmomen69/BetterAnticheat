@@ -456,7 +456,6 @@ public class EntityTracker extends Tracker {
                 });
             }
 
-
             // do not run instantly, wait a little.
             if (positionTracker.getTicks() % 20 == 0.0) {
                 // Run a special task on massively oversized trees
