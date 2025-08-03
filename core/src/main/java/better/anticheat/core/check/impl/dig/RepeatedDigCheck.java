@@ -3,13 +3,14 @@ package better.anticheat.core.check.impl.dig;
 import better.anticheat.core.BetterAnticheat;
 import better.anticheat.core.check.Check;
 import better.anticheat.core.check.CheckInfo;
+import better.anticheat.core.check.ClientFeatureRequirement;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerDigging;
 
 /**
  * This check looks for multiple dig packets in a tick.
  */
-@CheckInfo(name = "RepeatedDig", category = "dig")
+@CheckInfo(name = "RepeatedDig", category = "dig", requirements = ClientFeatureRequirement.CLIENT_TICK_END)
 public class RepeatedDigCheck extends Check {
 
     private boolean dug = false;

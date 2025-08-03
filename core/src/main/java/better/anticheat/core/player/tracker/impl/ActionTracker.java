@@ -4,6 +4,7 @@ import better.anticheat.core.player.Player;
 import better.anticheat.core.player.tracker.Tracker;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.event.simple.PacketPlaySendEvent;
+import com.github.retrooper.packetevents.protocol.player.ClientVersion;
 import com.github.retrooper.packetevents.wrapper.play.client.*;
 import lombok.Getter;
 import org.jetbrains.annotations.Nullable;
@@ -142,28 +143,12 @@ public class ActionTracker extends Tracker {
                 }
             }
 
-            case CLIENT_TICK_END -> {
-                // Update digging timer
-                if (digging) {
-                    ticksSinceDigging.increment();
-                } else {
-                    ticksSinceDigging.set(0);
+            case CLIENT_TICK_END -> tick();
+            case PLAYER_FLYING -> {
+                // Handle no tick end versions.
+                if (player.getUser().getClientVersion().isOlderThan(ClientVersion.V_1_21_2)) {
+                    tick();
                 }
-                
-                // Increment tick counters
-                ticksSinceSuccessfulDig.increment();
-                ticksSincePlace.increment();
-                ticksSinceRealPlace.increment();
-                ticksSinceRealPlaceUnder.increment();
-
-                // Update previous states
-                wasSneaking = sneaking;
-                wasSprinting = sprinting;
-
-                // Combat tickets
-                this.ticksSinceAttack.increment();
-                this.ticksSinceSwing.increment();
-                this.ticksSinceEntityInteract.increment();
             }
 
             case ENTITY_ACTION -> {
@@ -195,5 +180,29 @@ public class ActionTracker extends Tracker {
 
     @Override
     public void handlePacketPlaySend(PacketPlaySendEvent event) {
+    }
+
+    private void tick() {
+        // Update digging timer
+        if (digging) {
+            ticksSinceDigging.increment();
+        } else {
+            ticksSinceDigging.set(0);
+        }
+
+        // Increment tick counters
+        ticksSinceSuccessfulDig.increment();
+        ticksSincePlace.increment();
+        ticksSinceRealPlace.increment();
+        ticksSinceRealPlaceUnder.increment();
+
+        // Update previous states
+        wasSneaking = sneaking;
+        wasSprinting = sprinting;
+
+        // Combat tickets
+        this.ticksSinceAttack.increment();
+        this.ticksSinceSwing.increment();
+        this.ticksSinceEntityInteract.increment();
     }
 }
