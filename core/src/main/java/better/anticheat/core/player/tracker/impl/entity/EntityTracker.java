@@ -430,7 +430,7 @@ public class EntityTracker extends Tracker {
             if (fullSizeTreeShakeTimer.get() % 40.0 == 0.0) {
                 // Get rid of not very useful data, and do emergency cleanup if >> 180
                 final var treeSize = entityData.getTreeSize().get();
-                final var maxDelta = treeSize > 100 ? 0.12 : treeSize > 60 ? 0.03 : treeSize > 30 ? 0.025 : 0.015;
+                final var maxDelta = treeSize > 90 ? 0.12 : treeSize > 60 ? 0.03 : treeSize > 30 ? 0.025 : 0.015;
 
                 shakeTreeRecursive(entityData.getRootState(), (state) -> {
                     var statee = (EntityTrackerState) state;
