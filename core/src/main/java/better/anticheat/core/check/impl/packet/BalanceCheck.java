@@ -3,13 +3,18 @@ package better.anticheat.core.check.impl.packet;
 import better.anticheat.core.BetterAnticheat;
 import better.anticheat.core.check.Check;
 import better.anticheat.core.check.CheckInfo;
+import better.anticheat.core.check.ClientFeatureRequirement;
 import better.anticheat.core.configuration.ConfigSection;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 
 /**
  * This check looks for game speed modifications and potentially artificial packets, like in Timer and Blink cheats.
  */
-@CheckInfo(name = "Balance", category = "packet")
+@CheckInfo(
+        name = "Balance",
+        category = "packet",
+        requirements = {ClientFeatureRequirement.CLIENT_TICK_END}
+)
 public class BalanceCheck extends Check {
 
     private long lastTick = -1, balance = 0;

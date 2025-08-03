@@ -91,8 +91,8 @@ public class BetterAnticheat {
         PacketEvents.getAPI().getEventManager().registerListener(new PacketListener(this));
         load();
 
-        // Ensure players are 1.21.2+. This used to be 1.21.4+, but now it's 1.21.2+ as 1.21.2 was when CLIENT_TICK_END was introduced.
-        playerManager.registerQuantifier((user -> user.getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_21_2)));
+        // Ensure players are 1.21+. We will conditionally load checks depending on features (e.g., CLIENT_TICK_END).
+        playerManager.registerQuantifier((user -> user.getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_21)));
     }
 
     public void disable() {

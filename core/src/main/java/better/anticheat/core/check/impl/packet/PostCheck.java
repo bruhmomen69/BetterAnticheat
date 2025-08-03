@@ -3,6 +3,7 @@ package better.anticheat.core.check.impl.packet;
 import better.anticheat.core.BetterAnticheat;
 import better.anticheat.core.check.Check;
 import better.anticheat.core.check.CheckInfo;
+import better.anticheat.core.check.ClientFeatureRequirement;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 
@@ -12,7 +13,13 @@ import java.util.List;
 /**
  * This check looks for packets sent at the wrong stage of a tick.
  */
-@CheckInfo(name = "Post", category = "packet")
+@CheckInfo(
+        name = "Post",
+        category = "packet",
+        requirements = {
+                ClientFeatureRequirement.CLIENT_TICK_END
+        }
+)
 public class PostCheck extends Check {
 
     private boolean sentFlying = false, held = true, login = false;

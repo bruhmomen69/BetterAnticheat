@@ -3,12 +3,19 @@ package better.anticheat.core.check.impl.flying;
 import better.anticheat.core.BetterAnticheat;
 import better.anticheat.core.check.Check;
 import better.anticheat.core.check.CheckInfo;
+import better.anticheat.core.check.ClientFeatureRequirement;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 
 /**
  * THis check looks for mathematically impossible position changes.
  */
-@CheckInfo(name = "ArtificialPosition", category = "flying")
+@CheckInfo(
+        name = "ArtificialPosition",
+        category = "flying",
+        requirements = {
+                ClientFeatureRequirement.CLIENT_TICK_END
+        }
+)
 public class ArtificialPositionCheck extends Check {
 
     private int ticks = -1, samePositions = 0;
@@ -68,7 +75,7 @@ public class ArtificialPositionCheck extends Check {
                  * Value is (2.0E-4)^2 in 1.18.2+, (0.03)^2 in 1.18.1-.
                  */
                 if (deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ <= 4.0E-8D) {
-                    if (++samePositions > 1) fail("Excess");
+                    if (++samePositions > 1) fail("Excess: " + samePositions);
                 }
 
                 break;

@@ -5,9 +5,12 @@ import better.anticheat.core.player.tracker.Tracker;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.event.simple.PacketPlaySendEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
+import com.github.retrooper.packetevents.protocol.player.ClientVersion;
 import com.github.retrooper.packetevents.protocol.teleport.RelativeFlag;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerFlying;
-import com.github.retrooper.packetevents.wrapper.play.server.*;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityTeleport;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPlayerPositionAndLook;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPlayerRotation;
 import lombok.Getter;
 import wtf.spare.sparej.Pair;
 
@@ -25,36 +28,26 @@ public class TeleportTracker extends Tracker {
     private boolean teleported = true, positionTeleported = true, rotationTeleported = true, missedTeleport = false;
     private boolean positionLastTick = false, positionThisTick = false;
 
+    private final boolean supportsTickEnd;
+
     public TeleportTracker(Player player) {
         super(player);
+        this.supportsTickEnd = player.getUser().getClientVersion()
+                .isNewerThanOrEquals(ClientVersion.V_1_21_2);
     }
 
     @Override
     public void handlePacketPlayReceive(PacketPlayReceiveEvent event) {
-        if (event.getPacketType() == PacketType.Play.Client.CLIENT_TICK_END) {
-            positionTeleported = rotationTeleported = missedTeleport = teleported = false;
-            positionLastTick = positionThisTick;
-            positionThisTick = false;
-
-            /*
-             * Due to the current design of our confirmation system, teleports do not actually resolve within our
-             * confirmation window. Rather, they resolve in the tick following the post transaction (apart from world
-             * change teleports! Which resolve in time for some reason?). So, we handle it here in the following tick if
-             * needed.
-             */
-            for (Teleport teleport : remove) {
-                eligibleTeleports.remove(teleport);
-                if (!teleport.isHandled()) missedTeleport = true;
-            }
-            remove.clear();
-        }
+        if (event.getPacketType() == PacketType.Play.Client.CLIENT_TICK_END) handleTickEnd();
 
         if (!WrapperPlayClientPlayerFlying.isFlying(event.getPacketType())) return;
-        WrapperPlayClientPlayerFlying wrapper = new WrapperPlayClientPlayerFlying(event);
+        final var wrapper = new WrapperPlayClientPlayerFlying(event);
+
+        if (supportsTickEnd) handleTickEnd();
 
         if (wrapper.hasPositionChanged()) positionThisTick = true;
 
-        for (Teleport teleport : eligibleTeleports) {
+        for (final var teleport : eligibleTeleports) {
             if (match(teleport, wrapper)) {
                 if (teleport.getPosition() != null) positionTeleported = true;
                 if (teleport.getRotation() != null) rotationTeleported = true;
@@ -102,6 +95,27 @@ public class TeleportTracker extends Tracker {
                 handleTeleport(teleport);
             }
         }
+    }
+
+    /**
+     * Handles a tickend. Is a separate method for compatibility so we can support pre 1.21.2.
+     */
+    private void handleTickEnd() {
+        positionTeleported = rotationTeleported = missedTeleport = teleported = false;
+        positionLastTick = positionThisTick;
+        positionThisTick = false;
+
+        /*
+         * Due to the current design of our confirmation system, teleports do not actually resolve within our
+         * confirmation window. Rather, they resolve in the tick following the post transaction (apart from world
+         * change teleports! Which resolve in time for some reason?). So, we handle it here in the following tick if
+         * needed.
+         */
+        for (Teleport teleport : remove) {
+            eligibleTeleports.remove(teleport);
+            if (!teleport.isHandled()) missedTeleport = true;
+        }
+        remove.clear();
     }
 
     /**
@@ -175,7 +189,8 @@ public class TeleportTracker extends Tracker {
             float pitch = teleport.getRotation().getX(), yaw = teleport.getRotation().getY();
 
             if (teleport.getRelativeFlags() != null) {
-                if (teleport.getRelativeFlags().has(RelativeFlag.YAW) || teleport.getRelativeFlags().has(RelativeFlag.PITCH)) break rotation;
+                if (teleport.getRelativeFlags().has(RelativeFlag.YAW) || teleport.getRelativeFlags().has(RelativeFlag.PITCH))
+                    break rotation;
 
                 /*
                 // Rotation relatives seems to be messing up a lot right now. So, we don't care about it until we figure

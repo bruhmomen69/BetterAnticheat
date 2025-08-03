@@ -8,8 +8,8 @@ import better.anticheat.core.player.tracker.impl.confirmation.ConfirmationTracke
 import better.anticheat.core.player.tracker.impl.entity.type.EntityData;
 import better.anticheat.core.player.tracker.impl.entity.type.EntityTrackerState;
 import better.anticheat.core.player.tracker.impl.entity.type.SplitEntityUpdate;
-import better.anticheat.core.util.entity.BoundingBoxSize;
 import better.anticheat.core.util.MathUtil;
+import better.anticheat.core.util.entity.BoundingBoxSize;
 import better.anticheat.core.util.type.entity.AxisAlignedBB;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.event.simple.PacketPlaySendEvent;
@@ -18,6 +18,7 @@ import com.github.retrooper.packetevents.protocol.entity.pose.EntityPose;
 import com.github.retrooper.packetevents.protocol.entity.type.EntityType;
 import com.github.retrooper.packetevents.protocol.entity.type.EntityTypes;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
+import com.github.retrooper.packetevents.protocol.player.ClientVersion;
 import com.github.retrooper.packetevents.util.Vector3d;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerFlying;
 import com.github.retrooper.packetevents.wrapper.play.server.*;
@@ -44,7 +45,12 @@ public class EntityTracker extends Tracker {
         this.confirmationTracker = confirmationTracker;
         this.positionTracker = positionTracker;
         this.bridge = bridge;
+        this.supportsTickEnd = getPlayer().getUser().getClientVersion()
+                .isNewerThanOrEquals(ClientVersion.V_1_21_2);
     }
+
+    // General data
+    private final boolean supportsTickEnd;
 
     // Persistent data
     @Getter
@@ -113,12 +119,28 @@ public class EntityTracker extends Tracker {
     @Override
     public void handlePacketPlayReceive(final PacketPlayReceiveEvent event) {
         // WrapperPlayClientPlayerFlying is the base class for position, look, and position_look
-        if (WrapperPlayClientPlayerFlying.isFlying(event.getPacketType())) {
+        final var type = event.getPacketType();
+
+        if (WrapperPlayClientPlayerFlying.isFlying(type)) {
+            // Always run living update on flying
             this.tickEndSinceFlying = false;
             this.onLivingUpdate();
+
+            // If client doesn't support tick end, emulate "end of tick" once per flying sequence
+            if (supportsTickEnd) {
+                return;
+            }
+
+            if (!this.tickEndSinceFlying) {
+                this.tickEndSinceFlying = true;
+                for (EntityData data : entities.values()) {
+                    if (data.getTicksSinceMove().get() >= 0) data.getTicksSinceMove().increment();
+                }
+                return;
+            }
         }
 
-        if (event.getPacketType() == PacketType.Play.Client.CLIENT_TICK_END) {
+        if (supportsTickEnd && type == PacketType.Play.Client.CLIENT_TICK_END) {
             if (!this.tickEndSinceFlying) {
                 this.tickEndSinceFlying = true;
                 return;

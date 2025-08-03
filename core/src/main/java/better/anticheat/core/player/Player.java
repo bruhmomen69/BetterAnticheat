@@ -19,16 +19,12 @@ import com.github.retrooper.packetevents.event.simple.PacketPlaySendEvent;
 import com.github.retrooper.packetevents.protocol.player.User;
 import lombok.Getter;
 import lombok.Setter;
+import wtf.spare.sparej.fastlist.FastObjectArrayList;
 
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import wtf.spare.sparej.fastlist.FastObjectArrayList;
-
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @Getter
 public class Player implements Closeable {

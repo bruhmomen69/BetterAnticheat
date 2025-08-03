@@ -7,9 +7,11 @@ import better.anticheat.core.util.EasyLoops;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.event.simple.PacketPlaySendEvent;
 import com.github.retrooper.packetevents.protocol.ConnectionState;
+import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.resources.ResourceLocation;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientCookieResponse;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientKeepAlive;
+import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerFlying;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPong;
 import com.github.retrooper.packetevents.wrapper.play.server.*;
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
@@ -51,6 +53,10 @@ public class ConfirmationTracker extends Tracker {
      * This is used instead of a list search, to ensure we don't accidentally use a keepalive as the post confirmation, in a pre/post structure.
      */
     private @Nullable ConfirmationState nextPostPacket = null;
+    /**
+     * Counts packet edges across flying types and client tick end to emulate end-of-tick cadence on older clients.
+     */
+    private int packetTickCounter = 0;
 
     public ConfirmationTracker(Player player) {
         this(player, new SequentialLongCookieAllocator());
@@ -131,17 +137,28 @@ public class ConfirmationTracker extends Tracker {
                 break;
             }
             case CLIENT_TICK_END: {
+                // no-op; end-of-tick cadence is handled uniformly after the switch
+                break;
+            }
+            default:
+                break;
+        }
+        
+        // Packet counter cadence: increment on flying or CLIENT_TICK_END and run the old CLIENT_TICK_END logic on even counts.
+        final var packetType = event.getPacketType();
+        if (WrapperPlayClientPlayerFlying.isFlying(packetType)
+                || packetType == PacketType.Play.Client.CLIENT_TICK_END) {
+
+            this.packetTickCounter++;
+            if ((this.packetTickCounter % 2.0) == 0) {
                 final var currentTime = System.currentTimeMillis();
-                // Use removedItemTaskQueue to prevent circular references to the synchronized list.
                 this.confirmations.removeIf(state -> {
                     if (state.getTimestampConfirmed() == -1L && currentTime - state.getTimestamp() > 60000) {
-                        // Do this later to avoid locking issues.
                         event.getPostTasks().add(() -> {
                             synchronized (this.removedItemTaskQueue) {
                                 this.removedItemTaskQueue.addAll(state.getListeners());
                             }
                         });
-                        // Handle kicking if needed
                         if (state.getType() == ConfirmationType.COOKIE) {
                             getPlayer().getUser().sendPacket(new WrapperPlayServerDisconnect(Component.text("Timed out")));
                             log.info("[BetterAntiCheat] Timed out player: {}", getPlayer().getUser().getName());
@@ -153,17 +170,13 @@ public class ConfirmationTracker extends Tracker {
                     return false;
                 });
 
-                // Run all those post tasks we added.
                 event.getPostTasks().add(() -> {
                     synchronized (this.removedItemTaskQueue) {
                         this.removedItemTaskQueue.forEach(Runnable::run);
                         this.removedItemTaskQueue.clear();
                     }
                 });
-                break;
             }
-            default:
-                break;
         }
     }
 

@@ -102,6 +102,19 @@ public class CheckManager {
          */
         List<Check> returnList = new ArrayList<>();
         for (Check check : checks) {
+            // Filter by feature requirements, if any
+            final var info = check.getClass().getAnnotation(CheckInfo.class);
+            if (info != null && info.requirements() != null) {
+                var requirements = info.requirements();
+                boolean ok = true;
+                for (final var req : requirements) {
+                    if (!req.matches(player)) {
+                        ok = false;
+                        break;
+                    }
+                }
+                if (!ok) continue;
+            }
             returnList.add(check.initialCopy(player));
         }
 

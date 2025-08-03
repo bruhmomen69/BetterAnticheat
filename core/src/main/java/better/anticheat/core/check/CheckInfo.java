@@ -10,11 +10,12 @@ import java.lang.annotation.Target;
  * constructors. This allows all important information for loading to be available upon creation and allows for it to be
  * easily seen by other developers.
  * Example Annotation:
- * @CheckInfo(
- *     name = "Example",
- *     category = "Combat",
- *     parent = "newconfig",
- *     experimental = true
+ *
+ * @CheckInfo( name = "Example",
+ * category = "Combat",
+ * parent = "newconfig",
+ * experimental = true,
+ * requirements = { ClientFeatureRequirement.CLIENT_TICK_END }
  * )
  */
 @Retention(RetentionPolicy.RUNTIME)
@@ -31,4 +32,10 @@ public @interface CheckInfo {
     String config() default "checks";
 
     boolean experimental() default false;
+
+    /**
+     * Feature requirements this check depends on. If a player does not support a required feature,
+     * the check will not be loaded for that player.
+     */
+    ClientFeatureRequirement[] requirements() default {};
 }
