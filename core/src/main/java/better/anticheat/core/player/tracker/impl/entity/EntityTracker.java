@@ -461,7 +461,7 @@ public class EntityTracker extends Tracker {
                 // Run a special task on massively oversized trees
                 // This is an emergency task when things get bad
                 if (entityData.getTreeSize().get() > 120) {
-                    treeShrinkRecursive(entityData.getRootState(), 0, 8);
+                    treeShrinkRecursive(entityData.getRootState(), 0, 6);
                 }
             }
         } finally {
