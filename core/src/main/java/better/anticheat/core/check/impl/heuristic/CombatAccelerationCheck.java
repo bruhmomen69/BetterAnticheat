@@ -3,13 +3,14 @@ package better.anticheat.core.check.impl.heuristic;
 import better.anticheat.core.BetterAnticheat;
 import better.anticheat.core.check.Check;
 import better.anticheat.core.check.CheckInfo;
+import better.anticheat.core.check.ClientFeatureRequirement;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerFlying;
 
 /**
  * This check uses a magic acceleration value to attempt to find combat cheats.
  */
-@CheckInfo(name = "CombatAcceleration", category = "heuristic")
+@CheckInfo(name = "CombatAcceleration", category = "heuristic", requirements = ClientFeatureRequirement.CLIENT_TICK_END)
 public class CombatAccelerationCheck extends Check {
 
     private boolean posRotChange = false, lastTickChange = false;
@@ -23,7 +24,7 @@ public class CombatAccelerationCheck extends Check {
     public void handleReceivePlayPacket(PacketPlayReceiveEvent event) {
 
         /*
-         * TODO: This check false flags and needs to be reworked. Find a more precise magic value or better exempts.
+         * TODO: This check false flags and needs to be reworked. Find a more precise magic value or better exempts (VELOCITY/TELEPORT).
          *
          * This check uses a magic value (a value which doesn't have any real mathematical basis) to attempt to see if a
          * player's movement acceleration is too constant during combat with significant rotations. This was developed

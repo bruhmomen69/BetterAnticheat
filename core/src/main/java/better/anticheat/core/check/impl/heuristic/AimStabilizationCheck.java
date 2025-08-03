@@ -4,6 +4,7 @@ import better.anticheat.core.BetterAnticheat;
 import better.anticheat.core.check.Check;
 import better.anticheat.core.check.CheckInfo;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
+import com.github.retrooper.packetevents.protocol.player.ClientVersion;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientInteractEntity;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerFlying;
 
@@ -15,6 +16,7 @@ public class AimStabilizationCheck extends Check {
 
     private int ticksSinceAttack = 0;
     private double buffer = 0;
+    private Boolean supportsTickEnd;
 
     public AimStabilizationCheck(BetterAnticheat plugin) {
         super(plugin);
@@ -32,6 +34,16 @@ public class AimStabilizationCheck extends Check {
         }
 
         if (!WrapperPlayClientPlayerFlying.isFlying(event.getPacketType())) return;
+
+        // 1.21.1 fix
+        if (supportsTickEnd == null) {
+            this.supportsTickEnd = this.player.getUser().getClientVersion()
+                    .isNewerThanOrEquals(ClientVersion.V_1_21_2);
+        }
+        if (!this.supportsTickEnd) {
+            ticksSinceAttack = Math.min(++ticksSinceAttack, 1000);
+        }
+
         if (!player.getRotationTracker().isRotation()) return;
 
         // Only run if the player has been in combat.

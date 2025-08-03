@@ -3,6 +3,7 @@ package better.anticheat.core.check.impl.heuristic;
 import better.anticheat.core.BetterAnticheat;
 import better.anticheat.core.check.Check;
 import better.anticheat.core.check.CheckInfo;
+import better.anticheat.core.check.ClientFeatureRequirement;
 import better.anticheat.core.util.EasyLoops;
 import better.anticheat.core.util.MathUtil;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
@@ -14,7 +15,7 @@ import wtf.spare.sparej.fastlist.evicting.ord.OrderedArrayFloatEvictingList;
 /**
  * This check looks for very small mouse movement during combat.
  */
-@CheckInfo(name = "MicroAimMovement", category = "heuristic")
+@CheckInfo(name = "MicroAimMovement", category = "heuristic", requirements = ClientFeatureRequirement.CLIENT_TICK_END)
 public class MicroMovementCheck extends Check {
 
     private int ticksSinceAttack = 0, buffer = 0;

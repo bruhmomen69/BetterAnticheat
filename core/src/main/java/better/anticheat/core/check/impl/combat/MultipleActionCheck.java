@@ -3,13 +3,14 @@ package better.anticheat.core.check.impl.combat;
 import better.anticheat.core.BetterAnticheat;
 import better.anticheat.core.check.Check;
 import better.anticheat.core.check.CheckInfo;
+import better.anticheat.core.check.ClientFeatureRequirement;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientEntityAction;
 
 /**
  * This check looks for multiple actions within a tick.
  */
-@CheckInfo(name = "MultipleAction", category = "combat")
+@CheckInfo(name = "MultipleAction", category = "combat", requirements = ClientFeatureRequirement.CLIENT_TICK_END)
 public class MultipleActionCheck extends Check {
 
     private boolean changedSneak = false, changedSprint = false;

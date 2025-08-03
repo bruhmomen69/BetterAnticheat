@@ -3,12 +3,13 @@ package better.anticheat.core.check.impl.combat;
 import better.anticheat.core.BetterAnticheat;
 import better.anticheat.core.check.Check;
 import better.anticheat.core.check.CheckInfo;
+import better.anticheat.core.check.ClientFeatureRequirement;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 
 /**
  * This check looks for the order of slot change and interact entity packets.
  */
-@CheckInfo(name = "SlotInteractOrder", category = "combat")
+@CheckInfo(name = "SlotInteractOrder", category = "combat", requirements = ClientFeatureRequirement.CLIENT_TICK_END)
 public class SlotInteractOrderCheck extends Check {
 
     private boolean slotChange = false;

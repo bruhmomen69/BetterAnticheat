@@ -3,13 +3,14 @@ package better.anticheat.core.check.impl.combat;
 import better.anticheat.core.BetterAnticheat;
 import better.anticheat.core.check.Check;
 import better.anticheat.core.check.CheckInfo;
+import better.anticheat.core.check.ClientFeatureRequirement;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientInteractEntity;
 
 /**
  * This check looks for the order of entity action and interact entity packets.
  */
-@CheckInfo(name = "ActionInteractOrder", category = "combat")
+@CheckInfo(name = "ActionInteractOrder", category = "combat", requirements = ClientFeatureRequirement.CLIENT_TICK_END)
 public class ActionInteractOrderCheck extends Check {
 
     private boolean sentEntityAction = false;

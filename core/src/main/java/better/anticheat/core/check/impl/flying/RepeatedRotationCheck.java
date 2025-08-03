@@ -3,12 +3,13 @@ package better.anticheat.core.check.impl.flying;
 import better.anticheat.core.BetterAnticheat;
 import better.anticheat.core.check.Check;
 import better.anticheat.core.check.CheckInfo;
+import better.anticheat.core.check.ClientFeatureRequirement;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 
 /**
  * This check looks for rotation packets with no rotation changes.
  */
-@CheckInfo(name = "RepeatedRotation", category = "flying")
+@CheckInfo(name = "RepeatedRotation", category = "flying", requirements = ClientFeatureRequirement.CLIENT_TICK_END)
 public class RepeatedRotationCheck extends Check {
 
     private boolean loaded = false;

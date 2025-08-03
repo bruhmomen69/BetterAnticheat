@@ -3,13 +3,14 @@ package better.anticheat.core.check.impl.combat;
 import better.anticheat.core.BetterAnticheat;
 import better.anticheat.core.check.Check;
 import better.anticheat.core.check.CheckInfo;
+import better.anticheat.core.check.ClientFeatureRequirement;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientInteractEntity;
 
 /**
  * This check looks for hitting multiple entities within a tick.
  */
-@CheckInfo(name = "MultipleHit", category = "combat")
+@CheckInfo(name = "MultipleHit", category = "combat", requirements = ClientFeatureRequirement.CLIENT_TICK_END)
 public class MultipleHitCheck extends Check {
 
     private Integer lastEnemy;

@@ -7,6 +7,7 @@ import better.anticheat.core.util.MathUtil;
 import better.anticheat.core.util.entity.EntityMath;
 import better.anticheat.core.util.math.LinearRegression;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
+import com.github.retrooper.packetevents.protocol.player.ClientVersion;
 import com.github.retrooper.packetevents.util.Vector3d;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientInteractEntity;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerFlying;
@@ -24,6 +25,8 @@ public class LinearAimDeviationCheck extends Check {
     private int ticksSinceAttack = 40, interactedEntity;
 
     private double aimBurstBuffer = 0, fastAimBuffer = 0, smoothFollowBuffer = 0;
+
+    private Boolean tickEndSupported;
 
     public LinearAimDeviationCheck(BetterAnticheat plugin) {
         super(plugin);
@@ -51,6 +54,15 @@ public class LinearAimDeviationCheck extends Check {
          */
 
         if (!WrapperPlayClientPlayerFlying.isFlying(event.getPacketType())) return;
+        // 1.21.1 fix
+        if (tickEndSupported == null) {
+            this.tickEndSupported = this.player.getUser().getClientVersion()
+                    .isNewerThanOrEquals(ClientVersion.V_1_21_2);
+        }
+        if (!this.tickEndSupported) {
+            ticksSinceAttack = Math.min(++ticksSinceAttack, 1000);
+        }
+        // Actual check
         if (!player.getRotationTracker().isRotation()) return;
 
         final float pitch = player.getRotationTracker().getPitch(), yaw = player.getRotationTracker().getYaw(), deltaYaw = player.getRotationTracker().getDeltaYaw();

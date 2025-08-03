@@ -3,10 +3,11 @@ package better.anticheat.core.check.broken;
 import better.anticheat.core.BetterAnticheat;
 import better.anticheat.core.check.Check;
 import better.anticheat.core.check.CheckInfo;
+import better.anticheat.core.check.ClientFeatureRequirement;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerDigging;
 
-@CheckInfo(name = "NoSwingDig", category = "dig")
+@CheckInfo(name = "NoSwingDig", category = "dig", requirements = ClientFeatureRequirement.CLIENT_TICK_END)
 public class NoSwingDigCheck extends Check {
     private boolean started = false, swungThisTick = false, constantSwinging = false;
 
