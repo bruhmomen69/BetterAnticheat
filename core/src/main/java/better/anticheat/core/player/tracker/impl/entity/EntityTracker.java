@@ -131,23 +131,17 @@ public class EntityTracker extends Tracker {
                 return;
             }
 
+            for (EntityData data : entities.values()) {
+                if (data.getTicksSinceMove().get() >= 0) data.getTicksSinceMove().increment();
+            }
+
             if (!this.tickEndSinceFlying) {
                 this.tickEndSinceFlying = true;
-                for (EntityData data : entities.values()) {
-                    if (data.getTicksSinceMove().get() >= 0) data.getTicksSinceMove().increment();
-                }
                 return;
             }
         }
 
         if (supportsTickEnd && type == PacketType.Play.Client.CLIENT_TICK_END) {
-            if (!this.tickEndSinceFlying) {
-                this.tickEndSinceFlying = true;
-                return;
-            }
-
-            this.onLivingUpdate();
-
             /*
              * This is a value that can be important for some aim checks.
              * After a start confirmation, it will remain as -1 until the after confirmation. Then, it will begin
@@ -156,6 +150,13 @@ public class EntityTracker extends Tracker {
             for (EntityData data : entities.values()) {
                 if (data.getTicksSinceMove().get() >= 0) data.getTicksSinceMove().increment();
             }
+
+            if (!this.tickEndSinceFlying) {
+                this.tickEndSinceFlying = true;
+                return;
+            }
+
+            this.onLivingUpdate();
         }
     }
 
@@ -422,13 +423,14 @@ public class EntityTracker extends Tracker {
      */
     public synchronized void shakeTree(final @NotNull EntityData entityData) {
         try {
-            if (entityData.getTreeSize().get() > 20) {
+            if (entityData.getTreeSize().get() >= 20) {
                 fullSizeTreeShakeTimer.increment();
             }
 
             if (fullSizeTreeShakeTimer.get() % 40.0 == 0.0) {
                 // Get rid of not very useful data, and do emergency cleanup if >> 180
-                final var maxDelta = entityData.getTreeSize().get() > 180 ? 0.12 : entityData.getTreeSize().get() > 75 ? 0.03 : entityData.getTreeSize().get() > 45 ? 0.025 : 0.015;
+                final var treeSize = entityData.getTreeSize().get();
+                final var maxDelta = treeSize > 100 ? 0.12 : treeSize > 60 ? 0.03 : treeSize > 30 ? 0.025 : 0.015;
 
                 shakeTreeRecursive(entityData.getRootState(), (state) -> {
                     var statee = (EntityTrackerState) state;
@@ -541,7 +543,7 @@ public class EntityTracker extends Tracker {
             final double d1 = state.getPosY() + (state.getOtherPlayerMPY() - state.getPosY()) / state.getOtherPlayerMPPosRotationIncrements();
             final double d2 = state.getPosZ() + (state.getOtherPlayerMPZ() - state.getPosZ()) / state.getOtherPlayerMPPosRotationIncrements();
 
-            state.setPotentialOffsetAmount(MathUtil.hypot(d0, d1, d2));
+            state.addOffsetABS(d0, d1, d2);
 
             state.setOtherPlayerMPPosRotationIncrements(state.getOtherPlayerMPPosRotationIncrements() - 1);
 
@@ -572,7 +574,9 @@ public class EntityTracker extends Tracker {
                 }
             }
         } else {
-            state.setPotentialOffsetAmount(0);
+            state.setPotentialOffsetAmountX(0);
+            state.setPotentialOffsetAmountY(0);
+            state.setPotentialOffsetAmountZ(0);
         }
 
         for (final var child : state.getChildren()) {
