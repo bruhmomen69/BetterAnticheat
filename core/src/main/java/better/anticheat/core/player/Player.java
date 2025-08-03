@@ -8,8 +8,9 @@ import better.anticheat.core.player.tracker.impl.PlayerStatusTracker;
 import better.anticheat.core.player.tracker.impl.PositionTracker;
 import better.anticheat.core.player.tracker.impl.RotationTracker;
 import better.anticheat.core.player.tracker.impl.confirmation.ConfirmationTracker;
-import better.anticheat.core.player.tracker.impl.confirmation.CookieIdAllocator;
-import better.anticheat.core.player.tracker.impl.confirmation.allocator.*;
+import better.anticheat.core.player.tracker.impl.confirmation.cookie.CookieAllocatorConfig;
+import better.anticheat.core.player.tracker.impl.confirmation.cookie.CookieIdAllocator;
+import better.anticheat.core.player.tracker.impl.confirmation.cookie.allocator.*;
 import better.anticheat.core.player.tracker.impl.entity.EntityTracker;
 import better.anticheat.core.player.tracker.impl.mitigation.HitregMitigationTracker;
 import better.anticheat.core.player.tracker.impl.ml.CMLTracker;
@@ -150,7 +151,7 @@ public class Player implements Closeable {
      * @param config the allocator configuration
      * @return a new CookieIdAllocator instance
      */
-    private CookieIdAllocator createCookieAllocator(final better.anticheat.core.player.tracker.impl.confirmation.CookieAllocatorConfig config) {
+    private CookieIdAllocator createCookieAllocator(final CookieAllocatorConfig config) {
         if (config == null) {
             return new SequentialLongCookieAllocator();
         }
@@ -192,7 +193,7 @@ public class Player implements Closeable {
      * @param config The configuration for the allocator.
      * @return A new sequential cookie allocator.
      */
-    private CookieIdAllocator createSequentialAllocator(final better.anticheat.core.player.tracker.impl.confirmation.CookieAllocatorConfig config) {
+    private CookieIdAllocator createSequentialAllocator(final CookieAllocatorConfig config) {
         final var params = config.getParameters();
 
         if (params.containsKey("startValue")) {
@@ -217,7 +218,7 @@ public class Player implements Closeable {
      * @param config The configuration for the allocator.
      * @return A new random byte cookie allocator.
      */
-    private CookieIdAllocator createRandomAllocator(final better.anticheat.core.player.tracker.impl.confirmation.CookieAllocatorConfig config) {
+    private CookieIdAllocator createRandomAllocator(final CookieAllocatorConfig config) {
         final var params = config.getParameters();
 
         final var cookieLength = getIntParameter(params, "cookieLength", 8);
@@ -232,7 +233,7 @@ public class Player implements Closeable {
      * @param config The configuration for the allocator.
      * @return A new timestamp-based cookie allocator.
      */
-    private CookieIdAllocator createTimestampAllocator(final better.anticheat.core.player.tracker.impl.confirmation.CookieAllocatorConfig config) {
+    private CookieIdAllocator createTimestampAllocator(final CookieAllocatorConfig config) {
         final var params = config.getParameters();
 
         final var randomBytesLength = getIntParameter(params, "randomBytesLength", 8);
@@ -246,7 +247,7 @@ public class Player implements Closeable {
      * @param config The configuration for the allocator.
      * @return A new file-based cookie allocator.
      */
-    private CookieIdAllocator createFileAllocator(final better.anticheat.core.player.tracker.impl.confirmation.CookieAllocatorConfig config) {
+    private CookieIdAllocator createFileAllocator(final CookieAllocatorConfig config) {
         final var cookieSequenceData = BetterAnticheat.getInstance().getCookieSequenceData();
 
         if (cookieSequenceData == null) {
@@ -263,7 +264,7 @@ public class Player implements Closeable {
      * @param config The configuration for the allocator.
      * @return A new lyric-based cookie allocator.
      */
-    private CookieIdAllocator createLyricAllocator(final better.anticheat.core.player.tracker.impl.confirmation.CookieAllocatorConfig config) {
+    private CookieIdAllocator createLyricAllocator(final CookieAllocatorConfig config) {
         final var params = config.getParameters();
 
         final var artist = (String) params.get("artist");

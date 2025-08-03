@@ -1,6 +1,6 @@
-package better.anticheat.core.player.tracker.impl.confirmation.allocator;
+package better.anticheat.core.player.tracker.impl.confirmation.cookie.allocator;
 
-import better.anticheat.core.player.tracker.impl.confirmation.CookieIdAllocator;
+import better.anticheat.core.player.tracker.impl.confirmation.cookie.CookieIdAllocator;
 
 import java.nio.ByteBuffer;
 import java.security.SecureRandom;

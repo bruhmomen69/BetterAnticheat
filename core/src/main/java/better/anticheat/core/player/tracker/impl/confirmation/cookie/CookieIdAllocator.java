@@ -1,4 +1,4 @@
-package better.anticheat.core.player.tracker.impl.confirmation;
+package better.anticheat.core.player.tracker.impl.confirmation.cookie;
 
 /**
  * Interface for dynamic cookie ID allocation algorithms.

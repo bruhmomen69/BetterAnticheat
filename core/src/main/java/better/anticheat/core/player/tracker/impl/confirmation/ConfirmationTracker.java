@@ -3,6 +3,7 @@ package better.anticheat.core.player.tracker.impl.confirmation;
 import better.anticheat.core.DataBridge;
 import better.anticheat.core.player.Player;
 import better.anticheat.core.player.tracker.Tracker;
+import better.anticheat.core.player.tracker.impl.confirmation.cookie.CookieIdAllocator;
 import better.anticheat.core.util.EasyLoops;
 import com.github.retrooper.packetevents.event.simple.PacketPlayReceiveEvent;
 import com.github.retrooper.packetevents.event.simple.PacketPlaySendEvent;
@@ -297,8 +298,8 @@ public class ConfirmationTracker extends Tracker {
         }
         synchronized (cookieLock) {
             // Attempt to use native post confirmations to save on bandwidth.
-            if (this.dataBridge.pfNativeConfirmationSupported()) {
-                final var nativePostConfirmation = this.dataBridge.pfNativeConfirmationRun(getPlayer(), (c) -> this.processConfirmationState((ConfirmationState) c));
+            if (this.dataBridge.getNativeConfirmationHandler() instanceof PlatformNativeConfirmationHandler handler) {
+                final var nativePostConfirmation = handler.confirmPost(getPlayer(), this::processConfirmationState);
                 if (nativePostConfirmation != null) {
                     return nativePostConfirmation;
                 }

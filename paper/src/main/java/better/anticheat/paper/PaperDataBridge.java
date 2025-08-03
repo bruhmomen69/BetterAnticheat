@@ -2,7 +2,7 @@ package better.anticheat.paper;
 
 import better.anticheat.core.DataBridge;
 import better.anticheat.core.player.tracker.impl.confirmation.ConfirmationState;
-import better.anticheat.core.util.EasyLoops;
+import better.anticheat.core.player.tracker.impl.confirmation.PlatformNativeConfirmationHandler;
 import better.anticheat.paper.util.GrimHook;
 import com.github.retrooper.packetevents.protocol.player.User;
 import com.tcoded.folialib.FoliaLib;
@@ -12,7 +12,6 @@ import revxrsal.commands.bukkit.actor.BukkitCommandActor;
 
 import javax.annotation.Nullable;
 import java.io.Closeable;
-import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
@@ -21,11 +20,17 @@ public class PaperDataBridge implements DataBridge<BukkitCommandActor> {
 
     private final BetterAnticheatPaper plugin;
     private final FoliaLib lib;
-    private Boolean supportsNativeConfirmation;
+    private final GrimHook nativeConfirmationHook;
 
     public PaperDataBridge(BetterAnticheatPaper plugin) {
         this.plugin = plugin;
         lib = new FoliaLib(plugin);
+
+        if (plugin.getServer().getPluginManager().getPlugin("GrimAC") != null) {
+            nativeConfirmationHook = new GrimHook(plugin);
+        } else {
+            nativeConfirmationHook = null;
+        }
     }
 
     @Override
@@ -142,21 +147,8 @@ public class PaperDataBridge implements DataBridge<BukkitCommandActor> {
     }
 
     @Override
-    public boolean pfNativeConfirmationSupported() {
-        return this.supportsNativeConfirmation == null ? this.supportsNativeConfirmation = EasyLoops.anyMatch(
-                this.plugin.getServer().getPluginManager().getPlugins(),
-                plugin -> {
-                    final var name = plugin.getName().toLowerCase(Locale.ENGLISH);
-                    return name.endsWith("grim") || name.endsWith("grimac") || name.endsWith("lightninggrim");
-                }) : this.supportsNativeConfirmation;
-    }
-
-    @Override
-    public @Nullable ConfirmationState pfNativeConfirmationRun(better.anticheat.core.player.Player player, Consumer<ConfirmationState> runnable) {
-        if (!pfNativeConfirmationSupported()) {
-            return null;
-        }
-        return GrimHook.transact(player, runnable);
+    public PlatformNativeConfirmationHandler getNativeConfirmationHandler() {
+        return nativeConfirmationHook;
     }
 
     @Override

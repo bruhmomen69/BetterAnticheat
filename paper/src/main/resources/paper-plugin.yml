@@ -15,15 +15,7 @@ dependencies:
       load: AFTER
       required: true
       join-classpath: true
-    grim:
-      load: AFTER
-      required: false
-      join-classpath: true
-    grimac:
-      load: AFTER
-      required: false
-      join-classpath: true
-    LightningGrim:
+    GrimAC:
       load: AFTER
       required: false
       join-classpath: true
