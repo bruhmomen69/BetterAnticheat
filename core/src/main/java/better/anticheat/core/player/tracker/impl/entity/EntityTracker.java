@@ -457,7 +457,7 @@ public class EntityTracker extends Tracker {
             }
 
             // do not run instantly, wait a little.
-            if (positionTracker.getTicks() % 20 == 0.0) {
+            if (positionTracker.getTicks() % 20 == 0.0 || fullSizeTreeShakeTimer.get() % 50.0 == 0.0) {
                 // Run a special task on massively oversized trees
                 // This is an emergency task when things get bad
                 if (entityData.getTreeSize().get() > 120) {
