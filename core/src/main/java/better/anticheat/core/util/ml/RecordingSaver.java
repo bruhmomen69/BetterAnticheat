@@ -105,7 +105,11 @@ public class RecordingSaver {
      */
     private void sendRecordingWebhook(String fileName, Path filePath) {
         final var plugin = BetterAnticheat.getInstance();
-        final var webhookUrl = plugin.getWebhookUrl();
+        // Use save webhook if configured, otherwise fallback to main webhook
+        var webhookUrl = plugin.getSaveWebhookUrl();
+        if (webhookUrl == null || webhookUrl.isEmpty()) {
+            webhookUrl = plugin.getWebhookUrl();
+        }
 
         if (webhookUrl == null || webhookUrl.isEmpty()) {
             return;

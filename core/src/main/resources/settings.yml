@@ -130,6 +130,10 @@ webhook:
   # The message to send to the webhook.
   message: "**%username%** failed **%type%** (VL: %vl%)"
 
+  # The URL of the webhook to send recording saves to (optional).
+  # If empty, will use the main webhook URL instead.
+  save-url: ""
+
 # Sends alerts only to the user who triggered it. Used for testing purposes.
 test-mode: false
 

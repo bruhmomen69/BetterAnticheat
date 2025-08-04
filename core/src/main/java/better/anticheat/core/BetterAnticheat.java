@@ -52,7 +52,7 @@ public class BetterAnticheat {
     private List<String> alertHover;
     private String alertMessage, alertPermission, clickCommand;
     private boolean punishmentModulo, testMode, useCommand, ignorePre121Players;
-    private String webhookUrl, webhookMessage;
+    private String webhookUrl, webhookMessage, saveWebhookUrl;
     private final Map<String, ModelConfig> modelConfigs = new Object2ObjectArrayMap<>();
     private boolean mitigationCombatDamageEnabled;
     private double mitigationCombatDamageCancellationChance;
@@ -127,9 +127,11 @@ public class BetterAnticheat {
         if (webhookNode != null) {
             webhookUrl = webhookNode.getObject(String.class, "url", "");
             webhookMessage = webhookNode.getObject(String.class, "message", "**%username%** failed **%type%** (VL: %vl%)");
+            saveWebhookUrl = webhookNode.getObject(String.class, "save-url", "");
         } else {
             webhookUrl = "";
             webhookMessage = "**%username%** failed **%type%** (VL: %vl%)";
+            saveWebhookUrl = "";
         }
 
 
