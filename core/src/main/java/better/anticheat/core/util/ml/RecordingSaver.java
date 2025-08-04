@@ -112,34 +112,27 @@ public class RecordingSaver {
         }
 
         try {
-            // Create multipart form data for file upload
             final var boundary = "----RecordingBoundary" + System.currentTimeMillis();
 
-            // Create the JSON payload for the message
             final var data = new HashMap<String, String>();
             data.put("content", "Saved recording data for " + fileName);
             final var jsonPayload = JSON.toJSONString(data);
 
-            // Build the multipart request body
             final var bodyBuilder = new StringBuilder();
 
-            // Add JSON payload
             bodyBuilder.append("--").append(boundary).append("\r\n");
             bodyBuilder.append("Content-Disposition: form-data; name=\"payload_json\"\r\n");
             bodyBuilder.append("Content-Type: application/json\r\n\r\n");
             bodyBuilder.append(jsonPayload).append("\r\n");
 
-            // Add file attachment
             bodyBuilder.append("--").append(boundary).append("\r\n");
             bodyBuilder.append("Content-Disposition: form-data; name=\"file\"; filename=\"")
                     .append(fileName).append("\"\r\n");
             bodyBuilder.append("Content-Type: application/json\r\n\r\n");
 
-            // Read file content
             final var fileContent = Files.readString(filePath, StandardCharsets.UTF_16LE);
             bodyBuilder.append(fileContent).append("\r\n");
 
-            // End boundary
             bodyBuilder.append("--").append(boundary).append("--\r\n");
 
             final var request = HttpRequest.newBuilder()
