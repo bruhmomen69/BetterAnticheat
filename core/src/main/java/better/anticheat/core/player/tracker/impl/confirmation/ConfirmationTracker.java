@@ -226,7 +226,7 @@ public class ConfirmationTracker extends Tracker {
         }
 
         // Sent last tick, and NOT this tick (12ms ago for exemplar), therefore is a perfect pre confirmation option
-        var sentOption = EasyLoops.findFirst(confirmations, c -> c.getType() == ConfirmationType.KEEPALIVE & c.getTimestampConfirmed() == -1L & now - c.getTimestamp() <= 120 & now - c.getTimestamp() > 12);
+        var sentOption = EasyLoops.findFirst(confirmations, c -> c.getType() == ConfirmationType.KEEPALIVE & c.getTimestampConfirmed() == -1L & now - c.getTimestamp() <= 120);
         // Check if there is a sendoption except there is no keepalive sendoption.
         if (sentOption != null) {
             sentOption = EasyLoops.findFirst(confirmations, c -> c.getType() != ConfirmationType.KEEPALIVE & c.getTimestampConfirmed() == -1L & now - c.getTimestamp() <= 120 & now - c.getTimestamp() > 12);
