@@ -11,6 +11,7 @@ import better.anticheat.core.player.tracker.impl.confirmation.cookie.CookieSeque
 import better.anticheat.core.player.tracker.impl.confirmation.cookie.LyricManager;
 import better.anticheat.core.util.ml.MLTrainer;
 import better.anticheat.core.util.ml.ModelConfig;
+import better.anticheat.core.util.ml.RecordingSaver;
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.manager.server.ServerVersion;
 import com.github.retrooper.packetevents.protocol.player.ClientVersion;
@@ -43,6 +44,7 @@ public class BetterAnticheat {
     private final LyricManager lyricManager;
     private final PlayerManager playerManager;
     private final PunishmentManager punishmentManager;
+    private final RecordingSaver recordingSaver;
 
     // Settings
     private int alertCooldown;
@@ -75,6 +77,7 @@ public class BetterAnticheat {
         this.lyricManager = new LyricManager();
         this.playerManager = new PlayerManager(this);
         this.punishmentManager = new PunishmentManager(this);
+        this.recordingSaver = new RecordingSaver(directory);
 
         /*
          * We only support 1.21+.

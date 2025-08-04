@@ -6,6 +6,7 @@ import better.anticheat.core.command.CommandInfo;
 import better.anticheat.core.configuration.ConfigSection;
 import better.anticheat.core.util.MathUtil;
 import better.anticheat.core.util.ml.MLTrainer;
+import better.anticheat.core.util.ml.RecordingSaver;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
@@ -38,10 +39,12 @@ import java.util.concurrent.ForkJoinPool;
 @Slf4j
 @CommandInfo(name = "recording", parent = BACCommand.class)
 public class RecordingCommand extends Command {
+    private final RecordingSaver recordingSaver;
     private String[] changeOthersPerms;
 
-    public RecordingCommand(BetterAnticheat plugin) {
+    public RecordingCommand(BetterAnticheat plugin, RecordingSaver recordingSaver) {
         super(plugin);
+        this.recordingSaver = recordingSaver;
     }
 
     @Subcommand("reset")
@@ -106,58 +109,8 @@ public class RecordingCommand extends Command {
             player = targetPlayer;
         }
 
-        final var yawsArrays = new JSONArray();
-        final var offsetsArrays = new JSONArray();
-        final var enhancedOffsetsArrays = new JSONArray();
-
-        for (double[][] doubles : player.getCmlTracker().getRecording()) {
-            final var yawsArray = new JSONArray();
-            for (double v : doubles[0]) {
-                yawsArray.add(v);
-            }
-            yawsArrays.add(yawsArray);
-
-            final var offsetsArray = new JSONArray();
-            for (double v : doubles[1]) {
-                offsetsArray.add(v);
-            }
-            offsetsArrays.add(offsetsArray);
-
-            final var enhancedOffsetsArray = new JSONArray();
-            for (double v : doubles[2]) {
-                enhancedOffsetsArray.add(v);
-            }
-            enhancedOffsetsArrays.add(enhancedOffsetsArray);
-        }
-
-        sendReply(actor, Component.text("Saving... Size: " + enhancedOffsetsArrays.size()));
-
-        final var recordingDirectory = plugin.getDirectory().resolve("recording");
-        if (!recordingDirectory.toFile().exists()) {
-            recordingDirectory.toFile().mkdirs();
-        }
-        final var exists = recordingDirectory.resolve(name + ".json").toFile().exists();
-        if (exists) {
-            final var bytes = Files.readAllBytes(recordingDirectory.resolve(name + ".json"));
-            final var json = JSON.parseObject(new String(bytes, StandardCharsets.UTF_16LE));
-            final var oldYawsArrays = json.getJSONArray("yaws");
-            final var oldOffsetsArrays = json.getJSONArray("offsets");
-            final var oldEnhancedOffsetsArrays = json.getJSONArray("enhancedOffsets");
-
-            oldYawsArrays.addAll(yawsArrays);
-            oldOffsetsArrays.addAll(offsetsArrays);
-            oldEnhancedOffsetsArrays.addAll(enhancedOffsetsArrays);
-            json.put("yaws", oldYawsArrays);
-            json.put("offsets", oldOffsetsArrays);
-            json.put("enhancedOffsets", oldEnhancedOffsetsArrays);
-            Files.writeString(recordingDirectory.resolve(name + ".json"), JSON.toJSONString(json), StandardCharsets.UTF_16LE);
-        } else {
-            final JSONObject json = new JSONObject();
-            json.put("yaws", yawsArrays);
-            json.put("offsets", offsetsArrays);
-            json.put("enhancedOffsets", enhancedOffsetsArrays);
-            Files.writeString(recordingDirectory.resolve(name + ".json"), JSON.toJSONString(json), StandardCharsets.UTF_16LE);
-        }
+        // Use the injected RecordingSaver to save player data
+        recordingSaver.savePlayerData(player, name);
 
         sendReply(actor, Component.text("Recording saved! Remember to reset!"));
     }

@@ -32,7 +32,7 @@ public class CommandManager {
                 new AlertsCommand(plugin),
                 new VerboseCommand(plugin),
                 new MitigateCommand(plugin),
-                new RecordingCommand(plugin),
+                new RecordingCommand(plugin, plugin.getRecordingSaver()),
                 new ReloadCommand(plugin)
         );
     }
