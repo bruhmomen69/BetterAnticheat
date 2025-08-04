@@ -45,9 +45,11 @@ public class CMLTracker extends Tracker {
     private double averageScore;
     private boolean recordingNow = false;
     private int ticksSinceLastAttack = 0;
+    private boolean firstHitProcessed = false;
 
     public void onPlayerInit() {
-        this.expectedModels.forEach((name, modelConfig) -> this.internalChecks.add(new MLCheck(getPlayer(), modelConfig)));
+        this.expectedModels
+                .forEach((name, modelConfig) -> this.internalChecks.add(new MLCheck(getPlayer(), modelConfig)));
         this.internalChecks.forEach(this.getPlayer().getChecks()::addLast);
     }
 
@@ -66,13 +68,27 @@ public class CMLTracker extends Tracker {
                     log.trace("Did not switch entity ids: {} == {}", wrapper.getEntityId(), this.lastEntityId);
                 }
 
-                if (wrapper.getAction() != WrapperPlayClientInteractEntity.InteractAction.ATTACK || switchedIds) return;
+                if (wrapper.getAction() != WrapperPlayClientInteractEntity.InteractAction.ATTACK || switchedIds)
+                    return;
                 this.ticksSinceLastAttack = 0;
 
-                final var recordingEntry = new double[][]{
+                if (!this.firstHitProcessed) {
+                    this.firstHitProcessed = true;
+                    final var plugin = player.getPlugin();
+                    if (!this.recordingNow &&
+                            plugin.isAutoRecordEnabled() &&
+                            plugin.getDataBridge().hasPermission(getPlayer().getUser(),
+                                    plugin.getAutoRecordPermission())) {
+                        this.recordingNow = true;
+                        log.info("Auto-recording enabled for {}", getPlayer().getUser().getName());
+                    }
+                }
+
+                final var recordingEntry = new double[][] {
                         Arrays.copyOf(previousYaws.getArray(), previousYaws.getArray().length),
                         Arrays.copyOf(previousYawOffsets.getArray(), previousYawOffsets.getArray().length),
-                        Arrays.copyOf(previousEnhancedYawOffsets.getArray(), previousEnhancedYawOffsets.getArray().length)
+                        Arrays.copyOf(previousEnhancedYawOffsets.getArray(),
+                                previousEnhancedYawOffsets.getArray().length)
                 };
 
                 final var targetTracker = getPlayer().getEntityTracker();
@@ -84,7 +100,8 @@ public class CMLTracker extends Tracker {
                     }
                 }
 
-                if (!recordingNow) return;
+                if (!this.recordingNow)
+                    return;
 
                 this.recording.add(recordingEntry);
             }
@@ -106,7 +123,8 @@ public class CMLTracker extends Tracker {
                 final var position = getPlayer().getPositionTracker();
                 final var rots = getPlayer().getRotationTracker();
                 final var player = new Vector3d(position.getX(), position.getY(), position.getZ());
-                final double[] offsets = EntityMath.getOffsetFromLocation(player, targetCentre, rots.getYaw(), rots.getPitch());
+                final double[] offsets = EntityMath.getOffsetFromLocation(player, targetCentre, rots.getYaw(),
+                        rots.getPitch());
 
                 this.previousYawOffsets.push(offsets[0]);
                 this.previousYaws.push(rots.getDeltaYaw());
@@ -118,9 +136,11 @@ public class CMLTracker extends Tracker {
                 double totalSum = 0.0;
                 int totalCount = 0;
 
-                // Calculate overall average from all MLCheck history arrays, and use this to determine if we should be mitigating now.
+                // Calculate overall average from all MLCheck history arrays, and use this to
+                // determine if we should be mitigating now.
                 for (final var mlCheck : getInternalChecks()) {
-                    if (!mlCheck.getHistory().isFull()) continue;
+                    if (!mlCheck.getHistory().isFull())
+                        continue;
 
                     final double[] historyArray = mlCheck.getHistory().getArray();
                     for (final double value : historyArray) {
@@ -129,7 +149,8 @@ public class CMLTracker extends Tracker {
                     }
                 }
 
-                if (totalCount == 0) return;
+                if (totalCount == 0)
+                    return;
 
                 final double overallAverage = totalSum / totalCount;
 
@@ -165,22 +186,27 @@ public class CMLTracker extends Tracker {
         }
 
         public void handle(final double[][] data) {
-            if (!isEnabled()) return;
+            if (!isEnabled())
+                return;
 
             synchronized (MODEL_LOCK) {
                 this.history.push(this.modelConfig.getClassifierFunction().apply(data));
             }
 
             if (!this.history.isFull()) {
-                log.debug("[BetterAnticheat] [ML] {} still recording {} as {}", player.getUser().getName(), getName(), this.history.getCount());
+                log.debug("[BetterAnticheat] [ML] {} still recording {} as {}", player.getUser().getName(), getName(),
+                        this.history.getCount());
                 return;
             }
 
             final var avg = MathUtil.getAverage(this.history.getArray());
 
-            // We use `Math.round(modelConfig.getThreshold() - 0.5)` instead of `Math.floor(modelConfig.getThreshold())`, but they will both return the same integer result if all numbers are divisible by 0.5, but they are not.
-            final var extendedCheck = MathUtil.getConsecutiveAboveX(modelConfig.getAlertThreshold() - 0.5, this.history.getArray())
-                    > Math.max(Math.min(3, modelConfig.getSamples() / 2), Math.round(modelConfig.getAlertThreshold() - 0.5))
+            // We use `Math.round(modelConfig.getThreshold() - 0.5)` instead of
+            // `Math.floor(modelConfig.getThreshold())`, but they will both return the same
+            // integer result if all numbers are divisible by 0.5, but they are not.
+            final var extendedCheck = MathUtil.getConsecutiveAboveX(modelConfig.getAlertThreshold() - 0.5,
+                    this.history.getArray()) > Math.max(Math.min(3, modelConfig.getSamples() / 2),
+                            Math.round(modelConfig.getAlertThreshold() - 0.5))
                     && avg >= modelConfig.getAlertThreshold();
             final var basicCheck = avg >= modelConfig.getAlertThreshold() + 0.5;
 
@@ -190,8 +216,10 @@ public class CMLTracker extends Tracker {
                 return;
             }
 
-            final var mitigationExtendedCheck = MathUtil.getConsecutiveAboveX(modelConfig.getMitigationThreshold() - 0.5, this.history.getArray())
-                    > Math.max(Math.min(3, modelConfig.getSamples() / 2), Math.round(modelConfig.getMitigationThreshold() - 0.5))
+            final var mitigationExtendedCheck = MathUtil.getConsecutiveAboveX(
+                    modelConfig.getMitigationThreshold() - 0.5,
+                    this.history.getArray()) > Math.max(Math.min(3, modelConfig.getSamples() / 2),
+                            Math.round(modelConfig.getMitigationThreshold() - 0.5))
                     && avg >= modelConfig.getMitigationThreshold();
             final var mitigationBasicCheck = avg >= modelConfig.getMitigationThreshold() + 0.5;
 
@@ -201,7 +229,8 @@ public class CMLTracker extends Tracker {
                 return;
             }
 
-            log.debug("[BetterAnticheat] [ML] {} passed {} as {}", player.getUser().getName(), getName(), df.format(avg));
+            log.debug("[BetterAnticheat] [ML] {} passed {} as {}", player.getUser().getName(), getName(),
+                    df.format(avg));
         }
     }
 }

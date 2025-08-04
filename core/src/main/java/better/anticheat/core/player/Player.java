@@ -138,6 +138,10 @@ public class Player implements Closeable {
 
     @Override
     public void close() throws IOException {
+        if (this.cmlTracker.isRecordingNow()) {
+            plugin.getRecordingSaver().savePlayerData(this, "quitsave-" + this.user.getName() + "-" + System.currentTimeMillis());
+        }
+        
         for (final var closeable : this.closeables) {
             if (closeable == null) continue;
             closeable.close();

@@ -136,6 +136,14 @@ test-mode: false
 # Should the plugin register commands? This makes most other steps to hide the anticheat pointless.
 enable-commands: false
 
+# Auto-recording settings
+auto-record:
+  # Whether to automatically enable recording on the first hit if the user has the required permission
+  # This feature is disabled by default
+  enabled: false
+  # The permission required to automatically enable recording on first hit
+  permission: 'better.anticheat.autorecord'
+
 # ML Features. NOTE: These features are currently highly experimental, and are released for development purposes only.
 # DO NOT USE THEM IN PRODUCTION ENVIRONMENTS WITHOUT THOROUGH TESTING
 # MAKING THIS FEATURE STABLE will likely require significant and diverse amounts of extra training data, which can be collected with the record commands.

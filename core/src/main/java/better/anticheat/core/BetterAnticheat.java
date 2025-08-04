@@ -64,6 +64,10 @@ public class BetterAnticheat {
     private boolean mitigationCombatDamageHitregEnabled;
     private CookieAllocatorConfig cookieAllocatorConfig;
     private CookieSequenceData cookieSequenceData;
+    
+    // Auto-record settings
+    private boolean autoRecordEnabled;
+    private String autoRecordPermission;
 
     public BetterAnticheat(DataBridge dataBridge, Path directory, Lamp.Builder<?> lamp) {
         this.dataBridge = dataBridge;
@@ -162,6 +166,16 @@ public class BetterAnticheat {
                 this.mitigationCombatTickEnabled = false;
                 this.mitigationCombatTickDuration = 3;
             }
+        }
+
+        // Load auto-record settings
+        final var autoRecordNode = settings.getConfigSection("auto-record");
+        if (autoRecordNode != null) {
+            this.autoRecordEnabled = autoRecordNode.getObject(Boolean.class, "enabled", false);
+            this.autoRecordPermission = autoRecordNode.getObject(String.class, "permission", "better.anticheat.ml.record");
+        } else {
+            this.autoRecordEnabled = false;
+            this.autoRecordPermission = "better.anticheat.ml.record";
         }
 
         loadML(settings);
